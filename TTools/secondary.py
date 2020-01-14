@@ -56,7 +56,7 @@ def loops(vienna=""):
     return [(l + 1, k) for (l, k) in loops]
 
 
-def test(vienna="", loops=None, stems=None, multistems=None, linkers=None):
+def test(vienna="",sequence="", loops=None, stems=None, multistems=None, linkers=None):
     '''
     Prints vienna with given features
     :param vienna: str
@@ -76,6 +76,8 @@ def test(vienna="", loops=None, stems=None, multistems=None, linkers=None):
     print("".join(scale))
 
     print(vienna)
+    if sequence:
+        print(sequence)
 
     if loops:
         printMarks = ["_"] * len(vienna)
@@ -98,7 +100,7 @@ def test(vienna="", loops=None, stems=None, multistems=None, linkers=None):
     return None
 
 
-def loopStems(vienna="", loopsList=None, testPrint=False):
+def loopStems(vienna="", sequence="", loopsList=None, testPrint=False):
     '''
     Returns postions of stem of single hairpins and multiloop stems. Use coordinates {1:inf}.
     Warninig: tested with single multiloop stems only
@@ -170,12 +172,12 @@ def loopStems(vienna="", loopsList=None, testPrint=False):
 
     # print to check
     if testPrint == True:
-        test(vienna, loopsList, stems, multistems)
+        test(vienna, sequence, loopsList, stems, multistems)
 
     return stems, multistems
 
 
-def vienna2format(vienna="", loopsList=None, stemsList=None, multistemsList=None, testPrint=False):
+def vienna2format(vienna="", sequence="", loopsList=None, stemsList=None, multistemsList=None, testPrint=False):
     #TODO find name to this "format"
     '''
     Converts vienna format to letters: O - loop, S - stem, M - multiloop stem and L - linker
@@ -231,8 +233,28 @@ def vienna2format(vienna="", loopsList=None, stemsList=None, multistemsList=None
         print("".join(scale2))
 
         print(vienna)
+        if sequence:
+            print(sequence)
+        print("".join(scale2))
         print(output.replace(".", "L"))
 
     return output.replace(".", "L")
 
 
+def substructures(vienna="", sequence=""):
+    if len(vienna) != len(sequence): return None
+
+    stems, mstems = loopStems(vienna)
+
+    seqList = []
+    nameList = []
+
+    for (s1, s2) in stems:
+        seqList.append(sequence[s1 - 1:s2])
+        nameList.append("stem_" + str(s1))
+
+    if mstems:
+        seqList.append(sequence[mstems[0] - 1:mstems[3]])
+        nameList.append("mstem_" + str(mstems[0]))
+
+    return pd.Series(data=seqList, index=nameList)

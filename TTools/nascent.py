@@ -1,6 +1,5 @@
 import pandas as pd
-import TTools.methods as ttm
-import TTools.assays as ea
+import TTools as tt
 import os, shutil, random
 
 ### NASCENT (nascentFolding)
@@ -8,7 +7,26 @@ import os, shutil, random
 ################################################
 #############    preparing sequence
 
-def slidingWindow(sequence="", name="name", strand="plus", temp=37, window=80):
+def extendingWindow(sequence="", name="name", strand="plus", temp=37, m=7):
+    '''
+    Returns DataFrame of sequences of all possible lengths between minimum (m) and length of input sequence -1
+    :param sequence: str
+    :param name: str, default=name
+    :param strand: str {plus,minus,both}, default=plus (not tested for others)
+    :param temp: int, default=37
+    :param m: inf, default=7 - RNAfold does not return any values for length shorter than 7 even at 4 deg C
+    :return: DataFrame of sequences with names according to nascent.slidingWindow convention
+    '''
+    seqList = []
+    nameList = []
+
+    for i in range(m, len(sequence)):
+        seqList.append(sequence[0:i])
+        nameList.append(name + "_" + strand + "_pos" + str(i) + "_temp" + str(temp) + "_win" + str(i))
+
+    return pd.DataFrame(pd.Series(data=seqList, index=nameList, name='sequence'))
+
+def slidingWindow(sequence="", name="name", strand="plus", temp=37, window=100):
     '''
     Slices sequence using sliding window
     :param sequence: str
@@ -16,7 +34,7 @@ def slidingWindow(sequence="", name="name", strand="plus", temp=37, window=80):
     :param strand: str {"plus","both","minus"} default="plus"
     :param temp: int default=37
     :param window: int default=80
-    :return: DataFrame with
+    :return: DataFrame with sliding windows
     '''
     # sliding window for the sequence
     index_temp = list()
@@ -31,7 +49,7 @@ def slidingWindow(sequence="", name="name", strand="plus", temp=37, window=80):
 
     # minus strand
     if strand == "both" or strand == 'minus':
-        sequence_revcomp = ttm.reverse_complement_RNA(sequence.replace("T", "U"))
+        sequence_revcomp = tt.methods.reverse_complement_RNA(sequence.replace("T", "U"))
         for i in range(window, len(sequence_revcomp) + 1):
             string_rc = sequence_revcomp[i - window:i]  # correction to get exactly the same position for both strands
             list_temp.append(string_rc)
@@ -43,6 +61,23 @@ def slidingWindow(sequence="", name="name", strand="plus", temp=37, window=80):
     df_temp = pd.DataFrame()
     df_temp['sequence'] = pd.Series(list_temp, index=index_temp)
     return df_temp
+
+
+def prepareNascent(sequence="", name="name", strand="plus", temp=37, window=100):
+    '''
+    Combines output of extendingWindow and slidingWindow
+    :param sequence: str
+    :param name: str, default=name
+    :param strand: str {plus,minus,both}, default=plus (not tested for others)
+    :param temp: int, default=37
+    :param window:
+    :return: Dataframe with sequences
+    '''
+    extended = extendingWindow(sequence=sequence[:window], name=name,
+                                         strand=strand, temp=temp)
+    slided = slidingWindow(sequence=sequence, name=name,
+                                         strand=strand, temp=temp, window=window)
+    return extended.append(slided)
 
 def handleInput(data, keepNames=True):
     '''
@@ -115,12 +150,12 @@ class Fold:
         :return:
         '''
         ''''''
-        ttm.bashCommand("tab2fasta.awk temp.tab > temp.fasta")
+        tt.methods.bashCommand("tab2fasta.awk temp.tab > temp.fasta")
         if method == "UNA" or method == 'both':
-            ttm.bashCommand("hybrid-ss-min --tmin=" + str(self.temp) + " --tmax=" + str(self.temp) + " --magnesium=" + str(
+            tt.methods.bashCommand("hybrid-ss-min --tmin=" + str(self.temp) + " --tmax=" + str(self.temp) + " --magnesium=" + str(
                 self.Mg) + " --sodium=" + str(self.Na) + " temp.fasta")
         elif method == "RNA" or method == 'both':
-            ttm.bashCommand("RNAfold -T " + str(
+            tt.methods.bashCommand("RNAfold -T " + str(
                 self.temp) + " -i temp.fasta | sed 's/( -/(-/g' | awk 'BEGIN{RS=\">\"}{print $1\"\t\"$2\"\t\"$3\"\t\"$4}' > RNAfold.output")
 
     def UNAfold(self, data, saveData=False, temp=None):
@@ -136,7 +171,7 @@ class Fold:
         data = handleInput(data)
 
         # prepare folder
-        directory = self.tempDir + ttm.timestampRandomInt() + "_" + str(self.temp) + "_UNAfold"
+        directory = self.tempDir + tt.methods.timestampRandomInt() + "_" + str(self.temp) + "_UNAfold"
         os.makedirs(directory)
         path = directory + "/"
 
@@ -170,7 +205,7 @@ class Fold:
         data = handleInput(data)
 
         # prepare folder
-        directory = self.tempDir + ttm.timestampRandomInt() + "_" + str(self.temp) + "_RNAfold"
+        directory = self.tempDir + tt.methods.timestampRandomInt() + "_" + str(self.temp) + "_RNAfold"
         os.makedirs(directory)
         path = directory + "/"
 
@@ -188,7 +223,9 @@ class Fold:
             shutil.rmtree(directory)
 
         # return dG
-        df_temp['dG'] = df_temp['dG'].str.strip("(").str.strip(")").astype(float)
+        df_temp['dG'] = df_temp['dG'].str.replace("(","0.0)")       # trick to avoid crushing for 0.0
+        df_temp['dG'] = df_temp['dG'].str.replace("0.0\)-", "-")    # not very elegant but works
+        df_temp['dG'] = df_temp['dG'].str.strip(")").astype(float)
         return df_temp
 
     def RNAinvert(self, structure="", saveData=False, temp=None, n=5, RNAprimer="", stall="", quick=False):
@@ -205,21 +242,21 @@ class Fold:
         '''
 
         # prepare folder
-        directory = self.tempDir + ttm.timestampRandomInt() + "_RNAinvert"
+        directory = self.tempDir + tt.methods.timestampRandomInt() + "_RNAinvert"
         os.mkdir(directory)
         path = directory + "/"
 
         # folding
         if temp: self.temp = temp
         os.chdir(path)
-        ea.structureFile(structure=structure, stall=stall,
+        tt.assays.structureFile(structure=structure, stall=stall,
                       RNAprimer=RNAprimer)  # saves structure to file together with sequence constrain
         # run RNAinvert
         if quick == False:
-            ttm.bashCommand("cat structure.txt | RNAinverse -R" + str(n) + " -Fmp -f 0.01 -T " + str(
+            tt.methods.bashCommand("cat structure.txt | RNAinverse -R" + str(n) + " -Fmp -f 0.01 -T " + str(
                 self.temp) + " | awk '{print $1}' > output.tab")
         elif quick == True:
-            ttm.bashCommand("cat structure.txt | RNAinverse -R" + str(n) + " -T " + str(
+            tt.methods.bashCommand("cat structure.txt | RNAinverse -R" + str(n) + " -T " + str(
                 self.temp) + " | awk '{print $1}' > output.tab")
 
         df_temp = pd.read_csv(path + "output.tab", sep="\t", names=['sequence'])
@@ -331,7 +368,7 @@ def join2d(df=pd.DataFrame(), use='format'):
 
     df = pd.concat([df_names, df.drop('name', axis=1)], axis=1)
 
-    # prepares output - dictrionary of DataFrames - one for each gene/chromosome (name)
+    # prepares output - dictionary of DataFrames - one for each gene/chromosome (name)
     output = {}
 
     # separate by gene/chromosome
@@ -355,12 +392,113 @@ def join2d(df=pd.DataFrame(), use='format'):
         output[name] = df_out
 
         # output
-    if len(output) == 1:
-        return output[name]
-    else:
-        return output
+    return output
 
 
 def merge2d(df=pd.DataFrame):
     stat = df.T.describe(include='object').T
     return stat
+
+
+def nascentElem(vienna="", sequence="", verbose=False):
+    l = len(sequence)
+    if len(vienna) != l: return False
+
+    # extract positions of stems
+    stems, mstems = tt.secondary.loopStems(vienna)
+
+    # choose the last nt of the last substructure
+    if mstems:
+        last = max(max(max(stems)), max(mstems))  # in ofder: tuple, list, one of two lists
+    elif stems:
+        last = max(max(stems))
+    else:
+        return None, None
+
+    if last in mstems:
+        return sequence[mstems[0] - 1:last], l - last
+
+    else:
+        for s in stems:
+            if last == s[1]:
+                return sequence[s[0] - 1:s[1]], l - last
+
+
+def nascentElemDataFrame(data=pd.DataFrame()):
+    data = data.copy()
+    indexList = []
+    elemSequenceList = []
+    elemDistanceList = []
+
+    for i, df in data.iterrows():
+        indexList.append(i)
+        seq, dist = nascentElem(df['vienna'], df['sequence'])
+        elemSequenceList.append(seq)
+        elemDistanceList.append(dist)
+
+    data['elemSequence'] = pd.Series(data=elemSequenceList, index=indexList)
+    data['elemDistance'] = pd.Series(data=elemDistanceList, index=indexList)
+
+    return data
+
+
+def foldNascentElem(data=pd.DataFrame()):
+    # parse names and define folding temperature
+    df_names = data['name'].str.split("_", expand=True)
+    df_names.columns = ['name', 'strand', 'position', 'temp', 'window']
+    # TODO minus strand
+    df_names['temp'] = df_names['temp'].str.replace('temp', '').astype(int)
+    temps = df_names['temp'].unique()
+    if len(temps) > 1:
+        print("More than 1 folding temperature detected")
+        return False
+    elif len(temps) < 1:
+        print("No folding temperature detected")
+        return False
+    else:
+        temp = temps[0]
+
+    # folding
+    toFold = data[~data['elemSequence'].isna()]['elemSequence'].unique().tolist()
+
+    folded = Fold().RNAfold(toFold, temp=temp)
+
+    energies_dict = folded[['sequence', 'dG']].set_index('sequence').to_dict()['dG']
+    energies_dict[None] = 0.0
+
+    output = data.copy()
+    output['elemDistance'] = output['elemDistance'].fillna(0).astype(int)
+    output['elem_dG'] = output['elemSequence'].map(energies_dict)
+
+    return output
+
+
+def nascentFolding(sequence='', name='name', temp=37, window=100):
+    # preparing sequence sliding window
+    df = prepareNascent(sequence, temp=temp, window=window)
+    # folding arbitraty windows
+    df = Fold().RNAfold(df, temp=temp)
+    # defining nascent element and distance
+    df = nascentElemDataFrame(data=df)
+    # folding nascent element
+    df = foldNascentElem(df)
+
+    # parse names
+    df_names = df['name'].str.split("_", expand=True)
+    df_names.columns = ['name', 'strand', 'position', 'temp', 'window']
+    # TODO minus strand
+    df_names['position'] = df_names['position'].str.replace('pos', '').astype(int)
+    df_names['temp'] = df_names['temp'].str.replace('temp', '').astype(int)
+    df_names['window'] = df_names['window'].str.replace('win', '').astype(int)
+
+    df = pd.concat([df_names, df.drop('name', axis=1)], axis=1)
+
+    # preparing output
+    zeros = df['position'].min()
+    zeros = pd.DataFrame(data={"elemDistance": [0] * (zeros - 1),
+                               "elem_dG": [0.0] * (zeros - 1),
+                               'position': range(1, zeros)}).set_index('position')
+
+    df = df[['position', 'elemDistance', 'elem_dG']].set_index('position')
+
+    return pd.concat([zeros, df])
