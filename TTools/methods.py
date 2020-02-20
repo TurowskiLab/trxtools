@@ -1,6 +1,8 @@
 import subprocess, time, random
 import os, sys, re, itertools
 import pandas as pd
+import numpy as np
+from sklearn.decomposition import PCA
 
 ### METHODS ###
 # various python methods
@@ -208,7 +210,7 @@ def filterExp(datasets, let_in=[''], let_out=['wont_find_this_string']):
         return output_dict
 
 ################################################
-#############       statistical
+#############       statistics and analysis
 
 def quantileCategory(s1=pd.Series(), q=4):
     '''Quantile-based discretization function based on pandas.qcut function.
@@ -225,6 +227,22 @@ def quantileCategory(s1=pd.Series(), q=4):
     for i in range(0, len(quantiles[1]) - 1):
         temp_df['quantiles'][temp_df.data >= quantiles[1][i]] = i
     return temp_df['quantiles']
+
+def runPCA(data=pd.DataFrame(), n_components=2):
+    # x = StandardScaler().fit_transform(df1_codone_composition)
+
+    pca = PCA(n_components=n_components)
+    principalComponents = pca.fit_transform(data)
+    principalDf = pd.DataFrame(data=principalComponents,
+                               columns=['PC' + str(i + 1) for i in np.arange(0, n_components)])
+
+    print(pca.explained_variance_ratio_)
+
+    finalDf = pd.concat([principalDf, pd.Series(data.index)], axis=1)
+    finalDf.rename(columns={0: 'name'}, inplace=True)
+    finalDf = finalDf.set_index('name')
+
+    return finalDf
 
 
 ################################################

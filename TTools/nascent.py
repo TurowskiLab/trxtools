@@ -229,14 +229,14 @@ class Fold:
         return df_temp
 
     def RNAinvert(self, structure="", saveData=False, temp=None, n=5, RNAprimer="", stall="", quick=False):
-        '''Returns 2*n sequences with with given structure
+        '''Returns n sequences with with given structure
 
         :param structure: str() with secondary RNA structure
         :param saveData: boolean() default=False
         :param temp: int() default=None
-        :param n: int()
+        :param n: int() number of output sequences
         :param RNAprimer: str() sequence
-        :param stall: str() sequence
+        :param stall: str() nucleotide
         :param quick: boolean() if False uses -Fmp -f 0.01 params
         :return: DataFrame()
         '''
