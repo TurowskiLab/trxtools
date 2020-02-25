@@ -2,42 +2,130 @@ from scipy.signal import argrelextrema
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from warnings import warn
 
 ### PROFILES (ProfileAnalyser) ###
 # functions to deal with profiles of individual genes
 
 #importing data
+
 ##concat file
+def parseConcatFile(path, gtf, use='reads', RPM=False, ranges=1000):
+    # load concat
+    columns = ['gene', 'position', 'nucleotide', 'reads', 'substitutions', 'deletions', 'experiment', 'reads_pM',
+               'substitutions_pM', 'deletions_pM']
+    df_rawConcat = pd.read_csv(path, sep="\t", names=columns, comment="#")
+
+    # use collumn
+    if RPM == True: use = use + "_pM"
+
+    # output dict
+    output = {}
+
+    # genes
+    gene_list = df_rawConcat['gene'].unique()
+
+    # loop trough genes
+    for gene_name in gene_list:
+        geneLen = gtf.geneLength(gene_name)
+        # preparing dataframe
+        df_output = pd.DataFrame()
+        df_output['position'] = pd.Series(list(range(-ranges, 0)) + list(range(1, geneLen + ranges + 1)))
+        df_output['nucleotide'] = pd.Series(list(gtf.genomicSequence(gene_name, ranges=ranges)))
+
+        # loop trough experiments
+        for e, df in df_rawConcat.groupby('experiment'):
+            df_output[e] = df.reset_index()[use]
+
+            # check 'nucleotide' collumn
+            if df_output['nucleotide'].tolist() != df['nucleotide'].tolist():
+                warn("For " + gene_name + " gene list of nucleotides does not match/", UserWarning)
+
+        output[gene_name] = df_output
+    return output
 
 ##BigWig
 
+##normalization
+def pseudocounts(df=pd.DataFrame, value=0.01, drop=True):
+    # drop additional columns
+    cols = df.columns.tolist()
+    if 'position' in cols:
+        s1_pos = df['position']
+        df = df.drop('position', axis=1)
+    if 'nucleotide' in cols:
+        s2_nt = df['nucleotide']
+        df = df.drop('nucleotide', axis=1)
+
+    # pseudocounts
+    df = df.fillna(0).replace(0, value)
+
+    # output
+    if drop == True:
+        return df
+    elif drop == False:
+        df['position'] = s1_pos
+        df['nucleotide'] = s2_nt
+        return df
+
+
+def ntotal(df=pd.DataFrame, drop=True):
+    # drop additional columns
+    cols = df.columns.tolist()
+    if 'position' in cols:
+        s1_pos = df['position']
+        df = df.drop('position', axis=1)
+    if 'nucleotide' in cols:
+        s2_nt = df['nucleotide']
+        df = df.drop('nucleotide', axis=1)
+
+    # normalization
+    df = df / df.sum()
+
+    # output
+    if drop == True:
+        return df
+    elif drop == False:
+        df['position'] = s1_pos
+        df['nucleotide'] = s2_nt
+        return df
 
 ################################################
 #############        major TTools
 
-# def filter_df(input_df=pd.DataFrame(), let_in=[''], let_out=['wont_find_this_string'], smooth=True, window=10):
-#     '''Returns DataFrame() with choosen experiments
-#
-#     :param input_df: input DataFrame()
-#     :param let_in: list() of words that characterize experiment
-#     :param let_out: list() of words that disqualify experiments (may remain predefined)
-#     :param smooth: boolean() apply smootheninig window, default=True
-#     :param window: int() smootheninig window
-#     :return: DataFrame with 'mean', 'median', 'min', 'max' and quartiles if more than 2 experiments
-#     '''
-#
-#     working_df, result_df = pd.DataFrame(), pd.DataFrame()
-#     print("Experiments:")
-#     for f in [d for d in list(input_df.columns.values) if all(i in d for i in let_in) and all(o not in d for o in let_out)]:
-#         print(f)
-#         if smooth==True:
-#             working_df[f]=input_df[f].rolling(window, win_type='blackman', center=True).mean()
-#         else:
-#             working_df[f] = input_df[f]
-#     for function in ['mean', 'median', 'min', 'max']: result_df[function]=getattr(working_df, function)(axis=1) #calculates using pandas function listed in []
-#     if len(working_df.columns) > 2: #calculating quartiles only in more than two experiments
-#         result_df['q1'], result_df['q3'] = working_df.quantile(q=0.25, axis=1), working_df.quantile(q=0.75, axis=1)
-#     return result_df
+def filter_df(input_df=pd.DataFrame(), let_in=[''], let_out=['wont_find_this_string'],
+              stats=False, smooth=True, window=10, win_type='blackman'):
+    '''Returns DataFrame() with choosen experiments
+    :param input_df: input DataFrame()
+    :param let_in: list() of words that characterize experiment
+    :param let_out: list() of words that disqualify experiments (may remain predefined)
+    :param smooth: boolean() apply smootheninig window, default=True
+    :param window: int() smootheninig window
+    :return: DataFrame with 'mean', 'median', 'min', 'max' and quartiles if more than 2 experiments
+    '''
+    # filtering
+    selected = [d for d in list(input_df.columns.values) if
+                all(i in d for i in let_in) and all(o not in d for o in let_out)]
+    print("Experiments: ")
+    print(selected)
+
+    # selecting data
+    working_df, result_df = pd.DataFrame(), pd.DataFrame()
+    for f in selected:
+        if smooth == True:
+            working_df[f] = input_df[f].rolling(window, win_type=win_type, center=True).mean()
+        else:
+            working_df[f] = input_df[f]
+
+    # preparing output
+    if stats == False:
+        return working_df
+    else:
+        for function in ['mean', 'median', 'min', 'max']: result_df[function] = getattr(working_df, function)(
+            axis=1)  # calculates using pandas function listed in []
+        if len(selected) > 2:  # calculating quartiles only in more than two experiments
+            result_df['q1'], result_df['q3'] = working_df.quantile(q=0.25, axis=1), working_df.quantile(q=0.75, axis=1)
+        return result_df
 
 def expStats(input_df=pd.DataFrame(), smooth=True, window=10):
     '''
@@ -219,113 +307,6 @@ def compareMoretoRef(dataset=pd.DataFrame(), ranges='mm',
 ################################################
 #############        plotting
 
-def plot_as_box_plot(df=pd.DataFrame(),title=None, start=None, stop=None,figsize=(7,4),ylim=(None,0.01), dpi=150, color='green', h_lines=list(), lc='red'):
-    '''Plots figure similar to box plot: median, 2 and 3 quartiles and min-max range
-
-    :param df: Dataframe() containing following columns:```['position'] ['mean'] ['median'] ['std']```
-        optionally ```['nucleotide'] ['q1'] ['q3'] ['max'] ['min']```
-    :param title: str()
-    :param start: int()
-    :param stop: int()
-    :param figsize: touple(). Default = (7,4)
-    :param ylim: touple() OY axes lim. Default = (None,0.01)
-    :param dpi: int()
-    :param color: str()
-    :param h_lines: list() of horizontal lines
-    :param lc: str() color of horizontal lines
-    :return:
-    '''
-
-    if 'nucleotide' in df.columns.values:
-        df = df.drop('nucleotide', 1)
-    s2 = df[start:stop]
-    #plotting reference dataset
-    fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
-    plt.title(title)
-    ax1.set_xlabel('position')
-    ax1.set_ylabel('fraction of reads')
-    ax1.set_ylim(ylim)
-    ax1.plot(s2.index, s2['median'], color=color)
-    if set(['q1','q3']).issubset(list(s2.columns.values)):
-        ax1.fill_between(s2.index, s2['q1'], s2['q3'], label='range (2nd-3rd quartile)', color=color, alpha=0.2)
-    if set(['min','max']).issubset(list(s2.columns.values)):
-        ax1.fill_between(s2.index, s2['min'], s2['max'], label='range (min-max)', color=color, alpha=0.07)
-    for i in [i for i in h_lines if i in range(start,stop)]: ax1.axvline(i, color=lc)
-    ax1.legend()
-
-
-def plot_diff(dataset=pd.DataFrame(), ranges='mm', label=str(), start=None, stop=None, plot_medians=True,
-              plot_ranges=True, figsize=(15, 6), ylim=(None,0.01), h_lines=list(),
-              reference='/home/tturowski/notebooks/RDN37_reference_collapsed.csv'):
-    '''Plot given dataset and reference, differences are marked
-
-    :param dataset: DataFrame() containing following columns:```['position'] ['mean'] ['median'] ['std']```
-        optionally ```['nucleotide'] ['q1'] ['q3'] ['max'] ['min']```
-    :param ranges: str() mm : min-max or qq : q1-q3
-    :param label: str()
-    :param start: int()
-    :param stop: int()
-    :param plot_medians: plot medians
-    :param plot_ranges: plot ranges
-    :param figsize: touple(). Default = (7,4)
-    :param ylim: touple() OY axes lim. Default = (None,0.01)
-    :param h_lines: list() of horizontal lines
-    :param reference: str() with path or DataFrame() to reference data
-    :return: Plot with marked sequences
-    '''
-
-    ranges_dict = {'mm': 'min-max', 'qq': 'q1-q3'}
-
-    if isinstance(reference, str):
-        reference = pd.read_csv(reference, index_col=0)
-
-    differences_df = compareMoretoRef(dataset=dataset, ranges=ranges, reference=reference)[start:stop]
-    dataset, s2 = dataset[start:stop], reference[start:stop]  # prepating datasets
-    # plotting
-    fig, ax1 = plt.subplots(figsize=figsize)
-    ax1.fill_between(differences_df.index, differences_df['ear_min'], differences_df['ear_max'], color='red',
-                     where=(differences_df['ear_max'] > 0), label='increased pausing (' + ranges_dict[ranges] + ')')
-    ax1.fill_between(differences_df.index, differences_df['rae_min'], differences_df['rae_max'], color='blue',
-                     where=(differences_df['rae_max'] > 0), label='decreased pausing (' + ranges_dict[ranges] + ')')
-    if plot_medians == True:
-        ax1.plot(dataset.index, dataset['median'], 'black', label=label)
-        ax1.plot(s2.index, s2['median'], 'green', label='reference RDN37-1')
-    if plot_ranges == True:
-        if len(dataset.columns) == 4:  # if only two experiments
-            ax1.fill_between(dataset.index, dataset['min'], dataset['max'], color='black', alpha=0.3, label='min-max')
-        else:  # if more than two experiments
-            ax1.fill_between(dataset.index, dataset['q1'], dataset['q3'], color='black', alpha=0.2, label='q1-q3')
-            ax1.fill_between(dataset.index, dataset['min'], dataset['max'], color='black', alpha=0.07, label='min=max')
-        ax1.fill_between(s2.index, s2['q1'], s2['q3'], color='green', alpha=0.2, label='q1-q3')
-        ax1.fill_between(s2.index, s2['min'], s2['max'], color='green', alpha=0.07, label='min=max')
-    ax1.set_ylim(ylim)
-    ax1.set_xlabel('position')
-    ax1.set_ylabel('fraction of reads ' + label, color='black')
-    for i in [i for i in h_lines if i in range(start, stop)]: ax1.axvline(i, color='red')
-    plt.legend()
-
-def plot_heatmap(df=pd.DataFrame(), title='Heat map of differences between dataset and reference plot for RDN37-1', vmin=None,
-                 vmax=None, figsize=(20,10)):
-    '''Plot heat map of differences, from dataframe generated by compare1toRef(dataset, heatmap=True) function
-
-    :param df: DataFrame()
-    :param title: str()
-    :param vmin:
-    :param vmax:
-    :param figsize: touple()
-    :return:
-    '''
-
-    fig, ax = plt.subplots(figsize=figsize)
-    if not vmin:
-        vmin = -np.absolute(df.max().median())
-    if not vmax:
-        vmax = df.max().median()
-    heatmap = ax.pcolormesh(df.transpose(), cmap='seismic', vmin=vmin, vmax=vmax)
-    ax.set_yticks(np.arange(len(list(df.columns.values))) + 0.5, minor=False)
-    ax.set_yticklabels(list(df.columns.values), minor=False)
-    fig.colorbar(heatmap)
-    ax.set_title(title)
 
 
 # def plot_ChIP(df_sense=pd.DataFrame(), df_anti=pd.DataFrame(), title=None, start=None, stop=None, figsize=(15, 6),
