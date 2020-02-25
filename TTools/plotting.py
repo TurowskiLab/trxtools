@@ -109,9 +109,38 @@ def plot_as_box_plot(df=pd.DataFrame(),title=None, start=None, stop=None,figsize
         ax1.fill_between(s2.index-offset, s2['q1'], s2['q3'], label='range (2nd-3rd quartile)', color=color, alpha=0.2)
     if set(['min','max']).issubset(list(s2.columns.values)):
         ax1.fill_between(s2.index-offset, s2['min'], s2['max'], label='range (min-max)', color=color, alpha=0.07)
-    for i in [i for i in h_lines if i in range(start,stop)]: ax1.axvline(i, color=lc)
+    for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
     ax1.legend()
 
+def plot_to_compare(df=pd.DataFrame(), df2=None, color1='black', color2='darkred',
+                    label=str(), title=None, start=None, stop=None, figsize=(7,3),
+                    ylim=(None,0.01), h_lines=list(), dpi=150,offset=300,
+                    csv_path='/home/tturowski/notebooks/RDN37_csv_path_collapsed.csv'):
+    reference = pd.read_csv(csv_path, index_col=0) # reading reference
+    dataset, s2 = df[start:stop], reference[start:stop] # prepating datasets
+    #plotting
+    fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
+    plt.title(title)
+    plt.axhline(0, color='red')
+    if len(dataset.columns) == 4: #if only two experiments
+        ax1.plot(dataset.index-offset, dataset['mean'], color1, label=label)
+        ax1.fill_between(dataset.index-offset, dataset['min'], dataset['max'], color=color1, alpha=0.3, label='range (min-max)')
+    else: #if more than two experiments
+        ax1.plot(dataset.index-offset, dataset['median'], color1, label=label)
+        ax1.fill_between(dataset.index-offset, dataset['q1'], dataset['q3'], color=color1, alpha=0.2, label='range (2nd-3rd quartile)')
+#         ax1.fill_between(dataset.index-offset, dataset['min'], dataset['max'], color=color1, alpha=0.07, label='range (min-max)')
+    ax1.set_xlabel('position')
+    ax1.set_ylim(ylim)
+    # Make the y-axis label and tick labels match the line color.
+    ax1.set_ylabel('fraction of reads', color='black')
+    for tl in ax1.get_yticklabels():
+        tl.set_color('black')
+
+    ax1.plot(s2.index-offset, s2['median'], 'green', label='Rpa190')
+    ax1.fill_between(s2.index-offset, s2['q1'], s2['q3'], color='green', alpha=0.2, label='range (q2-q3)')
+    ax1.fill_between(s2.index-offset, s2['min'], s2['max'], color='green', alpha=0.07, label='range (min-max)')
+    for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color='red')
+    ax1.legend()
 
 def plot_diff(dataset=pd.DataFrame(), ranges='mm', label=str(), start=None, stop=None, plot_medians=True,
               plot_ranges=True, figsize=(7, 3), ylim=(None,0.01), h_lines=list(), offset=0,
