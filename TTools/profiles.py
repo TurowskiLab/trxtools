@@ -1,16 +1,25 @@
 from scipy.signal import argrelextrema
 import numpy as np
-import matplotlib.pyplot as plt
+from collections import OrderedDict
 import pandas as pd
 from warnings import warn
+import pyBigWig
 
 ### PROFILES (ProfileAnalyser) ###
 # functions to deal with profiles of individual genes
 
 #importing data
-
 ##concat file
 def parseConcatFile(path, gtf, use='reads', RPM=False, ranges=1000):
+    '''Parse concat file
+
+    :param path: str with path of the concat file
+    :param gtf: pyCRAC.GTF2 object with GTF and TAB files loaded
+    :param use: str with name of column tu use ['reads', 'substitutions', 'deletions'], default "reads"
+    :param RPM: boolean, default False
+    :param ranges: int flanks to be added for the gene, default 0
+    :return: dict of DataFrames; using gene name as a key
+    '''
     # load concat
     columns = ['gene', 'position', 'nucleotide', 'reads', 'substitutions', 'deletions', 'experiment', 'reads_pM',
                'substitutions_pM', 'deletions_pM']
@@ -45,9 +54,121 @@ def parseConcatFile(path, gtf, use='reads', RPM=False, ranges=1000):
     return output
 
 ##BigWig
+def stripBigWignames(files=[]):
+    '''Strip "_rev.bw" and "_fwd.bw" form file names
+
+    :param files: list of filenames
+    :return: list of unique names
+    '''
+    # returns uniq names for *fwd.bw and *rev.bw files
+    return list(set([f.replace("_rev.bw", "").replace("_fwd.bw", "") for f in files]))
+
+
+def dictBigWig(files=[], path="", strands=True):
+    '''Preloads BigWig files to memory using pyBigWig tools
+
+    :param files: list of files
+    :param path: str
+    :param strands: boolean, default True
+    :return: dict or dict, dict
+    '''
+    if strands == True:
+        # output dict
+        output_dict_fwd = OrderedDict()
+        output_dict_rev = OrderedDict()
+
+        strippedNames = stripBigWignames(files=files)  # list of common roots for strand specific data
+        for f in strippedNames:
+            output_dict_fwd[f] = pyBigWig.open(path + f + "_fwd.bw")
+            output_dict_rev[f] = pyBigWig.open(path + f + "_rev.bw")
+        return output_dict_fwd, output_dict_rev
+
+    if strands == False:
+        # output dict
+        output_dict = {}
+        for f in files:
+            output_dict[f.replace('.bw', '')] = pyBigWig.open(path + f)
+        return output_dict
+
+def geneFromBigWig(gene_name, gtf, bwFWD={}, bwREV={}, toStrip="", ranges=0):
+    '''Pulls genome coverage from BigWig data for a given gene. One BigWig file -> one column.
+
+    :param gene_name: str
+    :param gtf: pyCRAC.GTF2 object with GTF and TAB files loaded
+    :param bwFWD: dict of pyBigWig objects
+    :param bwREV: dict of pyBigWig objects
+    :param toStrip: str of name to be stripped
+    :param ranges: int flanks to be added for the gene, default 0
+    :return: DataFrame
+    '''
+    # preparing output
+    df_t1 = pd.DataFrame()
+    df_t1["nucleotide"] = "_".join(gtf.genomicSequence(gene_name, ranges=ranges)).split("_")
+
+    # coordinates from GTF file
+    strand, chromosome, coordinates = gtf.strand(gene_name), gtf.chromosome(gene_name), gtf.chromosomeCoordinates(
+        gene_name)
+
+    # extracting data
+    if strand == "+":
+        for name in bwFWD:
+            bw = bwFWD[name]
+            s1 = pd.Series(bw.values(chromosome, min(coordinates) - ranges, max(coordinates) + ranges))
+            df_t1[name.replace(toStrip, '')] = s1
+
+    if strand == "-":
+        for name in bwREV:
+            bw = bwREV[name]
+            s1 = pd.Series(bw.values(chromosome, min(coordinates) - ranges, max(coordinates) + ranges)[::-1])
+            df_t1[name.replace(toStrip, '')] = s1
+
+    return df_t1
+
+def FoldingFromBigWig(gene_name, gtf, bwFWD={}, bwREV={}, ranges=0,offset=15,fold="dG65nt@30C"):
+    '''Pulls folding information from BigWig folding data for a given gene.
+
+    :param gene_name: str
+    :param gtf: pyCRAC.GTF2 object with GTF and TAB files loaded
+    :param bwFWD: dict of pyBigWig objects
+    :param bwREV: dict of pyBigWig objects
+    :param ranges: int flanks to be added for the gene, default 0
+    :param offset: int to offset folding data, default 15
+    :param fold: name of output column, default="dG65nt@30C"
+    :return: DataFrame
+    '''
+    # preparing output
+    df_t1 = pd.DataFrame()
+
+    # coordinates from GTF file
+    strand, chromosome, coordinates = gtf.strand(gene_name), gtf.chromosome(gene_name), gtf.chromosomeCoordinates(
+        gene_name)
+
+    # extracting data
+    if strand == "+":
+        for name in bwFWD:
+            bw = bwFWD[name]
+            s1 = pd.Series(bw.values(chromosome, min(coordinates) - ranges, max(coordinates) + ranges))
+            # shifting to the extrustion point
+            df_t1[fold+"_add"+str(offset)+"nt"] = pd.Series((offset * [np.nan]) + s1.tolist())
+
+    if strand == "-":
+        for name in bwREV:
+            bw = bwREV[name]
+            s1 = pd.Series(bw.values(chromosome, min(coordinates) - ranges, max(coordinates) + ranges)[::-1])
+            # shifting to the extrustion point
+            df_t1[fold+"_add"+str(offset)+"nt"] = pd.Series((offset * [np.nan]) + s1.tolist())
+
+    return df_t1
 
 ##normalization
 def pseudocounts(df=pd.DataFrame, value=0.01, drop=True):
+    '''Add pseudocounts to data
+
+    :param df: DataFrame
+    :param value: float, default 0.01
+    :param drop: boolean, if True drop 'position' and 'nucleotide' columns, default True
+    :return: DataFrame
+    '''
     # drop additional columns
     cols = df.columns.tolist()
     if 'position' in cols:
@@ -70,6 +191,12 @@ def pseudocounts(df=pd.DataFrame, value=0.01, drop=True):
 
 
 def ntotal(df=pd.DataFrame, drop=True):
+    '''Normalize data in DataFrame to fraction of total column
+
+    :param df: DataFrame
+    :param drop: boolean, if True drop 'position' and 'nucleotide' columns, default True
+    :return: DataFrame
+    '''
     # drop additional columns
     cols = df.columns.tolist()
     if 'position' in cols:
@@ -93,14 +220,17 @@ def ntotal(df=pd.DataFrame, drop=True):
 ################################################
 #############        major TTools
 
-def filter_df(input_df=pd.DataFrame(), let_in=[''], let_out=['wont_find_this_string'],
-              stats=False, smooth=True, window=10, win_type='blackman'):
-    '''Returns DataFrame() with choosen experiments
-    :param input_df: input DataFrame()
-    :param let_in: list() of words that characterize experiment
-    :param let_out: list() of words that disqualify experiments (may remain predefined)
-    :param smooth: boolean() apply smootheninig window, default=True
-    :param window: int() smootheninig window
+def preprocess(input_df=pd.DataFrame(), let_in=[''], let_out=['wont_find_this_string'],
+              stats=False, smooth=True , window=10, win_type='blackman'):
+    '''Combines methods.filterExp and expStats. Returns DataFrame with choosen experiments, optionally apply smoothing and stats
+
+    :param input_df: DataFrame
+    :param let_in: list of words that characterize experiment, default ['']
+    :param let_out: list of words that disqualify experiments, default ['wont_find_this_string']
+    :param stats: boolean, if True return stats for all experiments, default False
+    :param smooth: boolean, if True apply smoothing window, default True
+    :param window: int smoothing window, default 10
+    :param win_type: str type of smoothing window, default "blackman"
     :return: DataFrame with 'mean', 'median', 'min', 'max' and quartiles if more than 2 experiments
     '''
     # filtering
@@ -127,37 +257,13 @@ def filter_df(input_df=pd.DataFrame(), let_in=[''], let_out=['wont_find_this_str
             result_df['q1'], result_df['q3'] = working_df.quantile(q=0.25, axis=1), working_df.quantile(q=0.75, axis=1)
         return result_df
 
-def expStats(input_df=pd.DataFrame(), smooth=True, window=10):
-    '''
-    :param input_df: input DataFrame()
-    :param smooth: boolean() apply smootheninig window, default=True
-    :param window: int() smootheninig window
-    :return: DataFrame with 'mean', 'median', 'min', 'max' and quartiles if more than 2 experiments
-    '''
-    working_df, result_df = pd.DataFrame(), pd.DataFrame()
-
-    #smoothing
-    if smooth == True:
-        for f in input_df.columns.values:
-            print(f)
-            working_df[f]=input_df[f].rolling(window, win_type='blackman', center=True).mean()
-    else:
-        working_df = input_df.copy()
-
-    #calculating stats
-    for function in ['mean', 'median', 'min', 'max']: result_df[function]=getattr(working_df, function)(axis=1) #calculates using pandas function listed in []
-    if len(working_df.columns) > 2: #calculating quartiles only in more than two experiments
-        result_df['q1'], result_df['q3'] = working_df.quantile(q=0.25, axis=1), working_df.quantile(q=0.75, axis=1)
-
-    return result_df
-
 def calculateFDR(data=pd.Series(), iterations=100, target_FDR=0.05):
     '''Calculates False Discovery Rate (FDR) for a given dataset.
 
-    :param data: Series()
-    :param iterations: int() Default = 100
-    :param target_FDR: float() Detault = 0.05
-    :return: Series()
+    :param data: Series
+    :param iterations: int, default 100
+    :param target_FDR: float, detault 0.05
+    :return: Series
     '''
 
     normalized_data = data / data.sum()  # normalize data
@@ -173,52 +279,52 @@ def calculateFDR(data=pd.Series(), iterations=100, target_FDR=0.05):
     return data * FDR
 
 
-def findPeaks(s1=pd.Series(), window=1, order=20):
+def findPeaks(s1=pd.Series(), window=1, win_type='blackman', order=20):
     '''Find local extrema using SciPy argrelextrema function
 
-    :param s1: Series() data to localize peaks
-    :param window: int(), To smooth data before peak-calling. Default = 1 (no smoothed)
-    :param order: int() minimal spacing between peaks, argrelextrema order parameter. Detault = 20
-    :return: list() of peaks
+    :param s1: Series data to localize peaks
+    :param window: int, To smooth data before peak-calling. default 1 (no smoothing)
+    :param win_type: str type of smoothing window, default "blackman"
+    :param order: int minimal spacing between peaks, argrelextrema order parameter, default  20
+    :return: list of peaks
     '''
 
     # smoothing
     if window > 1:
-        s1 = s1.rolling(window, win_type='blackman', center=True).mean()
+        s1 = s1.rolling(window, win_type=win_type, center=True).mean()
 
     # find peaks
     output = argrelextrema(data=s1.as_matrix(), comparator=np.greater, order=order)[0]
     return list(output)
 
-def findTroughs(s1=pd.Series(), window=1, order=20):
+def findTroughs(s1=pd.Series(), window=1, win_type='blackman', order=20):
     '''Find local minima using SciPy argrelextrema function
 
-    :param s1: Series() data to localize peaks
-    :param window: int(), To smooth data before trough-calling. Default = 1 (no smoothed)
-    :param order: int() minimal spacing between min, argrelextrema order parameter. Detault = 20
-    :return: list() of troughs
+    :param s1: Series data to localize peaks
+    :param window: int, To smooth data before trough-calling. default 1 (no smoothing)
+    :param win_type: str type of smoothing window, default "blackman"
+    :param order: int minimal spacing between min, argrelextrema order parameter, default 20
+    :return: list of troughs
     '''
 
     # smoothing
     if window > 1:
-        s1 = s1.rolling(window, win_type='blackman', center=True).mean()
+        s1 = s1.rolling(window, win_type=win_type, center=True).mean()
 
     # find troughs
     output = argrelextrema(data=s1.as_matrix(), comparator=np.less, order=order)[0]
     return list(output)
 
 
-def compare1toRef(dataset=pd.Series(), ranges='mm', heatmap=False, relative=False,
-                    reference='/home/tturowski/notebooks/RDN37_reference_collapsed.csv'):
-    '''Takes Series() and compare this with reference DataFrame()
+def compare1toRef(ref, dataset=pd.Series(), ranges='mm', heatmap=False, relative=False):
+    '''Takes Series and compare this with reference DataFrame()
 
-    :param dataset: Series()
+    :param ref: str with path to csv file or DataFrame
+    :param dataset: Series
     :param ranges: mm : min-max or qq : q1-q3
-    :param heatmap: boolean() heatmap=False: Dataframe with(reference_above_experiment minimum etc.): rae_min, rae_max, ear_min, ear_max;
+    :param heatmap: boolean, heatmap=False: Dataframe with(reference_above_experiment minimum etc.): rae_min, rae_max, ear_min, ear_max;
             heatmap=True: Series of differences to plot heatmap
-    :param relative: boolean() only for heatmap, recalculates differences according to the peak size. Warning: negative values are in range -1 to 0
-    but positive are from 0 to values higher than 1
-    :param reference: str() with path or DataFrame() to reference data
+    :param relative: boolean, only for heatmap, recalculates differences according to the peak size. Warning: negative values are in range -1 to 0 but positive are from 0 to values higher than 1
     :return: Dataframe (heatmap=False) or Series (heatmap=True)
     '''
 
@@ -227,8 +333,11 @@ def compare1toRef(dataset=pd.Series(), ranges='mm', heatmap=False, relative=Fals
     # preparing dataframe and reference
     differences_df, return_df = pd.DataFrame(), pd.DataFrame()
 
-    if isinstance(reference, str):
-        reference = pd.read_csv(reference, index_col=0)
+    #handling reference plot
+    if isinstance(ref, str):
+        reference = pd.read_csv(ref, index_col=0)
+    elif isinstance(ref, pd.DataFrame):
+        reference = ref
 
     differences_df['exp'] = dataset
     differences_df['ref_min'] = reference[ranges_dict[ranges][0]]  # choosing q1 or min
@@ -263,22 +372,23 @@ def compare1toRef(dataset=pd.Series(), ranges='mm', heatmap=False, relative=Fals
         return return_df  # return Dataframe
 
 
-def compareMoretoRef(dataset=pd.DataFrame(), ranges='mm',
-                     reference='/home/tturowski/notebooks/RDN37_reference_collapsed.csv'):
+def compareMoretoRef(ref, dataset=pd.DataFrame(), ranges='mm'):
     '''Takes Dataframe created by filter_df and compare this with reference DataFrame
 
-    :param dataset: Series()
+    :param ref: str with path to csv file or DataFrame
+    :param dataset: Series
     :param ranges: mm : min-max or qq : q1-q3
-    :param reference: str() with path or DataFrame() to reference data
-    :return: Dataframe()
+    :return: Dataframe
     '''
-
     ranges_dict = {'mm': ['min', 'max'], 'qq': ['q1', 'q3']}
     # preparing dataframe and reference
     differences_df, return_df = pd.DataFrame(), pd.DataFrame()
 
-    if isinstance(reference, str):
-        reference = pd.read_csv(reference, index_col=0)
+    #handling reference plot
+    if isinstance(ref, str):
+        reference = pd.read_csv(ref, index_col=0)
+    elif isinstance(ref, pd.DataFrame):
+        reference = ref
 
     if len(dataset.columns) == 4:  # if only two experiments
         differences_df['exp_min'] = dataset['min']
@@ -306,8 +416,6 @@ def compareMoretoRef(dataset=pd.DataFrame(), ranges='mm',
 
 ################################################
 #############        plotting
-
-
 
 # def plot_ChIP(df_sense=pd.DataFrame(), df_anti=pd.DataFrame(), title=None, start=None, stop=None, figsize=(15, 6),
 #               ylim=(-0.001, 0.001), s_color='red', as_color='blue', h_lines=list(), lc='black', dpi=150,
@@ -371,13 +479,13 @@ def compareMoretoRef(dataset=pd.DataFrame(), ranges='mm',
 ################################################
 #############        other
 
-def save_csv(data_ref=pd.DataFrame(), datasets=pd.DataFrame(), path=str()):
+def save_csv(data_ref=pd.DataFrame(), datasets=pd.DataFrame(), path=None):
     '''Saves Dataframe to csv
 
-    :param data_ref: DataFrame() with ``['position']`` and ``['nucleotide']`` columns
-    :param datasets: DataFrame() containinig experimental data only
-    :param path: str() Optional: path to save csv. Default: None
-    :return: DataFrame()
+    :param data_ref: DataFrame with ``['position']`` and ``['nucleotide']`` columns
+    :param datasets: DataFrame containinig experimental data only
+    :param path: str, Optional: path to save csv. Default None
+    :return: DataFrame
     '''
 
     reference = pd.DataFrame()

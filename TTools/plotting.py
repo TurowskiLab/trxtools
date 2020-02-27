@@ -4,8 +4,16 @@ import numpy as np
 import TTools.profiles as profiles
 
 #### PCA
+def plotPCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize = (7,7)):
+    '''Plot PCA plot
 
-def plotPCA(data=pd.DataFrame(), names=list(), title=str(), PClimit=1,figsize = (7,7)):
+    :param data: DataFrame
+    :param names: list of names to annotate
+    :param title: str
+    :param PClimit: int number of PC to plot, default 1
+    :param figsize: tuple, default (7,7)
+    :return:
+    '''
     nPCA = len([col for col in data.columns if 'PC' in col])
     axes = [ i +1 for i in range(nPCA)[:-1]]
 
@@ -38,11 +46,29 @@ def plotPCA(data=pd.DataFrame(), names=list(), title=str(), PClimit=1,figsize = 
         if nPC==PClimit: break
 
 ### Peaks metaplot
+def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
+                        title="", start=None, stop=None, window=50, figsize=(4,3),
+                        color1='green', color2="magenta", lc='red'):
+    '''Plot single gene peaks metaplot.
 
-def plotCumulativePeaks(csv_path=str(), df2=pd.DataFrame(), local_pos=list(), dpi=150,
-                        title=None, start=None, stop=None, window=20, figsize=(4, 3),
-                        color1='green', color2="magenta", lc='red', ylim=None):
-    reference = pd.read_csv(csv_path, index_col=0)
+    :param ref: str with path to csv file or DataFrame
+    :param df2: DataFrame
+    :param local_pos: list of features (peaks/troughs)
+    :param dpi: int, default 150
+    :param title: str
+    :param start: int
+    :param stop: int
+    :param window: int, default 50
+    :param figsize: tuple, default (4,3)
+    :param color1: str, default "green"
+    :param color2: str, default "magenta"
+    :param lc: str, default "red"
+    :return:
+    '''
+    if isinstance(ref, str):
+        reference = pd.read_csv(ref, index_col=0)
+    elif isinstance(ref, pd.DataFrame):
+        reference = ref
 
     # extracting data for metaplot
     df_dataset1 = pd.DataFrame()
@@ -77,21 +103,23 @@ def plotCumulativePeaks(csv_path=str(), df2=pd.DataFrame(), local_pos=list(), dp
     plt.show()
 
 ### profiles
-
-def plot_as_box_plot(df=pd.DataFrame(),title=None, start=None, stop=None,figsize=(7,3),ylim=(None,0.01), dpi=150, color='green', h_lines=list(), lc='red',offset=0):
+def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,
+                     figsize=(7,3),ylim=(None,0.01), dpi=150, color='green',
+                     h_lines=[], lc="red",offset=0):
     '''Plots figure similar to box plot: median, 2 and 3 quartiles and min-max range
 
     :param df: Dataframe() containing following columns:```['position'] ['mean'] ['median'] ['std']```
         optionally ```['nucleotide'] ['q1'] ['q3'] ['max'] ['min']```
-    :param title: str()
-    :param start: int()
-    :param stop: int()
-    :param figsize: touple(). Default = (7,4)
-    :param ylim: touple() OY axes lim. Default = (None,0.01)
-    :param dpi: int()
-    :param color: str()
-    :param h_lines: list() of horizontal lines
-    :param lc: str() color of horizontal lines
+    :param title: str
+    :param start: int
+    :param stop: int
+    :param figsize: tuple, default (7,4)
+    :param ylim: tuple OY axes lim. Default (None,0.01)
+    :param dpi: int, default 150
+    :param color: str, default "green"
+    :param h_lines: list of horizontal lines
+    :param lc: str color of horizontal lines, default "red"
+    :param offset: int number to offset position if 5' flank was used, default 0
     :return:
     '''
 
@@ -112,23 +140,48 @@ def plot_as_box_plot(df=pd.DataFrame(),title=None, start=None, stop=None,figsize
     for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
     ax1.legend()
 
-def plot_to_compare(df=pd.DataFrame(), df2=None, color1='black', color2='darkred',
-                    label=str(), title=None, start=None, stop=None, figsize=(7,3),
-                    ylim=(None,0.01), h_lines=list(), dpi=150,offset=300,
-                    csv_path='/home/tturowski/notebooks/RDN37_csv_path_collapsed.csv'):
-    reference = pd.read_csv(csv_path, index_col=0) # reading reference
+def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',
+                    ref_label="", label="", title="", start=None, stop=None, figsize=(7,3),
+                    ylim=(None,0.01), h_lines=[], lc="red", dpi=150,offset=300):
+    '''Figure to compare to plots similar to box plot: median, 2 and 3 quartiles and min-max range
+
+    :param ref: str with path to csv file or DataFrame
+    :param df: DataFrame
+    :param color1: str, default "green"
+    :param color2: str, default "black"
+    :param ref_label: str
+    :param label: str
+    :param title: str
+    :param start: int
+    :param stop: int
+    :param figsize: tuple, default (7,4)
+    :param ylim: tuple OY axes lim. Default (None,0.01)
+    :param h_lines: list of horizontal lines
+    :param lc: str color of horizontal lines, default "red"
+    :param dpi: int, default 150
+    :param offset: int number to offset position if 5' flank was used, default 0
+    :return:
+    '''
+
+    #handling reference plot
+    if isinstance(ref, str):
+        reference = pd.read_csv(ref, index_col=0)
+    elif isinstance(ref, pd.DataFrame):
+        reference = ref
+
     dataset, s2 = df[start:stop], reference[start:stop] # prepating datasets
     #plotting
     fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
     plt.title(title)
     plt.axhline(0, color='red')
+
+    ## plot to compare
     if len(dataset.columns) == 4: #if only two experiments
-        ax1.plot(dataset.index-offset, dataset['mean'], color1, label=label)
-        ax1.fill_between(dataset.index-offset, dataset['min'], dataset['max'], color=color1, alpha=0.3, label='range (min-max)')
+        ax1.plot(dataset.index-offset, dataset['mean'], color2, label=label)
+        ax1.fill_between(dataset.index-offset, dataset['min'], dataset['max'], color=color2, alpha=0.3, label='range (min-max)')
     else: #if more than two experiments
-        ax1.plot(dataset.index-offset, dataset['median'], color1, label=label)
-        ax1.fill_between(dataset.index-offset, dataset['q1'], dataset['q3'], color=color1, alpha=0.2, label='range (2nd-3rd quartile)')
-#         ax1.fill_between(dataset.index-offset, dataset['min'], dataset['max'], color=color1, alpha=0.07, label='range (min-max)')
+        ax1.plot(dataset.index-offset, dataset['median'], color2, label=label)
+        ax1.fill_between(dataset.index-offset, dataset['q1'], dataset['q3'], color=color2, alpha=0.2, label='range (2nd-3rd quartile)')
     ax1.set_xlabel('position')
     ax1.set_ylim(ylim)
     # Make the y-axis label and tick labels match the line color.
@@ -136,31 +189,41 @@ def plot_to_compare(df=pd.DataFrame(), df2=None, color1='black', color2='darkred
     for tl in ax1.get_yticklabels():
         tl.set_color('black')
 
-    ax1.plot(s2.index-offset, s2['median'], 'green', label='Rpa190')
-    ax1.fill_between(s2.index-offset, s2['q1'], s2['q3'], color='green', alpha=0.2, label='range (q2-q3)')
-    ax1.fill_between(s2.index-offset, s2['min'], s2['max'], color='green', alpha=0.07, label='range (min-max)')
-    for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color='red')
+    ## reference plot
+    if len(s2.columns) == 4:  # if only two experiments
+        ax1.plot(s2.index - offset, s2['mean'], color1, label=ref_label)
+        ax1.fill_between(s2.index - offset, s2['min'], s2['max'], color=color1, alpha=0.07, label='range (min-max)')
+    else:
+        ax1.plot(s2.index-offset, s2['median'], color1, label=ref_label)
+        ax1.fill_between(s2.index-offset, s2['q1'], s2['q3'], color=color1, alpha=0.2, label='range (q2-q3)')
+
+    for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
     ax1.legend()
 
-def plot_diff(dataset=pd.DataFrame(), ranges='mm', label=str(), start=None, stop=None, plot_medians=True,
-              plot_ranges=True, figsize=(7, 3), ylim=(None,0.01), h_lines=list(), offset=0,
-              reference='/home/tturowski/notebooks/RDN37_reference_collapsed.csv'):
+def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label="", start=None, stop=None, plot_medians=True,
+              plot_ranges=True, figsize=(7, 3), ylim=(None,0.01), h_lines=list(), offset=0):
     '''Plot given dataset and reference, differences are marked
 
-    :param dataset: DataFrame() containing following columns:```['position'] ['mean'] ['median'] ['std']```
+    :param ref: str with path to csv file or DataFrame
+    :param dataset: DataFrame containing following columns:```['position'] ['mean'] ['median'] ['std']```
         optionally ```['nucleotide'] ['q1'] ['q3'] ['max'] ['min']```
-    :param ranges: str() mm : min-max or qq : q1-q3
-    :param label: str()
-    :param start: int()
-    :param stop: int()
-    :param plot_medians: plot medians
-    :param plot_ranges: plot ranges
-    :param figsize: touple(). Default = (7,4)
-    :param ylim: touple() OY axes lim. Default = (None,0.01)
-    :param h_lines: list() of horizontal lines
-    :param reference: str() with path or DataFrame() to reference data
-    :return: Plot with marked sequences
+    :param ranges: str "mm" : min-max or "qq" : q1-q3
+    :param label: str
+    :param start: int
+    :param stop: int
+    :param plot_medians: boolean if True plot medians, default True
+    :param plot_ranges: boolean if True plot ranges, default True
+    :param figsize: tuple, default (7,3)
+    :param ylim: tuple OY axes lim, default (None,0.01)
+    :param h_lines: list of horizontal lines
+    :return:
     '''
+
+    #handling reference plot
+    if isinstance(ref, str):
+        reference = pd.read_csv(ref, index_col=0)
+    elif isinstance(ref, pd.DataFrame):
+        reference = ref
 
     ranges_dict = {'mm': 'min-max', 'qq': 'q1-q3'}
 
@@ -192,15 +255,15 @@ def plot_diff(dataset=pd.DataFrame(), ranges='mm', label=str(), start=None, stop
     for i in [i for i in h_lines if i in range(start, stop)]: ax1.axvline(i, color='red')
     plt.legend()
 
-def plot_heatmap(df=pd.DataFrame(), title='Heat map of differences between dataset and reference plot for RDN37-1', vmin=None,
-                 vmax=None, figsize=(20,10)):
+def plot_heatmap(df=pd.DataFrame(), title='Heatmap of differences between dataset and reference plot for RDN37-1',
+                 vmin=None, vmax=None, figsize=(20,10)):
     '''Plot heat map of differences, from dataframe generated by compare1toRef(dataset, heatmap=True) function
 
-    :param df: DataFrame()
-    :param title: str()
+    :param df: DataFrame
+    :param title: str
     :param vmin:
     :param vmax:
-    :param figsize: touple()
+    :param figsize: tuple, default (20,10)
     :return:
     '''
 

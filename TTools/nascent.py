@@ -7,14 +7,14 @@ import os, shutil, random
 ################################################
 #############    preparing sequence
 
-def extendingWindow(sequence="", name="name", strand="plus", temp=37, m=7):
-    '''
-    Returns DataFrame of sequences of all possible lengths between minimum (m) and length of input sequence -1
+def extendingWindow(sequence="", name="name", strand="plus", temp=30, m=7):
+    '''Returns DataFrame of sequences of all possible lengths between minimum (m) and length of input sequence -1
+
     :param sequence: str
-    :param name: str, default=name
-    :param strand: str {plus,minus,both}, default=plus (not tested for others)
-    :param temp: int, default=37
-    :param m: inf, default=7 - RNAfold does not return any values for length shorter than 7 even at 4 deg C
+    :param name: str, default "name"
+    :param strand: str {"plus","minus","both"}, default "plus" (not tested for others)
+    :param temp: int, default 30
+    :param m: int, default 7 - RNAfold does not return any values for length shorter than 7 even at 4 deg C
     :return: DataFrame of sequences with names according to nascent.slidingWindow convention
     '''
     seqList = []
@@ -26,14 +26,14 @@ def extendingWindow(sequence="", name="name", strand="plus", temp=37, m=7):
 
     return pd.DataFrame(pd.Series(data=seqList, index=nameList, name='sequence'))
 
-def slidingWindow(sequence="", name="name", strand="plus", temp=37, window=100):
-    '''
-    Slices sequence using sliding window
+def slidingWindow(sequence="", name="name", strand="plus", temp=30, window=100):
+    '''Slices sequence using sliding window
+
     :param sequence: str
-    :param name: str default="name"
-    :param strand: str {"plus","both","minus"} default="plus"
-    :param temp: int default=37
-    :param window: int default=80
+    :param name: str default "name"
+    :param strand: str {"plus","both","minus"} default "plus"
+    :param temp: int default 30
+    :param window: int default 80
     :return: DataFrame with sliding windows
     '''
     # sliding window for the sequence
@@ -62,15 +62,15 @@ def slidingWindow(sequence="", name="name", strand="plus", temp=37, window=100):
     df_temp['sequence'] = pd.Series(list_temp, index=index_temp)
     return df_temp
 
+# # # # #
+def prepareNascent(sequence="", name="name", strand="plus", temp=30, window=100):
+    '''Divide long transcript into short sequences. Combines output of extendingWindow and slidingWindow.
 
-def prepareNascent(sequence="", name="name", strand="plus", temp=37, window=100):
-    '''
-    Combines output of extendingWindow and slidingWindow
     :param sequence: str
-    :param name: str, default=name
-    :param strand: str {plus,minus,both}, default=plus (not tested for others)
-    :param temp: int, default=37
-    :param window:
+    :param name: str, default "name"
+    :param strand: str {plus,minus,both}, default "plus" (not tested for others)
+    :param temp: int, default 30
+    :param window: int, default 100
     :return: Dataframe with sequences
     '''
     extended = extendingWindow(sequence=sequence[:window], name=name,
@@ -80,11 +80,11 @@ def prepareNascent(sequence="", name="name", strand="plus", temp=37, window=100)
     return extended.append(slided)
 
 def handleInput(data, keepNames=True):
-    '''
-    input data with columns: "seq" or "sequence" and "name" (optional)
-    :param data: str() or list() or Series() or DataFrame()
-    :param keepNames: default True, use given names
-    :return: DataFrame() where index become name of sequence to fold
+    '''Input data with columns: "seq" or "sequence" and "name" (optional)
+
+    :param data: {str, list, Series, DataFrame}
+    :param keepNames if True use given names, default True
+    :return: DataFrame where index become name of sequence to fold
     '''
 
     # string to list
@@ -144,8 +144,8 @@ class Fold:
         self.Mg = 0.008  # for UNAfold
 
     def bashFolding(self, method="RNA"):
-        '''
-        Runs RNA folding using bash
+        '''Runs RNA folding using bash
+
         :param method: "RNA" for ViennaRNA or "UNA" for UNAfold"
         :return:
         '''
@@ -159,12 +159,12 @@ class Fold:
                 self.temp) + " -i temp.fasta | sed 's/( -/(-/g' | awk 'BEGIN{RS=\">\"}{print $1\"\t\"$2\"\t\"$3\"\t\"$4}' > RNAfold.output")
 
     def UNAfold(self, data, saveData=False, temp=None):
-        '''
-        Calculates dG using UNAfold
-        :param data: input data (list, Series or DataFrame with "name" column)
-        :param saveData: boolean() default=False
-        :param temp: int() default=None
-        :return: DataFrame()
+        '''Calculates dG using UNAfold
+
+        :param data: input data {list, Series, DataFrame with "name" column}
+        :param saveData: boolean, default False
+        :param temp: int, default None
+        :return: DataFrame
         '''
 
         # check input
@@ -192,13 +192,14 @@ class Fold:
         data['dG'] = df_temp['-RT ln Z']
         return data
 
+    # # # # #
     def RNAfold(self, data, saveData=False, temp=None):
-        '''
-        Calculates dG using RNAfold (ViennaRNA)
-        :param data: input data (list, Series or DataFrame with "name" column)
-        :param saveData: boolean() default=False
-        :param temp: int() default=None
-        :return: DataFrame()
+        '''Calculates dG using RNAfold (ViennaRNA)
+
+        :param data: input data {list, Series, DataFrame with "name" column}
+        :param saveData: boolean, default False
+        :param temp: int, default None
+        :return: DataFrame
         '''
 
         # check input
@@ -231,14 +232,14 @@ class Fold:
     def RNAinvert(self, structure="", saveData=False, temp=None, n=5, RNAprimer="", stall="", quick=False):
         '''Returns n sequences with with given structure
 
-        :param structure: str() with secondary RNA structure
-        :param saveData: boolean() default=False
-        :param temp: int() default=None
-        :param n: int() number of output sequences
-        :param RNAprimer: str() sequence
-        :param stall: str() nucleotide
-        :param quick: boolean() if False uses -Fmp -f 0.01 params
-        :return: DataFrame()
+        :param structure: str with secondary RNA structure
+        :param saveData: boolean, default False
+        :param temp: int, default None
+        :param n: int number of output sequences, default 5
+        :param RNAprimer: str sequence
+        :param stall: str nucleotide
+        :param quick: boolean if False uses -Fmp -f 0.01 params, default False
+        :return: DataFrame
         '''
 
         # prepare folder
@@ -270,13 +271,13 @@ class Fold:
         return df_temp
 
     def RNAinvertStall(self, structure="", RNAprimer="", stall="A", n=200):
-        '''
-        Returns sequences without nt that is present in stall
-        :param structure: str() with secondary RNA structure
-        :param RNAprimer: str() sequence
-        :param stall: str() sequence
-        :param n: int()
-        :return: DataFrame()
+        '''Returns sequences without nt that is present in stall
+
+        :param structure: str with secondary RNA structure
+        :param RNAprimer: str sequence
+        :param stall: str sequence, default "A"
+        :param n: int, default 200
+        :return: DataFrame
         '''
 
         # generates sequences according to the structure, quick parameter uses faster algorithm
@@ -293,11 +294,11 @@ class Fold:
 ### Vienna ###
 
 def analyseViennamarkGC(vienna=str(),sequence=str()):
-    '''
-    leaves only C and G in stem structures
-    :param vienna: str() with vienna format
-    :param sequence: str() sequence
-    :return:
+    '''Leaves only C and G in stem structures
+
+    :param vienna: str with vienna format
+    :param sequence: str sequence
+    :return: str
     '''
 
     output = []
@@ -310,9 +311,10 @@ def analyseViennamarkGC(vienna=str(),sequence=str()):
     return "".join(output)
 
 def markVienna(df=pd.DataFrame()):
-    '''
-    :param df: DataFrame()
-    :return: DataFrame()
+    '''Apply analyseViennamarkGC
+
+    :param df: DataFrame
+    :return: DataFrame
     '''
     df['marked'] = pd.Series()
     for i,row in df.iterrows():
@@ -321,13 +323,13 @@ def markVienna(df=pd.DataFrame()):
     return df
 
 def selectFoldedN(data=pd.DataFrame(), n=5, pattern="(((((....)))))"):
-    '''
-    Takes Fold().RNAFold() df as an input. Selects n rows with a given pattern
+    '''Takes Fold().RNAFold() df as an input. Selects n rows with a given pattern
     on the 5end and most different folding energy
-    :param data: DataFrame()
-    :param n: int() samples
-    :param pattern: str() vienna format
-    :return: DataFrame()
+
+    :param data: DataFrame
+    :param n: int samples, default 5
+    :param pattern: str vienna format, default "(((((....)))))"
+    :return: DataFrame
     '''
 
     n = n  # row every n
@@ -355,6 +357,11 @@ def selectFoldedN(data=pd.DataFrame(), n=5, pattern="(((((....)))))"):
 ### sliding window
 
 def join2d(df=pd.DataFrame(), use='format'):
+    '''
+    :param df: DataFrame
+    :param use: str, default "format"
+    :return: DataFrame
+    '''
     # uses output of nf.Fold().RNAfold(df)
     # plus strand only
 
@@ -390,17 +397,25 @@ def join2d(df=pd.DataFrame(), use='format'):
                 print("Minus strand not supported.")
 
         output[name] = df_out
-
-        # output
+    # output
     return output
 
 
 def merge2d(df=pd.DataFrame):
+    '''
+    :param df: DataFrame
+    :return: DataFrame
+    '''
     stat = df.T.describe(include='object').T
     return stat
 
+def nascentElems(vienna="", sequence=""):
+    '''Describe elements of secondary structure: stems, multistems.
 
-def nascentElem(vienna="", sequence="", verbose=False):
+    :param vienna: str
+    :param sequence: str
+    :return: str
+    '''
     l = len(sequence)
     if len(vienna) != l: return False
 
@@ -424,7 +439,13 @@ def nascentElem(vienna="", sequence="", verbose=False):
                 return sequence[s[0] - 1:s[1]], l - last
 
 
-def nascentElemDataFrame(data=pd.DataFrame()):
+def nascentElemsDataFrame(data=pd.DataFrame()):
+    '''Apply nascentElem to DataFrame of folded sequences
+
+    :param data: DataFrame containing df['vienna'] and df['sequence']
+    :return: DataFrame
+    '''
+
     data = data.copy()
     indexList = []
     elemSequenceList = []
@@ -432,7 +453,7 @@ def nascentElemDataFrame(data=pd.DataFrame()):
 
     for i, df in data.iterrows():
         indexList.append(i)
-        seq, dist = nascentElem(df['vienna'], df['sequence'])
+        seq, dist = nascentElems(df['vienna'], df['sequence'])
         elemSequenceList.append(seq)
         elemDistanceList.append(dist)
 
@@ -441,8 +462,12 @@ def nascentElemDataFrame(data=pd.DataFrame()):
 
     return data
 
-
 def foldNascentElem(data=pd.DataFrame()):
+    '''Fold the very 3' of nascent elements.
+
+    :param data: DataFrame
+    :return: DataFrame
+    '''
     # parse names and define folding temperature
     df_names = data['name'].str.split("_", expand=True)
     df_names.columns = ['name', 'strand', 'position', 'temp', 'window']
@@ -472,14 +497,21 @@ def foldNascentElem(data=pd.DataFrame()):
 
     return output
 
+# # # # #
+def nascentFolding(sequence='', temp=30, window=100):
+    '''Combines folding function: fold RNA, locate last nascent element and calculate dG of it.
 
-def nascentFolding(sequence='', name='name', temp=37, window=100):
+    :param sequence: str
+    :param temp: int, default 30
+    :param window: int, default 100
+    :return: DataFrame
+    '''
     # preparing sequence sliding window
     df = prepareNascent(sequence, temp=temp, window=window)
     # folding arbitraty windows
     df = Fold().RNAfold(df, temp=temp)
     # defining nascent element and distance
-    df = nascentElemDataFrame(data=df)
+    df = nascentElemsDataFrame(data=df)
     # folding nascent element
     df = foldNascentElem(df)
 

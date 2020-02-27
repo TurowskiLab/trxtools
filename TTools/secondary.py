@@ -9,8 +9,8 @@ import pandas as pd
 ### all tools written using genomic positions cointer from 1 (not from 0 as python default)
 
 def checkVienna(sequence="", vienna=""):
-    '''
-    Validates integrity of vienna file
+    '''Validates integrity of vienna file
+
     :param sequence: str
     :param vienna: str
     :return: True if pass
@@ -27,8 +27,8 @@ def checkVienna(sequence="", vienna=""):
 
 
 def Lstem(vienna=""):
-    '''
-    Returns list of positions where "(" is found using coordinates {1,inf}
+    '''Returns list of positions where "(" is found using coordinates {1,inf}
+
     :param vienna: str
     :return: list
     '''
@@ -36,8 +36,8 @@ def Lstem(vienna=""):
 
 
 def Rstem(vienna=""):
-    '''
-    Returns list of positions where ")" is found using coordinates {1,inf}
+    '''Returns list of positions where ")" is found using coordinates {1,inf}
+
     :param vienna: str
     :return: list
     '''
@@ -47,6 +47,7 @@ def Rstem(vienna=""):
 def loops(vienna=""):
     '''
     Returns first positions outside the loop i.e. ".((....))." returns [(3,8)]
+
     :param vienna: vienna
     :return: list of tuples
     '''
@@ -57,8 +58,8 @@ def loops(vienna=""):
 
 
 def test(vienna="",sequence="", loops=None, stems=None, multistems=None, linkers=None):
-    '''
-    Prints vienna with given features
+    '''Prints vienna with given features
+
     :param vienna: str
     :param loops: list of tuples (option)
     :param stems: list of tuples (option)
@@ -101,9 +102,9 @@ def test(vienna="",sequence="", loops=None, stems=None, multistems=None, linkers
 
 
 def loopStems(vienna="", sequence="", loopsList=None, testPrint=False):
-    '''
-    Returns postions of stem of single hairpins and multiloop stems. Use coordinates {1:inf}.
+    '''Returns postions of stem of single hairpins and multiloop stems. Use coordinates {1:inf}.
     Warninig: tested with single multiloop stems only
+
     :param vienna: str
     :param loopsList: list (option)
     :param testPrint: boolean to default=False
@@ -179,8 +180,8 @@ def loopStems(vienna="", sequence="", loopsList=None, testPrint=False):
 
 def vienna2format(vienna="", sequence="", loopsList=None, stemsList=None, multistemsList=None, testPrint=False):
     #TODO find name to this "format"
-    '''
-    Converts vienna format to letters: O - loop, S - stem, M - multiloop stem and L - linker
+    '''Converts vienna format to letters: O - loop, S - stem, M - multiloop stem and L - linker
+
     :param vienna: str
     :param loopsList: list (optional)
     :param stemsList: list (optional)
@@ -242,6 +243,12 @@ def vienna2format(vienna="", sequence="", loopsList=None, stemsList=None, multis
 
 
 def substructures(vienna="", sequence=""):
+    '''list sub-structures of the given structure
+
+    :param vienna: str
+    :param sequence: str
+    :return: Series
+    '''
     if len(vienna) != len(sequence): return None
 
     stems, mstems = loopStems(vienna)

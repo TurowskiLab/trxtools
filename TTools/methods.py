@@ -33,11 +33,10 @@ def bashCommand(bashCommand=str()):
 #############        DNA/RNA
 
 def calGC(dataset=pd.DataFrame(), calFor=['G','C']):
-    '''
-    Returns GC content in a given string - uses ['nucleotide'] column
+    '''Returns GC content in a given string - uses ['nucleotide'] column
 
     :param dataset: DataFrame() with "nucleotide" column
-    :return: fraction of GC content
+    :return: fraction of GC content, float
     '''
     return float(len(dataset[dataset['nucleotide'].isin(calFor)]))/float(len(dataset))
 
@@ -46,6 +45,11 @@ complement_DNA = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
 complement_RNA = {'A': 'U', 'C': 'G', 'G': 'C', 'U': 'A'}
 
 def reverse_complement_DNA(seq):
+    '''Reverse complement
+
+    :param seq: str
+    :return: str
+    '''
     if "U" in seq: return str()
     for k,v in alt_map.items():
         seq = seq.replace(k,v)
@@ -57,6 +61,11 @@ def reverse_complement_DNA(seq):
     return bases
 
 def reverse_complement_RNA(seq):
+    '''Reverse complement
+
+    :param seq: str
+    :return: str
+    '''
     for k,v in alt_map.items():
         seq = seq.replace(k,v)
     bases = list(seq)
@@ -67,6 +76,11 @@ def reverse_complement_RNA(seq):
     return bases
 
 def reverse_complement(seq):
+    '''Reverse complement
+
+    :param seq: str
+    :return: str
+    '''
     if "U" in seq:
         return reverse_complement_RNA(seq)
     else:
@@ -100,8 +114,7 @@ def randomDNAall(length=int(), letters="CGTA"):
 #############        handling multiple experiments
 
 def define_experiments(paths_in, whole_name=False, strip='_hittable_reads.txt'):
-    '''
-    Parse file names and extract experiment name from them
+    '''Parse file names and extract experiment name from them
 
     :param paths_in: str()
     :param whole_name: boolean() default False. As defaults script takes first 'a_b_c'
@@ -123,13 +136,13 @@ def define_experiments(paths_in, whole_name=False, strip='_hittable_reads.txt'):
     return experiments, paths
 
 def expNameParser(name, additional_tags=list(), order='b_d_e_p'):
-    '''
-    Function handles experiment name; recognizes AB123456 as experiment date; BY4741 or HTP or given string as bait protein
+    '''Function handles experiment name; recognizes AB123456 as experiment date; BY4741 or HTP or given string as bait protein
+
     :param name:
     :param additional_tags: list of tags
     :param output: default 'root' ; print other elements when 'all'
     :param order: defoult 'b_d_e_p' b-bait; d-details, e-experiment, p-prefix
-    :return: reordered name
+    :return: list of reordered name
     '''
     tag_list = ['HTP', 'HTG', 'HTF', 'BY4741'] + additional_tags
     output_dict = {'b': str(), 'd': str(), 'e': str(), 'p': list()}  # bait; details; experiment; prefix
@@ -160,7 +173,7 @@ def expNameParser(name, additional_tags=list(), order='b_d_e_p'):
 
     return '_'.join(return_list).strip('_')
 
-def cleanNames(df=pd.DataFrame(), additional_tags=list()):
+def cleanNames(df=pd.DataFrame(), additional_tags=[]):
     '''Cleans some problems with names if exist
 
     :param df: DataFrame() where names of columns are name of experiments
@@ -209,6 +222,32 @@ def filterExp(datasets, let_in=[''], let_out=['wont_find_this_string']):
             output_dict[f]=datasets[f]
         return output_dict
 
+def expStats(input_df=pd.DataFrame(), smooth=True, window=10, win_type='blackman'):
+    '''Returns DataFrame with 'mean', 'median', 'min', 'max' and quartiles if more than 2 experiments
+
+    :param input_df: DataFrame
+    :param smooth: boolean, if True apply smoothing window, default=True
+    :param window: int, smoothing window, default 10
+    :param win_type: str type of smoothing window, default "blackman"
+    :return: DataFrame
+    '''
+    working_df, result_df = pd.DataFrame(), pd.DataFrame()
+
+    #smoothing
+    if smooth == True:
+        for f in input_df.columns.values:
+            print(f)
+            working_df[f]=input_df[f].rolling(window, win_type=win_type, center=True).mean()
+    else:
+        working_df = input_df.copy()
+
+    #calculating stats
+    for function in ['mean', 'median', 'min', 'max']: result_df[function]=getattr(working_df, function)(axis=1) #calculates using pandas function listed in []
+    if len(working_df.columns) > 2: #calculating quartiles only in more than two experiments
+        result_df['q1'], result_df['q3'] = working_df.quantile(q=0.25, axis=1), working_df.quantile(q=0.75, axis=1)
+
+    return result_df
+
 ################################################
 #############       statistics and analysis
 
@@ -216,8 +255,8 @@ def quantileCategory(s1=pd.Series(), q=4):
     '''Quantile-based discretization function based on pandas.qcut function.
 
     :param s1: Series()
-    :param q: int() number of quantiles, default q=4
-    :return: 10 for deciles, 5 for quantiles, 4 for quartiles, etc.
+    :param q: int() number of quantiles: 10 for deciles, 5 for quantiles, 4 for quartiles, etc., default q=4
+    :return: Series
     '''
 
     temp_df = pd.DataFrame()
@@ -229,6 +268,12 @@ def quantileCategory(s1=pd.Series(), q=4):
     return temp_df['quantiles']
 
 def runPCA(data=pd.DataFrame(), n_components=2):
+    '''Run PCA analysis and re-assigns column names and index names
+
+    :param data: DataFrame
+    :param n_components: int, default 2
+    :return: DataFrame
+    '''
     # x = StandardScaler().fit_transform(df1_codone_composition)
 
     pca = PCA(n_components=n_components)
@@ -243,7 +288,6 @@ def runPCA(data=pd.DataFrame(), n_components=2):
     finalDf = finalDf.set_index('name')
 
     return finalDf
-
 
 ################################################
 #############        other

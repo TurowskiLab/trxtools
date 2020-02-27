@@ -55,7 +55,7 @@ def structureFile(structure=str(), stall="", RNAprimer=""):
     :param structure: str()
     :param stall: str()
     :param RNAprimer: str()
-    :return:
+    :return: True
     '''
 
     f = open("structure.txt", "w+")
@@ -63,15 +63,16 @@ def structureFile(structure=str(), stall="", RNAprimer=""):
     f.write(sequenceConstrain(structure=structure, stall=stall,
                               RNAprimer=RNAprimer) + "\n")  # saves nt constrains, N's if no RNAprimer
     f.close()
+    return True
 
 
 def stalled(seq=str(), stall="AAA", primer=str()):
     '''Finds and returns stalled sequence
 
     :param seq: str()
-    :param stall: str() default="AAA"
+    :param stall: str() default "AAA"
     :param primer: str()
-    :return: stalled sequence
+    :return: stalled sequence, str
     '''
 
     (primerStart, primerStop) = findPrimer(seq, primer)
@@ -83,7 +84,7 @@ def extruded(seq=str(), buried=13):
     '''
     :param seq: str()
     :param buried: int() length of sequence buried within RNAP
-    :return: Extruded sequence
+    :return: Extruded sequence, str
     '''
     return seq[:-buried]
 
@@ -95,7 +96,7 @@ def templateDNA(seq=str(), overhang5end=str()):
     '''
     :param seq: str() sequence of RNA
     :param overhang5end: str() sequence of the 5'end DNA ovethang
-    :return: DNA sequence of template strand
+    :return: DNA sequence of template strand, str
     '''
     return ttm.reverse_complement_RNA(seq) + overhang5end[::-1]
 
@@ -104,7 +105,7 @@ def nonTemplateDNA(seq="", primer=""):
     '''
     :param seq: str() sequence
     :param primer: str() sequence
-    :return: DNA sequence of non-template strand
+    :return: DNA sequence of non-template strand, str
     '''
     seq = seq.upper()
     primer = primer.upper()
@@ -115,9 +116,9 @@ def nonTemplateDNA(seq="", primer=""):
 
 
 def bulkInputIDT(data=pd.DataFrame()):
-    '''
-    Tranforms dataframe with colums "template" and "non-template" and prepares table to be used as bulk input
+    '''Tranforms dataframe with colums "template" and "non-template" and prepares table to be used as bulk input
     discards oligos longer than 200 nt.
+
     :param data: DataFrame()
     :return: DataFrame with sequences to order
     '''
@@ -151,6 +152,7 @@ def bulkInputIDT(data=pd.DataFrame()):
 
 def testScaffold(data=pd.DataFrame(), overhang5end="", RNA_primer="", ):
     '''Prints scaffold to test before ordering
+
     :param data: DataFrame()
     :param overhang5end: str() overhang to shift sequences
     :param RNA_primer: str() sequence
@@ -176,10 +178,10 @@ def toOrder(data=pd.DataFrame(), buried="GUCUGUUUUGUGG", stallFull="AAA", afterS
     :param afterStall: str() sequence
     :param overhang5end: str() sequence
     :param RNA_primer: str() sequence
-    :param bulkInput: boolean() default=True
-    :param test: boolean() default=True
-    :param lengthMax: int() default=200
-    :return: DataFrame() with sequences to order
+    :param bulkInput: boolean() default True
+    :param test: boolean() default True
+    :param lengthMax: int() default 200
+    :return: DataFrame of sequences to order
     '''
 
     buried = buried.replace("T", "U")
