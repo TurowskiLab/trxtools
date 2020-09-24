@@ -109,6 +109,15 @@ def randomDNAall(length=int(), letters="CGTA"):
         output_list.append("".join(i))
     return output_list
 
+def rollingGC(s=pd.Series, window=10): #rolling window, smoothing of data
+    '''
+    Calculates GC from sequence, uses 'boxcar' window
+    :param s: Series containing sequence
+    :param window: window size for GC calculation
+    :return: Series with GC calculated, center=False
+    '''
+    #be aware of win_type and center parameters
+    return s.replace(['G','C'],1).replace(['T','A'],0).rolling(window=window, win_type='boxcar',center=False).mean()
 
 ################################################
 #############        handling multiple experiments

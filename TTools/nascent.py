@@ -79,6 +79,14 @@ def prepareNascent(sequence="", name="name", strand="plus", temp=30, window=100)
                                          strand=strand, temp=temp, window=window)
     return extended.append(slided)
 
+def name2index(s1=pd.Series()):
+    '''Extracts position from sequence name
+
+    :param s1: Series with names from prepareNascent function
+    :return: Series with positions
+    '''
+    return s1.str.split("_",expand=True)[2].str.replace("pos","").astype(int)
+
 def handleInput(data, keepNames=True):
     '''Input data with columns: "seq" or "sequence" and "name" (optional)
 
@@ -140,7 +148,7 @@ class Fold:
             self.tempDir = tempDir
 
         self.temp = 30
-        self.Na = 0.06  # for UNAfold
+        self.Na = 0.03  # for UNAfold (30 mM in yeast, 10 mM in humans)
         self.Mg = 0.008  # for UNAfold
 
     def bashFolding(self, method="RNA"):
@@ -171,12 +179,12 @@ class Fold:
         data = handleInput(data)
 
         # prepare folder
+        if temp: self.temp = temp
         directory = self.tempDir + tt.methods.timestampRandomInt() + "_" + str(self.temp) + "_UNAfold"
         os.makedirs(directory)
         path = directory + "/"
 
         # folding
-        if temp: self.temp = temp
         data_temp = data
         data_temp.to_csv(path + "temp.tab", sep="\t", header=False)
         os.chdir(path)
@@ -206,12 +214,12 @@ class Fold:
         data = handleInput(data)
 
         # prepare folder
+        if temp: self.temp = temp
         directory = self.tempDir + tt.methods.timestampRandomInt() + "_" + str(self.temp) + "_RNAfold"
         os.makedirs(directory)
         path = directory + "/"
 
         # folding
-        if temp: self.temp = temp
         data_temp = data
         data_temp.to_csv(path + "temp.tab", sep="\t", header=False)
         os.chdir(path)
@@ -287,6 +295,76 @@ class Fold:
         df_filtered = df_sequences[df_sequences['sequence'].str.strip(RNAprimer.lower()).str.find(stall) == -1]
 
         return df_filtered.reset_index().drop('index', axis=1)
+
+################################################
+#############        hybrid
+
+class Hybrid:
+    def __init__(self, tempDir=None):
+        if not tempDir:
+            self.tempDir = os.getenv("HOME") + '/nascentFolding/temp_hybrids/'
+        else:
+            self.tempDir = tempDir
+
+        self.temp = 37
+        self.n = 'RNA'  # "RNA" or "DNA"
+        self.Na = 0.01  # for human cell
+        self.Mg = 0.01  # for human cell
+
+    def bashHybrid(self):
+        '''Runs RNA folding using bash
+
+        :param method: "RNA" for ViennaRNA or "UNA" for UNAfold"
+        :return:
+        '''
+        ''''''
+        tt.methods.bashCommand("tab2fasta.awk temp1.tab > temp1.fasta")
+        tt.methods.bashCommand("tab2fasta.awk temp2.tab > temp2.fasta")
+        tt.methods.bashCommand("hybrid-min -T " + str(self.temp)
+                               + " -n " + str(self.n)
+                               + " -N " + str(self.Na)
+                               + " -M " + str(self.Mg)
+                               + " temp1.fasta temp2.fasta")
+
+    def RNAhybrid(self, data, saveData=False, temp=None):
+        '''Calculates dG using hybrid-min
+
+        :param data: input data {list, Series, DataFrame with "name" column}
+        :param saveData: boolean, default False
+        :param temp: int, default None
+        :return: DataFrame
+        '''
+
+        # check input
+        data = handleInput(data)
+
+        # prepare folder
+        directory = self.tempDir + tt.methods.timestampRandomInt() + "_" + str(self.temp) + "_hybrid_min"
+        os.makedirs(directory)
+        path = directory + "/"
+
+        # folding
+        if temp: self.temp = temp
+        data_temp1 = data
+        data_temp1.to_csv(path + "temp1.tab", sep="\t", header=False)
+        #         print(data_temp)
+        # reverse complement
+        data_temp2 = pd.DataFrame(data_temp1['sequence'].apply(reverse_complement))
+        data_temp2.to_csv(path + "temp2.tab", sep="\t", header=False)
+
+        ###come back here ###
+        os.chdir(path)
+        self.bashHybrid()
+        df_temp = pd.read_csv(path + "temp1.fasta-temp2.fasta.dG", sep="\t", names=['temp', 'dG', 'Z'], header=0)
+
+        # clean folder
+        if saveData == False:
+            os.chdir(self.tempDir)
+            shutil.rmtree(directory)
+
+        # return dG
+        df_temp['dG'] = df_temp['dG'].astype(float)
+        return df_temp['dG']
 
 ################################################
 #############        output
