@@ -110,8 +110,8 @@ def randomDNAall(length=int(), letters="CGTA"):
     return output_list
 
 def rollingGC(s=pd.Series, window=10): #rolling window, smoothing of data
-    '''
-    Calculates GC from sequence, uses 'boxcar' window
+    '''Calculates GC from sequence, uses 'boxcar' window
+
     :param s: Series containing sequence
     :param window: window size for GC calculation
     :return: Series with GC calculated, center=False

@@ -312,9 +312,8 @@ class Hybrid:
         self.Mg = 0.01  # for human cell
 
     def bashHybrid(self):
-        '''Runs RNA folding using bash
+        '''Runs hybris-min using bash
 
-        :param method: "RNA" for ViennaRNA or "UNA" for UNAfold"
         :return:
         '''
         ''''''
