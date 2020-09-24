@@ -349,7 +349,7 @@ class Hybrid:
         data_temp1.to_csv(path + "temp1.tab", sep="\t", header=False)
         #         print(data_temp)
         # reverse complement
-        data_temp2 = pd.DataFrame(data_temp1['sequence'].apply(reverse_complement))
+        data_temp2 = pd.DataFrame(data_temp1['sequence'].apply(tt.methods.reverse_complement))
         data_temp2.to_csv(path + "temp2.tab", sep="\t", header=False)
 
         ###come back here ###
