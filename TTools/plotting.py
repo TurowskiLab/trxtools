@@ -2,9 +2,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import TTools.profiles as profiles
+from adjustText import adjust_text
 
 #### PCA
-def plotPCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize = (7,7)):
+def plotPCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize=(7,7), PCval=[]):
     '''Plot PCA plot
 
     :param data: DataFrame
@@ -16,31 +17,39 @@ def plotPCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize = (7,7)):
     '''
     nPCA = len([col for col in data.columns if 'PC' in col])
     axes = [ i +1 for i in range(nPCA)[:-1]]
+    if not PCval:
+        PCval = [""]*(PClimit+1)
 
     for nPC in axes:
-        fig = plt.figure(figsize)
+        fig = plt.figure(figsize=figsize)
         #         ax = fig.add_subplot(nPCA-1,1,nPC)
         ax = fig.add_subplot(1 ,1 ,1)
-        a = data['PC ' +str(nPC)].tolist()
-        b = data['PC ' +str(nPC+1)].tolist()
 
-        ax.scatter(x=a ,y=b ,color='lightgray')
+        texts = []
 
-        if names:
-            for i, txt in enumerate(data.index.tolist()):
-                if txt in names:
-                    ax.annotate(txt, (a[i], b[i]))
+        if 'group' in data.columns.tolist():
+            for group, df_temp in data.groupby('group'):
+                a = df_temp['PC' +str(nPC)].tolist()
+                b = df_temp['PC' +str(nPC+1)].tolist()
+                ax.scatter(x=a ,y=b ,label=group, cmap="paired")
+                for x, y, s in zip(a, b, df_temp.index.tolist()):
+                    if s in names:
+                        texts.append(plt.text(x, y, s))
 
-        #         for mark, c in zip(l1_fake,l1_fakeColor):
-        #             markTemp = data.T[mark]
-        #             ax.scatter(x=markTemp['PC'+str(nPC)],y=markTemp['PC'+str(nPC+1)],marker='X', color=c)
+        else:
+            a = data['PC' +str(nPC)].tolist()
+            b = data['PC' +str(nPC+1)].tolist()
+            ax.scatter(x=a ,y=b ,color='lightgray')
+            for x, y, s in zip(a, b, df_temp.index.tolist()):
+                if s in names:
+                    texts.append(plt.text(x, y, s))
 
         ax.legend()
-        ax.grid(True)
-        #         ax.set_xlim(-1,1)
-        plt.xlabel('PC ' +str(nPC))
-        plt.ylabel('PC ' +str(nPC +1))
+        ax.grid(True,ls="dotted")
+        plt.xlabel('PC ' +str(nPC)+" ("+str(PCval[nPC-1])+"%)")
+        plt.ylabel('PC ' +str(nPC +1)+" ("+str(PCval[nPC])+"%)")
         plt.title(title)
+        adjust_text(texts, only_move={'points':'y', 'texts':'y'}, arrowprops=dict(arrowstyle="->", color='black', lw=0.5))
         plt.show()
 
         if nPC==PClimit: break
@@ -277,3 +286,328 @@ def plot_heatmap(df=pd.DataFrame(), title='Heatmap of differences between datase
     ax.set_yticklabels(list(df.columns.values), minor=False)
     fig.colorbar(heatmap)
     ax.set_title(title)
+
+################################################
+#############       STAR mapping statistics
+
+def plotSTARstats_reads(df=pd.DataFrame(), dpi=150):
+    '''
+
+    :param df: DataFrame
+    :param dpi: int, default=150
+    :return:
+    '''
+    df = df.T
+    reads = df['                          Number of input reads |'].astype(int)
+    labels = df.index.tolist()
+    x = np.arange(len(labels))
+    width = 0.3
+
+    fig, ax1 = plt.subplots(figsize=(len(labels) / 4, 3), dpi=dpi)
+    plt.title('Number of reads after pre-processing')
+    ax1.bar(x, reads, width)
+    ax1.set_yscale('log')
+    ax1.set_ylabel('Number of reads [log10]')
+    ax1.grid(axis='y', c='black', ls="dotted")
+    plt.xticks(x, labels, rotation=90)
+    plt.show()
+
+
+def plotSTARstats_readLen(df=pd.DataFrame(), dpi=150):
+    '''
+
+    :param df: DataFrame
+    :param dpi: int, default=150
+    :return:
+    '''
+    df = df.T
+    labels = df.index.tolist()
+    x = np.arange(len(labels))
+    width = 0.3
+    # length of reads
+    readsLen = df['                      Average input read length |'].astype(int)
+
+    fig, ax1 = plt.subplots(figsize=(len(labels) / 4, 3), dpi=dpi)
+    plt.title('Average input read length')
+    ax1.bar(x, readsLen, width)
+    ax1.set_ylabel('Average input read length [nt]')
+    ax1.grid(axis='y', c='black', ls="dotted")
+    ax1.set_ylim(0, 175)
+    plt.xticks(x, labels, rotation=90)
+    plt.show()
+
+
+def plotSTARstats_mapping(df=pd.DataFrame(), dpi=150):
+    '''
+
+    :param df: DataFrame
+    :param dpi: int, default=150
+    :return:
+    '''
+    df = df.T
+    labels = df.index.tolist()
+    x = np.arange(len(labels))
+    width = 0.3
+    # reads mapping
+    mapped_uniq = df['                        Uniquely mapped reads % |'].str.strip("%").astype(float)
+    mapped_multi = df['             % of reads mapped to multiple loci |'].str.strip("%").astype(float)
+    mapped_tooMany = df['             % of reads mapped to too many loci |'].str.strip("%").astype(float)
+    unmapped_mismatches = df['       % of reads unmapped: too many mismatches |'].str.strip("%").astype(float)
+    unmapped_tooShort = df['                 % of reads unmapped: too short |'].str.strip("%").astype(float)
+    unmapped_other = df['                     % of reads unmapped: other |'].str.strip("%").astype(float)
+
+    fig, ax1 = plt.subplots(figsize=(len(labels) / 4, 3), dpi=dpi)
+    plt.title('STAR mapping statistics')
+
+    p1 = ax1.bar(x, mapped_uniq, width, color='green')
+    p2 = ax1.bar(x, mapped_multi, width, bottom=mapped_uniq, color='limegreen')
+    p3 = ax1.bar(x, mapped_tooMany, width, bottom=mapped_uniq + mapped_multi, color='yellow')
+    p4 = ax1.bar(x, unmapped_mismatches, width, bottom=mapped_uniq + mapped_multi + mapped_tooMany, color='grey')
+    p5 = ax1.bar(x, unmapped_tooShort, width, bottom=mapped_uniq + mapped_multi + mapped_tooMany + unmapped_mismatches,
+                 color='orange')
+    p6 = ax1.bar(x, unmapped_other, width,
+                 bottom=mapped_uniq + mapped_multi + mapped_tooMany + unmapped_mismatches + unmapped_tooShort,
+                 color='red')
+
+    plt.ylabel('Cumulative mapping [%]')
+    plt.xticks(x, labels, rotation=90)
+    plt.yticks(np.arange(0, 101, 10))
+    plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), (
+    'uniquely mapped', 'multimappers', 'too many mapped', 'unmapped (mistmateches)', 'unmapped (too short)',
+    'unmapped (other)'))
+
+    plt.show()
+
+
+def plotSTARstats_mistmatches(df=pd.DataFrame(), dpi=150):
+    '''
+
+    :param df: DataFrame
+    :param dpi: int, default=150
+    :return:
+    '''
+    df = df.T
+    labels = df.index.tolist()
+    x = np.arange(len(labels))
+    width = 0.3
+    # mistmatches and deletions
+    mismatches = df['                      Mismatch rate per base, % |'].str.strip("%").astype(float)
+    deletions = df['                         Deletion rate per base |'].str.strip("%").astype(float)
+    insertions = df['                        Insertion rate per base |'].str.strip("%").astype(float)
+
+    fig, ax1 = plt.subplots(figsize=(len(labels) / 4, 3), dpi=dpi)
+    plt.title('Mapping errors')
+    ax1.bar(x - width, mismatches, width, label='mismatches')
+    ax1.bar(x, deletions, width, label='deletions')
+    ax1.bar(x + width, insertions, width, label='insertions')
+    ax1.grid(axis='y', c='black', ls="dotted")
+    ax1.legend()
+    plt.xticks(x, labels, rotation=90)
+    plt.ylabel('Errors as % rate per base')
+    plt.show()
+
+
+def plotSTARstats_chimeric(df=pd.DataFrame(), dpi=150):
+    '''
+
+    :param df: DataFrame
+    :param dpi: int, default=150
+    :return:
+    '''
+    df = df.T
+    labels = df.index.tolist()
+    x = np.arange(len(labels))
+    width = 0.3
+    reads = df['                          Number of input reads |'].astype(int)
+    # Splices and chimeric reads
+    splices = df['                       Number of splices: Total |'].astype(int) / reads
+    chmieric = df['                            % of chimeric reads |'].str.strip("%").astype(float)
+
+    fig, ax1 = plt.subplots(figsize=(len(labels) / 4, 3), dpi=dpi)
+    plt.title('Chimeric reads')
+
+    ax1.bar(x - width / 2, splices, width, label='splices')
+    ax1.bar(x + width / 2, chmieric, width, label='chmieric')
+    ax1.grid(axis='y', c='black', ls="dotted")
+    ax1.legend()
+    plt.xticks(x, labels, rotation=90)
+    plt.ylabel('% of reads')
+    plt.show()
+
+
+def plotSTARstats(df=pd.DataFrame(), dpi=150):
+    '''
+
+    :param df: DataFrame
+    :param dpi: int, default=150
+    :return:
+    '''
+    plotSTARstats_reads(df=df, dpi=dpi)
+    plotSTARstats_readLen(df=df, dpi=dpi)
+    plotSTARstats_mapping(df=df, dpi=dpi)
+    plotSTARstats_mistmatches(df=df, dpi=dpi)
+    plotSTARstats_chimeric(df=df, dpi=dpi)
+
+
+def hplotSTARstats_reads(df=pd.DataFrame(), dpi=150):
+    '''
+
+    :param df: DataFrame
+    :param dpi: int, default=150
+    :return:
+    '''
+    df = df.T
+    reads = df['                          Number of input reads |'].astype(int)
+    labels = df.index.tolist()
+    x = np.arange(len(labels))
+    width = 0.3
+
+    fig, ax1 = plt.subplots(figsize=(5, len(labels) / 4), dpi=dpi)
+    plt.title('Number of reads after pre-processing')
+    ax1.barh(x, reads, width)
+    ax1.set_xscale('log')
+    ax1.set_xlabel('Number of reads [log10]')
+    ax1.invert_yaxis()
+    ax1.grid(axis='x', c='black', ls="dotted")
+    plt.yticks(x, labels, rotation=0)
+    plt.show()
+
+
+def hplotSTARstats_readLen(df=pd.DataFrame(), dpi=150):
+    '''
+
+    :param df: DataFrame
+    :param dpi: int, default=150
+    :return:
+    '''
+    df = df.T
+    labels = df.index.tolist()
+    x = np.arange(len(labels))
+    width = 0.3
+    # length of reads
+    readsLen = df['                      Average input read length |'].astype(int)
+
+    fig, ax1 = plt.subplots(figsize=(5, len(labels) / 4), dpi=dpi)
+    plt.title('Average input read length')
+    ax1.barh(x, readsLen, width)
+    ax1.set_xlabel('Average input read length [nt]')
+    ax1.invert_yaxis()
+    ax1.grid(axis='x', c='black', ls="dotted")
+    ax1.set_xlim(0, 175)
+    plt.yticks(x, labels, rotation=0)
+    plt.show()
+
+
+def hplotSTARstats_mapping(df=pd.DataFrame(), dpi=150):
+    '''
+
+    :param df: DataFrame
+    :param dpi: int, default=150
+    :return:
+    '''
+    df = df.T
+    labels = df.index.tolist()
+    x = np.arange(len(labels))
+    width = 0.3
+    # reads mapping
+    mapped_uniq = df['                        Uniquely mapped reads % |'].str.strip("%").astype(float)
+    mapped_multi = df['             % of reads mapped to multiple loci |'].str.strip("%").astype(float)
+    mapped_tooMany = df['             % of reads mapped to too many loci |'].str.strip("%").astype(float)
+    unmapped_mismatches = df['       % of reads unmapped: too many mismatches |'].str.strip("%").astype(float)
+    unmapped_tooShort = df['                 % of reads unmapped: too short |'].str.strip("%").astype(float)
+    unmapped_other = df['                     % of reads unmapped: other |'].str.strip("%").astype(float)
+
+    fig, ax1 = plt.subplots(figsize=(5, len(labels) / 4), dpi=dpi)
+    plt.title('STAR mapping statistics')
+
+    p1 = ax1.barh(x, mapped_uniq, width, color='green')
+    p2 = ax1.barh(x, mapped_multi, width, left=mapped_uniq, color='limegreen')
+    p3 = ax1.barh(x, mapped_tooMany, width, left=mapped_uniq + mapped_multi, color='yellow')
+    p4 = ax1.barh(x, unmapped_mismatches, width, left=mapped_uniq + mapped_multi + mapped_tooMany, color='grey')
+    p5 = ax1.barh(x, unmapped_tooShort, width, left=mapped_uniq + mapped_multi + mapped_tooMany + unmapped_mismatches,
+                  color='orange')
+    p6 = ax1.barh(x, unmapped_other, width,
+                  left=mapped_uniq + mapped_multi + mapped_tooMany + unmapped_mismatches + unmapped_tooShort,
+                  color='red')
+
+    plt.xlabel('Cumulative mapping [%]')
+    ax1.invert_yaxis()
+    plt.yticks(x, labels, rotation=0)
+    plt.xticks(np.arange(0, 101, 10))
+    plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), (
+    'uniquely mapped', 'multimappers', 'too many mapped', 'unmapped (mistmateches)', 'unmapped (too short)',
+    'unmapped (other)'))
+
+    plt.show()
+
+
+def hplotSTARstats_mistmatches(df=pd.DataFrame(), dpi=150):
+    '''
+
+    :param df: DataFrame
+    :param dpi: int, default=150
+    :return:
+    '''
+    df = df.T
+    labels = df.index.tolist()
+    x = np.arange(len(labels))
+    width = 0.3
+    # mistmatches and deletions
+    mismatches = df['                      Mismatch rate per base, % |'].str.strip("%").astype(float)
+    deletions = df['                         Deletion rate per base |'].str.strip("%").astype(float)
+    insertions = df['                        Insertion rate per base |'].str.strip("%").astype(float)
+
+    fig, ax1 = plt.subplots(figsize=(5, len(labels) / 4), dpi=dpi)
+    plt.title('Mapping errors')
+    ax1.barh(x - width, mismatches, width, label='mismatches')
+    ax1.barh(x, deletions, width, label='deletions')
+    ax1.barh(x + width, insertions, width, label='insertions')
+    ax1.grid(axis='x', c='black', ls="dotted")
+    ax1.legend()
+    plt.yticks(x, labels, rotation=0)
+    plt.xlabel('Errors rate per base [%]')
+    ax1.invert_yaxis()
+    plt.show()
+
+
+def hplotSTARstats_chimeric(df=pd.DataFrame(), dpi=150):
+    '''
+
+    :param df: DataFrame
+    :param dpi: int, default=150
+    :return:
+    '''
+    df = df.T
+    labels = df.index.tolist()
+    x = np.arange(len(labels))
+    width = 0.3
+    reads = df['                          Number of input reads |'].astype(int)
+    # Splices and chimeric reads
+    splices = df['                       Number of splices: Total |'].astype(int) / reads
+    chmieric = df['                            % of chimeric reads |'].str.strip("%").astype(float)
+
+    fig, ax1 = plt.subplots(figsize=(5, len(labels) / 4), dpi=dpi)
+    plt.title('Chimeric reads')
+
+    ax1.barh(x - width / 2, splices, width, label='splices')
+    ax1.barh(x + width / 2, chmieric, width, label='chmieric')
+    ax1.grid(axis='x', c='black', ls="dotted")
+    ax1.legend()
+    plt.yticks(x, labels, rotation=0)
+    plt.xlabel('% of reads')
+    ax1.invert_yaxis()
+    plt.show()
+
+
+def hplotSTARstats(df=pd.DataFrame(), dpi=150):
+    '''
+
+    :param df: DataFrame
+    :param dpi: int, default=150
+    :return:
+    '''
+    hplotSTARstats_reads(df=df, dpi=dpi)
+    hplotSTARstats_readLen(df=df, dpi=dpi)
+    hplotSTARstats_mapping(df=df, dpi=dpi)
+    hplotSTARstats_mistmatches(df=df, dpi=dpi)
+    hplotSTARstats_chimeric(df=df, dpi=dpi)

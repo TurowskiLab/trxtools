@@ -120,6 +120,84 @@ def rollingGC(s=pd.Series, window=10): #rolling window, smoothing of data
     return s.replace(['G','C'],1).replace(['T','A'],0).rolling(window=window, win_type='boxcar',center=False).mean()
 
 ################################################
+#############        importing data
+
+def read_tabFile(nameElem="", path="", toLoad="", toClear=[], toAdd="", df=None, overwrite=False):
+    '''
+    Read tab files with common first column
+    :param nameElem: str, present in all files
+    :param path: str, path to directory with files
+    :param toLoad: str, to be present in file name
+    :param toClear: str, will be removed from file name
+    :param toAdd: str, to be added to file name
+    :param df: DataFrame, to be appended; default=None
+    :param overwrite: boolean, allows for overwriting during appending, default = False
+    :return: DataFrame
+    '''
+    # list files with STAT mapping
+    l1_mapping = [f for f in os.listdir(path) if nameElem in f]
+    if toLoad:
+        l1_mapping = [f for f in l1_mapping if toLoad in f]
+
+    # check input dataframe
+    if isinstance(df, pd.DataFrame):
+        namesInUse = df.columns.tolist()
+    else:
+        if df == None:
+            df = pd.DataFrame()
+            namesInUse = []
+        else:
+            exit("df is not a DataFrame")
+
+    for f in l1_mapping:
+        tempDF = pd.read_csv(path + f, sep='\t', names=['name', 'value'])
+        tempDF = tempDF.set_index('name').dropna()
+
+        # clear names
+        name = f.replace(nameElem, '')
+        for c in toClear:
+            name = name.replace(c, '')
+        name = name + toAdd
+
+        # overwrite warninig
+        if name in namesInUse:
+            if overwrite == False:
+                return print(name + " exits in input df. Use overwrite=True to ignore.")
+
+        # adding to dataframe
+        df[name] = tempDF['value']
+
+    return df.reindex(sorted(df.columns), axis=1)
+
+
+def read_STARstats(path="", toClear=[], toAdd="", df=None, overwrite=False):
+    '''Reads multiple HTSeq tab files to one DataFrame
+
+    :param path: str, path to directory with files
+    :param toClear: str, will be removed from file name
+    :param toAdd: str, to be added to file name
+    :param df: DataFrame, to be appended; default=None
+    :param overwrite: boolean, allows for overwriting during appending, default = False
+    :return: DataFrame
+    '''
+    return read_tabFile(nameElem='_STARLog.final.out', path=path,
+                        toClear=toClear, toAdd=toAdd, df=df, overwrite=overwrite)
+
+
+def read_HTSeq_output(path="", toLoad="classes", toClear=[], toAdd="", df=None, overwrite=False):
+    '''Reads multiple HTSeq tab files to one DataFrame
+
+    :param path: str, path to directory with files
+    :param toClear: str, will be removed from file name
+    :param toAdd: str, to be added to file name
+    :param df: DataFrame, to be appended; default=None
+    :param overwrite: boolean, allows for overwriting during appending, default = False
+    :return: DataFrame
+    '''
+    return read_tabFile(nameElem='_hittable.tab', path=path, toLoad=toLoad,
+                        toClear=toClear, toAdd=toAdd, df=df, overwrite=overwrite)[:-5]
+
+################################################
 #############        handling multiple experiments
 
 def define_experiments(paths_in, whole_name=False, strip='_hittable_reads.txt'):
@@ -231,6 +309,58 @@ def filterExp(datasets, let_in=[''], let_out=['wont_find_this_string']):
             output_dict[f]=datasets[f]
         return output_dict
 
+
+def parseCRACname(s1=pd.Series):
+    '''Parse CRAC name into ['expID', 'expDate', 'protein', 'condition1', 'condition2', 'condition3'] using this order.
+     "_" is used to split the name
+
+    :param s1: Series,
+    :return: DataFrame
+    '''
+    df = s1.str.split("_", expand=True)
+    df.columns = ['expID', 'expDate', 'protein', 'condition1', 'condition2', 'condition3', 'sample','sampleRep']
+    df['expFull'] = df['expID'] + "_" + df['expDate']
+    df['sampleRep'] = None
+    df['sample'] = None
+    for i, row in df.iterrows():
+        if row['condition3'] == None:
+            n1 = row['protein'] + "_" + row['condition1'] + "_" + row['condition2']
+        else:
+            n1 = row['protein'] + "_" + row['condition1'] + "_" + row['condition2'] + "_" + row['condition3']
+
+        if row['condition3'] == None:
+            n2 = row['protein'] + "_" + row['condition1']
+        else:
+            n2 = row['protein'] + "_" + row['condition1'] + "_" + row['condition2']
+
+        df.loc[i]['sampleRep'] = n1
+        df.loc[i]['sample'] = n2
+    return df
+
+
+def groupCRACsamples(df=pd.DataFrame, use='protein', toDrop=[]):
+    '''Parse CRAC names and annotates them using on of following features
+    ['expID', 'expDate', 'protein', 'condition1', 'condition2', 'condition3', 'sample','sampleRep']
+
+    :param df: DataFrame
+    :param use: str, choose from ['expID', 'expDate', 'protein', 'condition1', 'condition2', 'condition3', 'sample','sampleRep'], default = 'protein'
+    :param toDrop: list of word in CRAC name that will qualify the sample to rejection, default = []
+    :return: DataFrame with added column ['group']
+    '''
+    df2 = parseCRACname(df.index.to_series())
+
+    df2['group'] = None
+    for group_name, df_temp in df2.groupby(use):
+        df2['group'].loc[df_temp.index.tolist()] = group_name
+
+    df['group'] = df2['group']
+
+    if toDrop:
+        dropping = [i for i in df.index.tolist() if any(d in i for d in toDrop)]
+        return df.drop(dropping)
+    else:
+        return df
+
 def expStats(input_df=pd.DataFrame(), smooth=True, window=10, win_type='blackman'):
     '''Returns DataFrame with 'mean', 'median', 'min', 'max' and quartiles if more than 2 experiments
 
@@ -259,6 +389,22 @@ def expStats(input_df=pd.DataFrame(), smooth=True, window=10, win_type='blackman
 
 ################################################
 #############       statistics and analysis
+
+def normalize(df=pd.DataFrame, log2=False, pseudocounts=0.1):
+    '''
+
+    :param df: DataFrame
+    :param log2: boolean, default=False
+    :param pseudocounts: float, default=0.1
+    :return:
+    '''
+    df = df.add(pseudocounts)
+    df = df / df.sum()
+    df = df.multiply(1000000)
+    if log2==True:
+        return df.apply(np.log2)
+    else:
+        return df
 
 def quantileCategory(s1=pd.Series(), q=4):
     '''Quantile-based discretization function based on pandas.qcut function.
