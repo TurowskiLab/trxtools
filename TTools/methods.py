@@ -318,7 +318,7 @@ def parseCRACname(s1=pd.Series):
     :return: DataFrame
     '''
     df = s1.str.split("_", expand=True)
-    df.columns = ['expID', 'expDate', 'protein', 'condition1', 'condition2', 'condition3', 'sample','sampleRep']
+    df.columns = ['expID', 'expDate', 'protein', 'condition1', 'condition2', 'condition3']
     df['expFull'] = df['expID'] + "_" + df['expDate']
     df['sampleRep'] = None
     df['sample'] = None
