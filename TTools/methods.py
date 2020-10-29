@@ -142,9 +142,10 @@ def read_tabFile(nameElem="", path="", toLoad="", toClear=[], toAdd="", df=None,
     # check input dataframe
     if isinstance(df, pd.DataFrame):
         namesInUse = df.columns.tolist()
+        df_output = df.copy()
     else:
         if df == None:
-            df = pd.DataFrame()
+            df_output = pd.DataFrame()
             namesInUse = []
         else:
             exit("df is not a DataFrame")
@@ -165,9 +166,9 @@ def read_tabFile(nameElem="", path="", toLoad="", toClear=[], toAdd="", df=None,
                 return print(name + " exits in input df. Use overwrite=True to ignore.")
 
         # adding to dataframe
-        df[name] = tempDF['value']
+        df_output[name] = tempDF['value']
 
-    return df.reindex(sorted(df.columns), axis=1)
+    return df_output.reindex(sorted(df.columns), axis=1)
 
 
 def read_STARstats(path="", toClear=[], toAdd="", df=None, overwrite=False):
@@ -286,7 +287,7 @@ def indexOrder(df=pd.DataFrame(), additional_tags=list(), output='root', order='
     df.columns = [expNameParser(f, additional_tags=additional_tags, order=order) for f in list(df.columns.values)]
     return df.sort_index(axis=1)
 
-def filterExp(datasets, let_in=[''], let_out=['wont_find_this_string']):
+def filterExp(datasets, let_in=[''], let_out=['wont_find_this_string'],verbose=False):
     '''Returns object with filtered columns/keys.
 
     :param datasets: DataFrame() or dict() with exp name as a key
@@ -300,6 +301,7 @@ def filterExp(datasets, let_in=[''], let_out=['wont_find_this_string']):
         output_df = pd.DataFrame()
         for f in [d for d in list(datasets.columns.values) if all(i in d for i in let_in) and all(o not in d for o in let_out)]:
             output_df[f]=datasets[f]
+        if verbose: print(output_df.columns.tolist())
         return output_df
 
     #for dict()
@@ -307,6 +309,7 @@ def filterExp(datasets, let_in=[''], let_out=['wont_find_this_string']):
         output_dict = dict()
         for f in [d for d in list(datasets.keys()) if all(i in d for i in let_in) and all(o not in d for o in let_out)]:
             output_dict[f]=datasets[f]
+        if verbose: print(list(output_dict.keys()))
         return output_dict
 
 
