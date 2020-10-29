@@ -168,7 +168,7 @@ def read_tabFile(nameElem="", path="", toLoad="", toClear=[], toAdd="", df=None,
         # adding to dataframe
         df_output[name] = tempDF['value']
 
-    return df_output.reindex(sorted(df.columns), axis=1)
+    return df_output.reindex(sorted(df_output.columns), axis=1)
 
 
 def read_STARstats(path="", toClear=[], toAdd="", df=None, overwrite=False):
