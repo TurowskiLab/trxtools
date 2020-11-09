@@ -166,7 +166,7 @@ def read_tabFile(nameElem="", path="", toLoad="", toClear=[], toAdd="", df=None,
                 return print(name + " exits in input df. Use overwrite=True to ignore.")
 
         # adding to dataframe
-        df_output[name] = tempDF['value']
+        df_output = pd.concat([df_output, tempDF['value'].rename(name)],axis=1)
 
     return df_output.reindex(sorted(df_output.columns), axis=1)
 
