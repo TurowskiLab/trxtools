@@ -196,7 +196,7 @@ def read_HTSeq_output(path="", toLoad="classes", toClear=[], toAdd="", df=None, 
     :return: DataFrame
     '''
     return read_tabFile(nameElem='_hittable.tab', path=path, toLoad=toLoad,
-                        toClear=toClear, toAdd=toAdd, df=df, overwrite=overwrite)[:-5]
+                        toClear=toClear, toAdd=toAdd, df=df, overwrite=overwrite)
 
 ################################################
 #############        handling multiple experiments
