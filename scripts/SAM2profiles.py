@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import TTools as tt
 import os, argparse
 from argparse import RawTextHelpFormatter
