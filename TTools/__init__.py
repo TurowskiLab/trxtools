@@ -4,3 +4,4 @@ import TTools.methods
 import TTools.nascent
 import TTools.secondary
 import TTools.plotting
+import TTools.SAM2profiles
