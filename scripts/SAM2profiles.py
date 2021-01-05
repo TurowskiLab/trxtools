@@ -2,18 +2,17 @@
 
 import TTools as tt
 import os, argparse
-from argparse import RawTextHelpFormatter
 import pandas as pd
 
 usage = "Generates profiles for a given list of genes from SAM files "
 
-parser = argparse.ArgumentParser(usage=usage, formatter_class=RawTextHelpFormatter)
+parser = argparse.ArgumentParser(usage=usage, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 files = parser.add_argument_group('Options for input files')
-files.add_argument("-f", dest="sam_file", help="Provide the path to your SAM file",
+files.add_argument("-f", dest="sam_file", help="SAM file",
                  metavar="FILE", default=None)
-files.add_argument("-l", dest="list_file", help="Provide the path to your list of genes file",
+files.add_argument("-l", dest="list_file", help="list of genes file",
                  metavar="FILE", default=None)
-files.add_argument("-d", dest="details_file", help="Provide the path to file with transcriptome details.",
+files.add_argument("-d", dest="details_file", help="file with transcriptome details.",
                    type=str, default='/homes/tollervey/COVID19/databases/transcriptome_details_biomart_tRNA_rRNA_LongNAME.tab')
 files.add_argument("-s", dest="sequence_file", help="Provide the path to your sequence file.",
                    type=str, default='/homes/tollervey/COVID19/databases/transcriptome_h38_September2020/biomart_transcriptome_all_short_header_rRNA_tRNA.tab')
