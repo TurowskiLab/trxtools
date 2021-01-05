@@ -12,11 +12,11 @@ files = parser.add_argument_group('Options for input files')
 files.add_argument("-f", dest="sam_file", help="Provide the path to your SAM file",
                  metavar="FILE", default=None)
 files.add_argument("-l", dest="list_file", help="Provide the path to your list of genes file",
-                 metavar="FILE", default='gene_list.list')
+                 metavar="FILE", default=None)
 files.add_argument("-d", dest="details_file", help="Provide the path to file with transcriptome details.",
-                   metavar="FILE", default='/homes/tollervey/COVID19/databases/transcriptome_details_biomart_tRNA_rRNA_LongNAME.tab')
+                   type=str, default='/homes/tollervey/COVID19/databases/transcriptome_details_biomart_tRNA_rRNA_LongNAME.tab')
 files.add_argument("-s", dest="sequence_file", help="Provide the path to your sequence file.",
-                   metavar="FILE", default='/homes/tollervey/COVID19/databases/transcriptome_h38_September2020/biomart_transcriptome_all_short_header_rRNA_tRNA.tab')
+                   type=str, default='/homes/tollervey/COVID19/databases/transcriptome_h38_September2020/biomart_transcriptome_all_short_header_rRNA_tRNA.tab')
 files.add_argument("-m", dest="method", help="Method how to generate profile: {read, middle, deletion}",
                    type=str, default='read')
 files.add_argument("-e", dest="expand", help="For method {middle, deletion} position can be expanded by the value on each side (e=5 gives 10 nt long)", type=int, default=0)
