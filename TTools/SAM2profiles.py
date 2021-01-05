@@ -1,9 +1,7 @@
 import pandas as pd
 import numpy as np
-import os, collections, shutil
-import matplotlib.pyplot as plt
-import scipy, re
-from collections import OrderedDict
+import os, collections, shutil, re
+import TTools as tt
 
 ### support functions ###
 def groupCIGAR(cigar_string=""):
