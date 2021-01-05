@@ -1,10 +1,9 @@
 import TTools as tt
-import os
-import argparse
+import os, argparse
 from argparse import RawTextHelpFormatter
 import pandas as pd
 
-usage = "Generates profiles for a given list of genes (gene name "
+usage = "Generates profiles for a given list of genes from SAM files "
 
 parser = argparse.ArgumentParser(usage=usage, formatter_class=RawTextHelpFormatter)
 files = parser.add_argument_group('Options for input files')
