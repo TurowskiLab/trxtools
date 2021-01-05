@@ -25,9 +25,9 @@ args = parser.parse_args()
 df_details = pd.read_csv(args.details_file, sep="\t",index_col=0,header=0)
 df_details = pd.read_csv(args.sequence_file, sep="\t",names=['name','sequence'],index_col=0)
 
-path = os.getcwd()
+path = os.getcwd()+"/"
 
-with open(path+"/"+args.list_file) as f:
+with open(path+args.list_file) as f:
     gene_list = f.read().splitlines()
 
 tt.SAM2profiles.sam2profiles(filename=args.sam_file, path=path,
