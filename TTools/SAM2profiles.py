@@ -24,124 +24,148 @@ def tostripCIGARthree(match=[]):
         return None
 
 
-# def stripCIGAR(match=[]):
-#     stripFive = tostripCIGARfive(match)
-#     print(stripFive)
-#     if stripFive:
-#         match = match[1:]
-
-#     stripThree = tostripCIGARthree(match)
-#     print(stripThree)
-#     if stripThree:
-#         match = match[-1:]
-#     return match
-
-def countRead(cigar_string="", position=int(), how="read", expand=0):
-    '''
-    '''
-    if not how in ['read', 'middle', 'deletion', 'del']:
-        exit("How not recognized")
-
-    match = groupCIGAR(cigar_string)
-    # stripping substitutions
+def stripSubstitutions(match):
+    '''Strip substutiotns on both ends'''
     if "S" in match[0]:
         match = match[1:]
     if "S" in match[-1]:
         match = match[:-1]
+    return match
+
+
+def countRead(i=tuple()):
+    ''' Takes tuple (position,CIGARstring) and returns list of mapped positions'''
+    (position, cigar_string) = i
+    match = groupCIGAR(cigar_string)
+    # stripping substitutions
+    match = stripSubstitutions(match)
 
     # outputs
     length = sum([int(i) for i, x in match])
+    output = np.arange(length, dtype=int)
+    return output + position
 
-    if how == 'read':
-        output = np.arange(length, dtype=int)
+
+def countMiddle(i=tuple(), expand=0):
+    ''' Takes tuple (position,CIGARstring) and returns list with the middle of mapped read'''
+    (position, cigar_string) = i
+    match = groupCIGAR(cigar_string)
+    # stripping substitutions
+    match = stripSubstitutions(match)
+
+    # outputs
+    length = sum([int(i) for i, x in match])
+    mid = round(length / 2)
+    if expand > 0:
+        output = np.arange(mid - expand, mid + expand)
         return output + position
+    else:
+        return np.arange(mid, mid + 1) + position
 
-    elif how == 'middle':
-        mid = round(length / 2)
-        if expand > 0:
-            output = np.arange(mid - expand, mid + expand)
-            return output + position
-        else:
-            return np.arange(mid, mid + 1) + position
 
-    elif how in ['deletion', 'del']:
-        output = np.arange(length, dtype=int)
-        outputMask = np.zeros(length, dtype=int)
-        cumsum = 0
-        for i, x in match:
-            i = int(i)
+def countDeletion(i=tuple(), expand=0):
+    ''' Takes tuple (position,CIGARstring) and returns list of mapped deletions'''
+    (position, cigar_string) = i
+    match = groupCIGAR(cigar_string)
+    # stripping substitutions
+    match = stripSubstitutions(match)
 
-            if x == 'D' and expand == 0:
-                outputMask[cumsum:cumsum + i] = 1
-            elif x == 'D' and expand > 0:
-                outputMask[cumsum - expand:cumsum + i + expand] = 1
+    # outputs
+    length = sum([int(i) for i, x in match])
+    output = np.arange(length, dtype=int)
+    outputMask = np.zeros(length, dtype=int)
+    cumsum = 0
+    for i, x in match:
+        i = int(i)
+        if x == 'D' and expand == 0:
+            outputMask[cumsum:cumsum + i] = 1
+        elif x == 'D' and expand > 0:
+            outputMask[cumsum - expand:cumsum + i + expand] = 1
+        cumsum += i
+    output = (output + position) * outputMask
+    return output[output != 0]
 
-            cumsum += i
-        output = (output + position) * outputMask
-        return output[output != 0]
 
 ### main functions ###
-def transcript2profile(n="", df=pd.DataFrame(), seq=pd.Series(), how='read', expand=0):
-    if not how in ['read', 'middle', 'deletion', 'del']:
-        exit("How not recognized")
-
-    output_df = pd.DataFrame()
-    output_df['sequence'] = list(seq[0])  # sequence is python-style numbered
-
-    hits = np.array([])
-    for i, row in df.iterrows():
-        pos = int(row['position'])
-        match = groupCIGAR(row['CIGAR'])
-        shiftFive = tostripCIGARfive(match)
-        length = sum([int(i) for i, x in match])
-        read = row['sequence']
-
-        # testing
-        #         print(read)
-        #         print(output_df[pos-1:pos+length-shiftFive-1])
-        #         print(countRead(row['CIGAR'],position=pos))
-        #         print(countRead(row['CIGAR'],position=pos,how='del'))
-        hits = np.append(hits, countRead(row['CIGAR'], position=pos, how=how, expand=expand))
-
+def transcript2profile(l=[], length=int()):
+    '''Takes list of tuples position,CIGARstring) and generates profile'''
+    list_hits = [countRead(i) for i in l]  # list of lists
+    hits = [item for sublist in list_hits for item in sublist]  # transforms to flat list
     # returning the profile
     profile = pd.Series(collections.Counter(hits))  # faster that using zip and numpy
-    return profile.reindex(pd.RangeIndex(profile.index.max() + 1)).fillna(0)  # fills spaces with 0 counts
+    return profile.reindex(pd.RangeIndex(length + 1)).fillna(0)  # fills spaces with 0 counts
 
 
-def reads2profile(name=str(), dirPath=str(),
-                  df_details=pd.DataFrame(),
-                  df_sequences=pd.DataFrame(),
-                  how='read', expand=0):
-    if not how in ['read', 'middle', 'deletion', 'del']:
-        exit("How not recognized")
+def transcript2profileDeletions(l=[], expand=0, length=int()):
+    '''Takes list of tuples position,CIGARstring) and generates profile'''
+    list_hits = [countDeletion(i, expand=expand) for i in l]  # list of lists
+    hits = [item for sublist in list_hits for item in sublist]  # transforms to flat list
+    # returning the profile
+    profile = pd.Series(collections.Counter(hits))  # faster that using zip and numpy
+    return profile.reindex(pd.RangeIndex(length + 1)).fillna(0)  # fills spaces with 0 counts
+
+
+def reads2profile(name=str(), dirPath=str(), df_details=pd.DataFrame()):
     cols = ['score', 'name', 'position', 'CIGAR', 'sequence', 'details']
-
     df_input = pd.read_csv(dirPath + "/" + name + ".tab", sep="\t", names=cols)
 
     output_df = pd.DataFrame()
+    log = []
 
     for n, df in df_input.groupby('name'):
-        details = df_details.loc[n]
-        seq = df_sequences.loc[n]
-
         try:
-            s1 = transcript2profile(n=n, df=df, seq=seq, how=how, expand=expand)
+            details = df_details.loc[n]
+            length = details['transcript_length']
+            l = list(zip(df['position'], df['CIGAR']))
+            s1 = transcript2profile(l, length=length)
+            output_df = output_df.append(s1.rename(n))
+
+            log.append(n + " - profile generated successfully")
         except:
-            print(n)
+            log.append(n + " - profile FAILED")
 
-        output_df = output_df.append(s1.rename(n))
-
-    return output_df
+    return output_df, log
 
 
-def sam2profiles(filename="", path='', geneList=[], toClear='',
-                 df_details=pd.DataFrame(), df_sequences=pd.DataFrame(),
-                 how='read', expand=0):
-    if not how in ['read', 'middle', 'deletion', 'del']:
-        exit("How not recognized")
+def reads2profileDeletions(name=str(), dirPath=str(), df_details=pd.DataFrame(), expand=5):
+    cols = ['score', 'name', 'position', 'CIGAR', 'sequence', 'details']
+    df_input = pd.read_csv(dirPath + "/" + name + ".tab", sep="\t", names=cols)
 
+    output_df = pd.DataFrame()
+    outputDel_df = pd.DataFrame()
+    outputDelExt_df = pd.DataFrame()
+    log = []
+
+    for n, df in df_input.groupby('name'):
+        try:
+            details = df_details.loc[n]
+            length = details['transcript_length']
+            l = list(zip(df['position'], df['CIGAR']))
+
+            # reads
+            s1 = transcript2profile(l, length=length)
+            output_df = output_df.append(s1.rename(n))
+
+            # deletions
+            s2 = transcript2profileDeletions(l, length=length)
+            outputDel_df = outputDel_df.append(s2.rename(n))
+
+            # deletions ext
+            s3 = transcript2profileDeletions(l, length=length, expand=expand)
+            outputDelExt_df = outputDelExt_df.append(s3.rename(n))
+
+            log.append(n + " - profile generated successfully")
+        except:
+            log.append(n + " - profile FAILED")
+
+    return output_df, outputDel_df, outputDelExt_df, log
+
+
+def sam2profiles(filename="", path='', geneList=[], toClear='', df_details=pd.DataFrame(), deletions=False, expand=5):
     # making working directory
-    name = filename.strip(toClear + ".sam")
+    name = filename.replace(".sam", "")
+    if toClear:
+        name = name.replace(toClear, "")
     timestamp = tt.methods.timestampRandomInt()
     dirPath = path + name + timestamp
     os.makedirs(dirPath)
@@ -158,9 +182,22 @@ def sam2profiles(filename="", path='', geneList=[], toClear='',
     print("Reads selected.")
 
     # get profiles
-    df_profiles = reads2profile(name=name, dirPath=dirPath, df_details=df_details, df_sequences=df_sequences, how=how,
-                                expand=expand)
-    df_profiles.to_csv(path + name + "_PROFILES_" + how + "_expand" + str(expand) + ".csv")
+    if deletions == False:
+        df_profiles, log = reads2profile(name=name, dirPath=dirPath, df_details=df_details)
+        df_profiles.to_csv(path + name + "_PROFILES_reads.csv")
+        with open(path + name + "_PROFILES_reads.log", "w") as log_file:
+            for row in log:
+                log_file.write(str(row) + '\n')
+
+    elif deletions == True:
+        output_df, outputDel_df, outputDelExt_df, log = reads2profileDeletions(name=name, dirPath=dirPath,
+                                                                               df_details=df_details, expand=expand)
+        output_df.to_csv(path + name + "_PROFILES_reads.csv")
+        outputDel_df.to_csv(path + name + "_PROFILES_deletions_expand0.csv")
+        outputDelExt_df.to_csv(path + name + "_PROFILES_deletions_expand" + str(expand) + ".csv")
+        with open(path + name + "_PROFILES_reads.log", "w") as log_file:
+            for row in log:
+                log_file.write(str(row) + '\n')
 
     # clean
     os.chdir(path)
