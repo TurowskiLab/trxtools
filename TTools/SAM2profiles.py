@@ -172,8 +172,8 @@ def sam2profiles(filename="", path='', geneList=[], toClear='', df_details=pd.Da
 
     # tempfiles
     ##list
-    genes = pd.Series(geneList)
-    genes = pd.DataFrame("_" + genes + "_").to_csv(dirPath + "/geneList.tab", sep='\t', index=False, header=False)
+    genes = pd.DataFrame(pd.Series(geneList))
+    genes.to_csv(dirPath + "/geneList.tab", sep='\t', index=False, header=False)
 
     ##reads
     os.chdir(dirPath)
