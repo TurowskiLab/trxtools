@@ -16,6 +16,7 @@ setuptools.setup(
     #     "Programming Language :: Python :: 3",
     #     "License :: OSI Approved :: MIT License",
     #     "Operating System :: OS Independent"],
-    scripts=['scripts/SAM2profiles.py','scripts/mergeSalmon.py'],
+    scripts=['scripts/SAM2profiles.py',
+             'scripts/mergeSalmon.py'],
     python_requires='>=3.6'
 )
