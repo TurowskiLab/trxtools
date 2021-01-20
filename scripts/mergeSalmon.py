@@ -11,7 +11,7 @@ files = parser.add_argument_group('Options for input files')
 files.add_argument("-i", dest="input",type=str, help="String of signs to be found in Salmon output directory")
 
 files.add_argument("-o", dest="output",type=str, help="Name of output file",default="merged")
-files.add_argument("-u", dest="use",type=str, help="column to be used {TPM,NumReads}",defaul='NumReads')
+files.add_argument("-u", dest="use",type=str, help="column to be used {TPM,NumReads}",default='NumReads')
 
 files.add_argument("-f", dest="filter",type=str, help="String of signs to be found in Salmon output directory. Optional as additional filter", default=None)
 files.add_argument("-c", dest="clear",type=str, help="String of signs to be found in Salmon output directory, will be cleared",default=None)
