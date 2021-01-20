@@ -198,6 +198,54 @@ def read_HTSeq_output(path="", toLoad="classes", toClear=[], toAdd="", df=None, 
     return read_tabFile(nameElem='_hittable.tab', path=path, toLoad=toLoad,
                         toClear=toClear, toAdd=toAdd, df=df, overwrite=overwrite)
 
+def readSalmon(nameElem="", path="", toLoad="", toClear=[], toAdd="", column='NumReads', df=None, overwrite=False):
+    '''
+
+    :param nameElem: str, elem to load
+    :param path: str
+    :param toLoad: str, additional param for filtering, by default equal to nameElem
+    :param toClear: str
+    :param toAdd: str
+    :param df: pd.DataFrame
+    :param overwrite: boolean, default=False
+    :return:
+    '''
+    # list files with STAT mapping
+    l1_mapping = [f for f in os.listdir(path) if nameElem in f]
+    if toLoad:
+        l1_mapping = [f for f in l1_mapping if toLoad in f]
+
+    # check input dataframe
+    if isinstance(df, pd.DataFrame):
+        namesInUse = df.columns.tolist()
+        df_output = df.copy()
+    else:
+        if df == None:
+            df_output = pd.DataFrame()
+            namesInUse = []
+        else:
+            exit("df is not a DataFrame")
+
+    for f in l1_mapping:
+        tempDF = pd.read_csv(path + f+"/quant.sf", sep='\t')
+        tempDF = tempDF.set_index('Name').dropna()
+
+        # clear names
+        name = f.replace(nameElem, '')
+        for c in toClear:
+            name = name.replace(c, '')
+        name = name + toAdd
+
+        # overwrite warninig
+        if name in namesInUse:
+            if overwrite == False:
+                return print(name + " exits in input df. Use overwrite=True to ignore.")
+
+        # adding to dataframe
+        df_output = pd.concat([df_output, tempDF[column].rename(name)],axis=1)
+
+    return df_output.reindex(sorted(df_output.columns), axis=1)
+
 ################################################
 #############        handling multiple experiments
 
