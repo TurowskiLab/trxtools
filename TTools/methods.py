@@ -487,13 +487,13 @@ def runPCA(data=pd.DataFrame(), n_components=2):
     principalDf = pd.DataFrame(data=principalComponents,
                                columns=['PC' + str(i + 1) for i in np.arange(0, n_components)])
 
-    print(pca.explained_variance_ratio_)
+    values = pca.explained_variance_ratio_
 
     finalDf = pd.concat([principalDf, pd.Series(data.index)], axis=1)
     finalDf.rename(columns={0: 'name'}, inplace=True)
     finalDf = finalDf.set_index('name')
 
-    return finalDf
+    return finalDf, [round(i*100,2) for i in values.tolist()]
 
 ################################################
 #############        other
