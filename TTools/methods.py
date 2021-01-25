@@ -3,6 +3,8 @@ import os, sys, re, itertools
 import pandas as pd
 import numpy as np
 from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+import TTools as tt
 
 ### METHODS ###
 # various python methods
@@ -494,6 +496,24 @@ def runPCA(data=pd.DataFrame(), n_components=2):
     finalDf = finalDf.set_index('name')
 
     return finalDf, [round(i*100,2) for i in values.tolist()]
+
+def addCluster(df=pd.DataFrame(), n=10):
+    '''
+    Assigns n clusters to the data using KMeans algorithm
+    :param df:
+    :param n:
+    :return:
+    '''
+    if 'cluster' in df.columns:
+        df = df.drop('cluster', 1)
+    kmeans = KMeans(n_clusters=n, random_state=0).fit(df)
+    df['cluster'] = kmeans.labels_
+    df = df.sort_values('cluster', ascending=True)
+
+    # summary
+    tt.plotting.clusterClusterMap(df)
+
+    return df
 
 ################################################
 #############        other

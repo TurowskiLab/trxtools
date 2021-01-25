@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import TTools.profiles as profiles
 from adjustText import adjust_text
+import seaborn as sns
 
 #### PCA
 def plotPCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize=(7,7), PCval=[]):
@@ -53,6 +54,28 @@ def plotPCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize=(7,7), PC
         plt.show()
 
         if nPC==PClimit: break
+
+
+def clusterClusterMap(df):
+    '''
+    Clustermap for clusters
+    :param df:
+    :return:
+    '''
+    df_mean = pd.DataFrame()
+
+    n = df['cluster'].max()+1
+
+    for c in range(0, n):
+        a = df[df['cluster'] == c]
+        #         print("Cluster "+str(c)+"\t"+str(len(a)))
+        df_mean['cluster ' + str(c) + " (" + str(len(a)) + ")"] = a.mean()
+
+    df_mean = df_mean.T.drop('cluster', axis=1)
+
+    sns.clustermap(df_mean, center=0, cmap="vlag",
+                   linewidths=.75, figsize=(7, 7))
+    plt.show()
 
 ### Peaks metaplot
 def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
