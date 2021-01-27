@@ -17,6 +17,7 @@ setuptools.setup(
     #     "License :: OSI Approved :: MIT License",
     #     "Operating System :: OS Independent"],
     scripts=['scripts/SAM2profiles.py',
-             'scripts/mergeSalmon.py'],
+             'scripts/mergeSalmon.py',
+             'scripts/csv2pickle.py'],
     python_requires='>=3.6'
 )

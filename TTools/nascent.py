@@ -575,6 +575,17 @@ def foldNascentElem(data=pd.DataFrame()):
     return output
 
 # # # # #
+def parseFoldingName(df=pd.DataFrame()):
+    # parse names
+    df_names = df['name'].str.split("_", expand=True)
+    df_names.columns = ['name', 'strand', 'position', 'temp', 'window']
+    # TODO minus strand
+    df_names['position'] = df_names['position'].str.replace('pos', '').astype(int)
+    df_names['temp'] = df_names['temp'].str.replace('temp', '').astype(int)
+    df_names['window'] = df_names['window'].str.replace('win', '').astype(int)
+
+    return pd.concat([df_names, df.drop('name', axis=1)], axis=1)
+
 def nascentFolding(sequence='', temp=30, window=100):
     '''Combines folding function: fold RNA, locate last nascent element and calculate dG of it.
 
@@ -591,16 +602,8 @@ def nascentFolding(sequence='', temp=30, window=100):
     df = nascentElemsDataFrame(data=df)
     # folding nascent element
     df = foldNascentElem(df)
-
-    # parse names
-    df_names = df['name'].str.split("_", expand=True)
-    df_names.columns = ['name', 'strand', 'position', 'temp', 'window']
-    # TODO minus strand
-    df_names['position'] = df_names['position'].str.replace('pos', '').astype(int)
-    df_names['temp'] = df_names['temp'].str.replace('temp', '').astype(int)
-    df_names['window'] = df_names['window'].str.replace('win', '').astype(int)
-
-    df = pd.concat([df_names, df.drop('name', axis=1)], axis=1)
+    # parse name
+    df = parseFoldingName(df)
 
     # preparing output
     zeros = df['position'].min()

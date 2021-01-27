@@ -161,7 +161,7 @@ def reads2profileDeletions(name=str(), dirPath=str(), df_details=pd.DataFrame(),
     return output_df, outputDel_df, outputDelExt_df, log
 
 
-def sam2profiles(filename="", path='', geneList=[], toClear='', df_details=pd.DataFrame(), deletions=False, expand=5):
+def sam2profiles(filename="", path='', geneList=[], toClear='', df_details=pd.DataFrame(), deletions=False, expand=5, pickle=False):
     # making working directory
     name = filename.replace(".sam", "")
     if toClear:
@@ -184,7 +184,12 @@ def sam2profiles(filename="", path='', geneList=[], toClear='', df_details=pd.Da
     # get profiles
     if deletions == False:
         df_profiles, log = reads2profile(name=name, dirPath=dirPath, df_details=df_details)
-        df_profiles.to_csv(path + name + "_PROFILES_reads.csv")
+        #save output
+        if pickle==True:
+            df_profiles.to_pickle(path + name + "_PROFILES_reads.pcl")
+        elif pickle==False:
+            df_profiles.to_csv(path + name + "_PROFILES_reads.csv")
+        #save log
         with open(path + name + "_PROFILES_reads.log", "w") as log_file:
             for row in log:
                 log_file.write(str(row) + '\n')
@@ -192,9 +197,16 @@ def sam2profiles(filename="", path='', geneList=[], toClear='', df_details=pd.Da
     elif deletions == True:
         output_df, outputDel_df, outputDelExt_df, log = reads2profileDeletions(name=name, dirPath=dirPath,
                                                                                df_details=df_details, expand=expand)
-        output_df.to_csv(path + name + "_PROFILES_reads.csv")
-        outputDel_df.to_csv(path + name + "_PROFILES_deletions_expand0.csv")
-        outputDelExt_df.to_csv(path + name + "_PROFILES_deletions_expand" + str(expand) + ".csv")
+        # save output
+        if pickle==True:
+            output_df.to_pickle(path + name + "_PROFILES_reads.pcl")
+            outputDel_df.to_pickle(path + name + "_PROFILES_deletions_expand0.pcl")
+            outputDelExt_df.to_pickle(path + name + "_PROFILES_deletions_expand" + str(expand) + ".pcl")
+        elif pickle==False:
+            output_df.to_csv(path + name + "_PROFILES_reads.csv")
+            outputDel_df.to_csv(path + name + "_PROFILES_deletions_expand0.csv")
+            outputDelExt_df.to_csv(path + name + "_PROFILES_deletions_expand" + str(expand) + ".csv")
+        #save log
         with open(path + name + "_PROFILES_reads.log", "w") as log_file:
             for row in log:
                 log_file.write(str(row) + '\n')

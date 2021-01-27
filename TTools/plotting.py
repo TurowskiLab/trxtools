@@ -55,11 +55,10 @@ def plotPCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize=(7,7), PC
 
         if nPC==PClimit: break
 
-
 def clusterClusterMap(df):
     '''
     Clustermap for clusters
-    :param df:
+    :param df: DataFrame
     :return:
     '''
     df_mean = pd.DataFrame()

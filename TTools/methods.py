@@ -500,8 +500,8 @@ def runPCA(data=pd.DataFrame(), n_components=2):
 def addCluster(df=pd.DataFrame(), n=10):
     '''
     Assigns n clusters to the data using KMeans algorithm
-    :param df:
-    :param n:
+    :param df: DataFrame
+    :param n: no. of clusters, int
     :return:
     '''
     if 'cluster' in df.columns:

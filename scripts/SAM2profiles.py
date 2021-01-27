@@ -15,6 +15,7 @@ files.add_argument("-l", dest="list_file", help="list of genes file",
 files.add_argument("-d", dest="details_file", help="file with transcriptome details.",
                    type=str, default='/homes/tollervey/COVID19/databases/transcriptome_details_biomart_tRNA_rRNA_UPDATEJan2021.tab')
 files.add_argument("--del", dest="deletions", help="Generate additional profiles for deletions",action="store_true")
+files.add_argument("-p", dest="pickle", help="SAve output as pickle DataFrame",action="store_true")
 files.add_argument("-e", dest="expand", help="For deletions position can be expanded by the value on each side (e=5 gives 10 nt long)", type=int, default=5)
 files.add_argument("-c", dest="toClear", help="String of signs to be cleared from the name of SAM file", type=str, default='_comp_flexbar_STARAligned.out')
 args = parser.parse_args()
@@ -29,6 +30,6 @@ with open(path+args.list_file) as f:
 
 tt.SAM2profiles.sam2profiles(filename=args.sam_file, path=path,
              geneList=gene_list, toClear=args.toClear,df_details=df_details,
-             deletions=args.deletions ,expand=args.expand)
+             deletions=args.deletions ,expand=args.expand,pickle=args.pickle)
 
 print("Done at "+tt.methods.timestamp())
