@@ -15,4 +15,4 @@ path = os.getcwd()+"/"
 filename=args.csv_file
 
 df = pd.read_csv(path+filename, sep=",",index_col=0,header=0)
-df.to_pickle(path+filename.replace(",csv",".pickle"))
+df.to_pickle(path+filename.replace(".csv",".pickle"))
