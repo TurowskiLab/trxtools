@@ -18,6 +18,7 @@ files.add_argument("--del", dest="deletions", help="Generate additional profiles
 files.add_argument("-p", dest="pickle", help="SAve output as pickle DataFrame",action="store_true")
 files.add_argument("-e", dest="expand", help="For deletions position can be expanded by the value on each side (e=5 gives 10 nt long)", type=int, default=5)
 files.add_argument("-c", dest="toClear", help="String of signs to be cleared from the name of SAM file", type=str, default='_comp_flexbar_STARAligned.out')
+files.add_argument("--chunks", dest="chunks", help="Divide list of genes into a chunks of given size", type=int, default=0)
 args = parser.parse_args()
 
 print("Start at "+tt.methods.timestamp())
@@ -30,6 +31,7 @@ with open(path+args.list_file) as f:
 
 tt.SAM2profiles.sam2profiles(filename=args.sam_file, path=path,
              geneList=gene_list, toClear=args.toClear,df_details=df_details,
-             deletions=args.deletions ,expand=args.expand,pickle=args.pickle)
+             deletions=args.deletions ,expand=args.expand,pickle=args.pickle,
+             chunks=args.chunks)
 
 print("Done at "+tt.methods.timestamp())

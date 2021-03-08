@@ -278,7 +278,6 @@ def calculateFDR(data=pd.Series(), iterations=100, target_FDR=0.05):
     FDR = DR <= target_FDR
     return data * FDR
 
-
 def findPeaks(s1=pd.Series(), window=1, win_type='blackman', order=20):
     '''Find local extrema using SciPy argrelextrema function
 
@@ -294,7 +293,7 @@ def findPeaks(s1=pd.Series(), window=1, win_type='blackman', order=20):
         s1 = s1.rolling(window, win_type=win_type, center=True).mean()
 
     # find peaks
-    output = argrelextrema(data=s1.as_matrix(), comparator=np.greater, order=order)[0]
+    output = argrelextrema(data=s1.to_numpy(), comparator=np.greater, order=order)[0]
     return list(output)
 
 def findTroughs(s1=pd.Series(), window=1, win_type='blackman', order=20):
@@ -312,7 +311,7 @@ def findTroughs(s1=pd.Series(), window=1, win_type='blackman', order=20):
         s1 = s1.rolling(window, win_type=win_type, center=True).mean()
 
     # find troughs
-    output = argrelextrema(data=s1.as_matrix(), comparator=np.less, order=order)[0]
+    output = argrelextrema(data=s1.to_numpy(), comparator=np.less, order=order)[0]
     return list(output)
 
 

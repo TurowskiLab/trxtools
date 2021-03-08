@@ -161,7 +161,8 @@ def reads2profileDeletions(name=str(), dirPath=str(), df_details=pd.DataFrame(),
     return output_df, outputDel_df, outputDelExt_df, log
 
 
-def sam2profiles(filename="", path='', geneList=[], toClear='', df_details=pd.DataFrame(), deletions=False, expand=5, pickle=False):
+def sam2profiles(filename="", path='', geneList=[], toClear='', df_details=pd.DataFrame(),
+                 deletions=False, expand=5, pickle=False,chunks=0):
     # making working directory
     name = filename.replace(".sam", "")
     if toClear:
@@ -172,13 +173,26 @@ def sam2profiles(filename="", path='', geneList=[], toClear='', df_details=pd.Da
 
     # tempfiles
     ##list
+    if chunks > 0:
+        chunkList = [i for i in range(0,len(geneList)+1,chunks)]
+    else:
+        chunkList = [0]
+        chunks = len(geneList)+1
+
     genes = pd.DataFrame(pd.Series(geneList))
-    genes.to_csv(dirPath + "/geneList.tab", sep='\t', index=False, header=False)
+    for i in chunkList:
+        geneListFileName = "/geneList_" + str(i) + ".tab"
+        genes[i:i+chunks].to_csv(dirPath + geneListFileName, sep='\t', index=False, header=False)
 
     ##reads
     os.chdir(dirPath)
-    command = "grep -v ^@ ../" + filename + " | grep -f geneList.tab | awk -F'\t' 'BEGIN{OFS = FS} $2==0||$2==256{print $2,$3, $4, $6, $10, $12}' > " + name + ".tab"
-    tt.methods.bashCommand(command)
+    for i in chunkList:
+        geneListFileName = "/geneList_" + str(i) + ".tab"
+        command = "grep -v ^@ ../" + filename + " | grep -f "+geneListFileName+\
+                  " | awk -F'\t' 'BEGIN{OFS = FS} $2==0||$2==256{print $2,$3, $4, $6, $10, $12}' > " + name+"_" + str(i) + ".tab"
+        tt.methods.bashCommand(command)
+    tt.methods.bashCommand("cat "+name+"* > " + name+".tab")
+
     print("Reads selected.")
 
     # get profiles
