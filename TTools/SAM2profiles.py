@@ -187,7 +187,7 @@ def sam2profiles(filename="", path='', geneList=[], toClear='', df_details=pd.Da
     ##reads
     os.chdir(dirPath)
     for i in chunkList:
-        geneListFileName = "/geneList_" + str(i) + ".tab"
+        geneListFileName = "geneList_" + str(i) + ".tab"
         command = "grep -v ^@ ../" + filename + " | grep -f "+geneListFileName+\
                   " | awk -F'\t' 'BEGIN{OFS = FS} $2==0||$2==256{print $2,$3, $4, $6, $10, $12}' > " + name+"_" + str(i) + ".tab"
         tt.methods.bashCommand(command)
