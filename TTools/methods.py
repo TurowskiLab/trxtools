@@ -29,7 +29,11 @@ def list_paths_in_current_dir(suffix=str(), stdin=False):
 
 def bashCommand(bashCommand=str()):
     '''Run command in bash using subprocess.call()'''
-    subprocess.call(bashCommand, shell=True)
+    pipes = subprocess.Popen(bashCommand,shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    std_out, std_err = pipes.communicate()
+    if pipes.returncode != 0:
+            err_msg = "%s. Code: %s" % (std_err.strip(), pipes.returncode)
+            raise Exception(err_msg)
 
 ################################################
 #############        DNA/RNA
