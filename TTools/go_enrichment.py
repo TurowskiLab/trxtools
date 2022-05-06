@@ -1,5 +1,6 @@
 import pandas as pd
 import requests
+import warnings
 
 go_mappings = {
     'biological_process': "GO:0008150",
@@ -9,18 +10,36 @@ available_test_types = ["FISHER", "BINOMIAL"]
 available_corrections = ["FDR", "BONFERRONI", "NONE"]
 
 def get_enrichment(query_genes, organism, use_reference_set=False, ref_genes=None, ref_organism=None, go_dataset='biological_process', test_type="FISHER", correction="FDR"):
-    '''
-    Run a GO term enrichment test using PANTHER API
-    :param query_genes: list() of sequence identifiers of queried genes (e.g. transcript ids, gene ids)
-    :param organism: str() taxid of query species (e.g. "9606" for H. sapiens)
+    '''Run a GO term enrichment test using PANTHER API
+
+    :param query_genes: List of sequence identifiers of queried genes (e.g. transcript ids, gene ids)
+    :type query_genes: list
+    :param organism: Taxid of query species (e.g. "9606" for H. sapiens)
+    :type organism: str
     :param use_reference_set: Use a custom set of rerence (background) genes? Default False. If True, ref_genes and ref_species need to be specifed.
-    :param ref_genes: *optional* list() of reference genes. Specifying None (default) will use the whole genome of species specified in organism. When passing a list, ref_organism taxid must also be provided.
-    :param ref_species: str() taxid of reference species, required when ref_genes is not None
-    :param go_dataset: str() which annotation dataset to query, "biological_process" or "molecular_function"
-    :param test_type: str() statistical test to use. Available: "FISHER" (default), "BINOMIAL"
-    :param correction: str() multiple testing correction method. Available: "FDR" (default), "BONFERRONI", "NONE"
-    :return: unfiltered DataFrame of results
+    :type use_reference_set: bool
+    :param ref_genes: *optional* list of reference genes. Specifying None (default) will use the whole genome of species specified in organism. When passing a list, ref_organism taxid must also be provided.
+    :type ref_genes: list
+    :param ref_species: Taxid of reference species, required when ref_genes is not None
+    :type ref_species: str
+    :param go_dataset: Which annotation dataset to query, "biological_process" or "molecular_function"
+    :type go_dataset: str
+    :param test_type: Which tatistical test to use. Available: "FISHER" (default), "BINOMIAL"
+    :type test_type: str
+    :param correction: Which multiple testing correction method to use. Available: "FDR" (default), "BONFERRONI", "NONE"
+    :type correction: str
+    :returns: Unfiltered DataFrame of results.
+    :rtype: pandas.DataFrame:
     '''
+    ## return empty df if empty list provided as input
+    if len(query_genes) == 0:
+        dummy_df = pd.DataFrame({
+            "number_in_list": [], "fold_enrichment": [], "fdr": [],
+            "expected": [], "number_in_reference": [], "pValue": [],
+            "plus_minus": [], "term.id": [], "term.label": []
+        })
+        warnings.warn("Empty list provided, returning empty DataFrame.")
+        return dummy_df
     ## check if passed parameters are correct
     if go_dataset not in go_mappings.keys():
         raise Exception('Incorrect go_dataset value specified. Available values: "biological_process", "molecular_function"')
@@ -37,14 +56,14 @@ def get_enrichment(query_genes, organism, use_reference_set=False, ref_genes=Non
             raise Exception("Reference organism taxid needs to be provided when use_reference_set is True")
         ref_ids = ",".join(ref_genes)
         query = {
-        "geneInputList": seq_ids,
-        "organism": organism,
-        "refInputList": ref_ids,
-        "refOrganism": ref_organism,
-        "annotDataSet": go_mappings[go_dataset],
-        "enrichmentTestType": test_type,
-        "correction": correction
-    }
+            "geneInputList": seq_ids,
+            "organism": organism,
+            "refInputList": ref_ids,
+            "refOrganism": ref_organism,
+            "annotDataSet": go_mappings[go_dataset],
+            "enrichmentTestType": test_type,
+            "correction": correction
+        }
     else:
         query = {
             "geneInputList": seq_ids,
