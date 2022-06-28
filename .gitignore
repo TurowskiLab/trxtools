@@ -1,3 +1,4 @@
 /build/
 /TTools.egg-info/
 /__pycache__/
+/TTools/__pycache__/
