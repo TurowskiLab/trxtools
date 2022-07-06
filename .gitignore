@@ -2,3 +2,5 @@
 /TTools.egg-info/
 /__pycache__/
 /TTools/__pycache__/
+/docs/
+tests.ipynb
