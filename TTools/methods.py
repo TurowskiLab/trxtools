@@ -128,6 +128,18 @@ def rollingGC(s=pd.Series, window=10): #rolling window, smoothing of data
 ################################################
 #############        importing data
 
+def read_list(filepath=''):
+    '''Read list from file. Each row becomes item in the list.
+    
+    :param filepath: str
+    :return: list
+    '''
+
+    txt_file = open(filepath, "r")
+    content_list = txt_file.read().splitlines()
+    txt_file.close()
+    return content_list
+
 def read_tabFile(nameElem="", path="", toLoad="", toClear=[], toAdd="", df=None, overwrite=False):
     '''
     Read tab files with common first column
