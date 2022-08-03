@@ -4,5 +4,7 @@ import TTools.methods
 import TTools.nascent
 import TTools.secondary
 import TTools.plotting
-import TTools.SAM2profiles
+import TTools.SAMgeneral
+import TTools.SAMtranscripts
+import TTools.SAMgenome
 import TTools.go_enrichment

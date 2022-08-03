@@ -1,3 +1,5 @@
+author="Jan Mikołajczyk"
+
 import pandas as pd
 import requests
 import warnings

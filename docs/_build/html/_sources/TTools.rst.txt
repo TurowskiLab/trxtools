@@ -1,10 +1,26 @@
 TTools package
 ==============
 
-TTools.SAM2profiles module
---------------------------
+TTools.SAMgeneral module
+-------------------------
 
-.. automodule:: TTools.SAM2profiles
+.. automodule:: TTools.SAMgeneral
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+TTools.SAMtranscripts module
+-----------------------------
+
+.. automodule:: TTools.SAMtranscripts
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+TTools.SAMgenome module
+------------------------
+
+.. automodule:: TTools.SAMgenome
    :members:
    :undoc-members:
    :show-inheritance:

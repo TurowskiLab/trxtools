@@ -29,7 +29,7 @@ path = os.getcwd()+"/"
 with open(path+args.list_file) as f:
     gene_list = f.read().splitlines()
 
-tt.SAM2profiles.sam2profiles(filename=args.sam_file, path=path,
+tt.SAMtranscripts.sam2profiles(filename=args.sam_file, path=path,
              geneList=gene_list, toClear=args.toClear,df_details=df_details,
              deletions=args.deletions ,expand=args.expand,pickle=args.pickle,
              chunks=args.chunks)

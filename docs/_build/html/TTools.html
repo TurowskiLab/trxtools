@@ -38,7 +38,9 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">TTools package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#module-TTools.SAM2profiles">TTools.SAM2profiles module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-TTools.SAMgeneral">TTools.SAMgeneral module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-TTools.SAMtranscripts">TTools.SAMtranscripts module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-TTools.SAMgenome">TTools.SAMgenome module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-TTools.assays">TTools.assays module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-TTools.go_enrichment">TTools.go_enrichment module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-TTools.methods">TTools.methods module</a></li>
@@ -76,11 +78,11 @@
              
   <section id="ttools-package">
 <h1>TTools package<a class="headerlink" href="#ttools-package" title="Permalink to this headline"></a></h1>
-<section id="module-TTools.SAM2profiles">
-<span id="ttools-sam2profiles-module"></span><h2>TTools.SAM2profiles module<a class="headerlink" href="#module-TTools.SAM2profiles" title="Permalink to this headline"></a></h2>
+<section id="module-TTools.SAMgeneral">
+<span id="ttools-samgeneral-module"></span><h2>TTools.SAMgeneral module<a class="headerlink" href="#module-TTools.SAMgeneral" title="Permalink to this headline"></a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="TTools.SAM2profiles.countDeletion">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAM2profiles.</span></span><span class="sig-name descname"><span class="pre">countDeletion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAM2profiles.countDeletion" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="TTools.SAMgeneral.countDeletion">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">countDeletion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMgeneral.countDeletion" title="Permalink to this definition"></a></dt>
 <dd><p>Takes tuple (position,CIGARstring) and returns list of mapped deletions. Each deletion is counted once, but expand parameter can merge some longer deletions (common expansion).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -99,8 +101,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="TTools.SAM2profiles.countMiddle">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAM2profiles.</span></span><span class="sig-name descname"><span class="pre">countMiddle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAM2profiles.countMiddle" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="TTools.SAMgeneral.countMiddle">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">countMiddle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMgeneral.countMiddle" title="Permalink to this definition"></a></dt>
 <dd><p>Takes tuple (position,CIGARstring) and returns list with the middle of mapped read</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -119,8 +121,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="TTools.SAM2profiles.countRead">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAM2profiles.</span></span><span class="sig-name descname"><span class="pre">countRead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAM2profiles.countRead" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="TTools.SAMgeneral.countRead">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">countRead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMgeneral.countRead" title="Permalink to this definition"></a></dt>
 <dd><p>Takes tuple (position,CIGARstring) and returns list of mapped positions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -136,9 +138,11 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="TTools.SAM2profiles.groupCIGAR">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAM2profiles.</span></span><span class="sig-name descname"><span class="pre">groupCIGAR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cigar_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAM2profiles.groupCIGAR" title="Permalink to this definition"></a></dt>
-<dd><p>Split CIGAR string to list of tuples.</p>
+<dt class="sig sig-object py" id="TTools.SAMgeneral.groupCIGAR">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">groupCIGAR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cigar_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMgeneral.groupCIGAR" title="Permalink to this definition"></a></dt>
+<dd><p>Split CIGAR string to list of tuples. 
+Takes <code class="docutils literal notranslate"><span class="pre">&quot;3S44M1S1H&quot;</span></code> and returns 
+<code class="docutils literal notranslate"><span class="pre">[('3',</span> <span class="pre">'S'),</span> <span class="pre">('44',</span> <span class="pre">'M'),</span> <span class="pre">('1',</span> <span class="pre">'S'),</span> <span class="pre">('1',</span> <span class="pre">'H')]</span></code></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>cigar_string</strong> (<em>str</em>) – CIGAR string “”</p>
@@ -153,23 +157,14 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="TTools.SAM2profiles.reads2profile">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAM2profiles.</span></span><span class="sig-name descname"><span class="pre">reads2profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name=''</span></em>, <em class="sig-param"><span class="pre">dirPath=''</span></em>, <em class="sig-param"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAM2profiles.reads2profile" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="TTools.SAMgeneral.stripCIGAR">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">stripCIGAR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_strip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'H'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMgeneral.stripCIGAR" title="Permalink to this definition"></a></dt>
+<dd><p>Removes H from output of groupCIGAR</p>
+</dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="TTools.SAM2profiles.reads2profileDeletions">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAM2profiles.</span></span><span class="sig-name descname"><span class="pre">reads2profileDeletions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name=''</span></em>, <em class="sig-param"><span class="pre">dirPath=''</span></em>, <em class="sig-param"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></em>, <em class="sig-param"><span class="pre">expand=5</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAM2profiles.reads2profileDeletions" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="TTools.SAM2profiles.sam2profiles">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAM2profiles.</span></span><span class="sig-name descname"><span class="pre">sam2profiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">filename=''</span></em>, <em class="sig-param"><span class="pre">path=''</span></em>, <em class="sig-param"><span class="pre">geneList=[]</span></em>, <em class="sig-param"><span class="pre">toClear=''</span></em>, <em class="sig-param"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></em>, <em class="sig-param"><span class="pre">deletions=False</span></em>, <em class="sig-param"><span class="pre">expand=5</span></em>, <em class="sig-param"><span class="pre">pickle=False</span></em>, <em class="sig-param"><span class="pre">chunks=0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAM2profiles.sam2profiles" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="TTools.SAM2profiles.stripSubstitutions">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAM2profiles.</span></span><span class="sig-name descname"><span class="pre">stripSubstitutions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">match</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAM2profiles.stripSubstitutions" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="TTools.SAMgeneral.stripSubstitutions">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">stripSubstitutions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">match</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMgeneral.stripSubstitutions" title="Permalink to this definition"></a></dt>
 <dd><p>Strip substutiotns on both ends</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -185,8 +180,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="TTools.SAM2profiles.tostripCIGARfive">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAM2profiles.</span></span><span class="sig-name descname"><span class="pre">tostripCIGARfive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAM2profiles.tostripCIGARfive" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="TTools.SAMgeneral.tostripCIGARfive">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">tostripCIGARfive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMgeneral.tostripCIGARfive" title="Permalink to this definition"></a></dt>
 <dd><p>Nucleotides without alignment at the 5’ end of the read</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -202,8 +197,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="TTools.SAM2profiles.tostripCIGARthree">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAM2profiles.</span></span><span class="sig-name descname"><span class="pre">tostripCIGARthree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAM2profiles.tostripCIGARthree" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="TTools.SAMgeneral.tostripCIGARthree">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">tostripCIGARthree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMgeneral.tostripCIGARthree" title="Permalink to this definition"></a></dt>
 <dd><p>Nucleotides without alignment at the 3’ end of the read</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -218,17 +213,69 @@
 </dl>
 </dd></dl>
 
+</section>
+<section id="module-TTools.SAMtranscripts">
+<span id="ttools-samtranscripts-module"></span><h2>TTools.SAMtranscripts module<a class="headerlink" href="#module-TTools.SAMtranscripts" title="Permalink to this headline"></a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="TTools.SAM2profiles.transcript2profile">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAM2profiles.</span></span><span class="sig-name descname"><span class="pre">transcript2profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAM2profiles.transcript2profile" title="Permalink to this definition"></a></dt>
-<dd><p>Takes list of tuples position,CIGARstring) and generates profile</p>
+<dt class="sig sig-object py" id="TTools.SAMtranscripts.reads2profile">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMtranscripts.</span></span><span class="sig-name descname"><span class="pre">reads2profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name=''</span></em>, <em class="sig-param"><span class="pre">dirPath=''</span></em>, <em class="sig-param"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMtranscripts.reads2profile" title="Permalink to this definition"></a></dt>
+<dd><p>Takes list of aligned reads and transform to profile for each transctipt. Tested only for PLUS strand.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="TTools.SAM2profiles.transcript2profileDeletions">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAM2profiles.</span></span><span class="sig-name descname"><span class="pre">transcript2profileDeletions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAM2profiles.transcript2profileDeletions" title="Permalink to this definition"></a></dt>
-<dd><p>Takes list of tuples position,CIGARstring) and generates profile</p>
+<dt class="sig sig-object py" id="TTools.SAMtranscripts.reads2profileDeletions">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMtranscripts.</span></span><span class="sig-name descname"><span class="pre">reads2profileDeletions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name=''</span></em>, <em class="sig-param"><span class="pre">dirPath=''</span></em>, <em class="sig-param"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></em>, <em class="sig-param"><span class="pre">expand=5</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMtranscripts.reads2profileDeletions" title="Permalink to this definition"></a></dt>
+<dd><p>Tested only for PLUS strand.</p>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TTools.SAMtranscripts.sam2profiles">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMtranscripts.</span></span><span class="sig-name descname"><span class="pre">sam2profiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">filename=''</span></em>, <em class="sig-param"><span class="pre">path=''</span></em>, <em class="sig-param"><span class="pre">geneList=[]</span></em>, <em class="sig-param"><span class="pre">toClear=''</span></em>, <em class="sig-param"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></em>, <em class="sig-param"><span class="pre">deletions=False</span></em>, <em class="sig-param"><span class="pre">expand=5</span></em>, <em class="sig-param"><span class="pre">pickle=False</span></em>, <em class="sig-param"><span class="pre">chunks=0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMtranscripts.sam2profiles" title="Permalink to this definition"></a></dt>
+<dd><p>Tested only for PLUS strand.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TTools.SAMtranscripts.transcript2profile">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMtranscripts.</span></span><span class="sig-name descname"><span class="pre">transcript2profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMtranscripts.transcript2profile" title="Permalink to this definition"></a></dt>
+<dd><p>Takes list of tuples position,CIGARstring) and generates profile. Works with entire reads, for both strands.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TTools.SAMtranscripts.transcript2profileDeletions">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMtranscripts.</span></span><span class="sig-name descname"><span class="pre">transcript2profileDeletions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMtranscripts.transcript2profileDeletions" title="Permalink to this definition"></a></dt>
+<dd><p>Takes list of tuples position,CIGARstring) and generates profile. Not tested for MINUS strand.</p>
+</dd></dl>
+
+</section>
+<section id="module-TTools.SAMgenome">
+<span id="ttools-samgenome-module"></span><h2>TTools.SAMgenome module<a class="headerlink" href="#module-TTools.SAMgenome" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="TTools.SAMgenome.chromosome2profile3end">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">chromosome2profile3end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'FWD'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMgenome.chromosome2profile3end" title="Permalink to this definition"></a></dt>
+<dd><p>Takes list of tuples (position,CIGARstring,sequence) and generates profile</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TTools.SAMgenome.reads2genome">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">reads2genome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name=''</span></em>, <em class="sig-param"><span class="pre">dirPath=''</span></em>, <em class="sig-param"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMgenome.reads2genome" title="Permalink to this definition"></a></dt>
+<dd><p>Works for both strands, extensive testing needed.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TTools.SAMgenome.reads2genome3end">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">reads2genome3end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name=''</span></em>, <em class="sig-param"><span class="pre">dirPath=''</span></em>, <em class="sig-param"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></em>, <em class="sig-param"><span class="pre">noncoded=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMgenome.reads2genome3end" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TTools.SAMgenome.sam2genome">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">sam2genome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">filename=''</span></em>, <em class="sig-param"><span class="pre">path=''</span></em>, <em class="sig-param"><span class="pre">geneList=[]</span></em>, <em class="sig-param"><span class="pre">toClear=''</span></em>, <em class="sig-param"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></em>, <em class="sig-param"><span class="pre">pickle=False</span></em>, <em class="sig-param"><span class="pre">chunks=0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMgenome.sam2genome" title="Permalink to this definition"></a></dt>
+<dd><p>Works for both strands, extensive testing needed.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TTools.SAMgenome.sam2genome3end">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">sam2genome3end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">filename=''</span></em>, <em class="sig-param"><span class="pre">path=''</span></em>, <em class="sig-param"><span class="pre">geneList=[]</span></em>, <em class="sig-param"><span class="pre">toClear=''</span></em>, <em class="sig-param"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></em>, <em class="sig-param"><span class="pre">pickle=False</span></em>, <em class="sig-param"><span class="pre">chunks=0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.SAMgenome.sam2genome3end" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 </section>
 <section id="module-TTools.assays">
@@ -757,6 +804,20 @@ discards oligos longer than 200 nt.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TTools.methods.read_list">
+<span class="sig-prename descclassname"><span class="pre">TTools.methods.</span></span><span class="sig-name descname"><span class="pre">read_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TTools.methods.read_list" title="Permalink to this definition"></a></dt>
+<dd><p>Read list from file. Each row becomes item in the list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> – str</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
