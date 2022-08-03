@@ -139,3 +139,23 @@ def countDeletion(i=tuple(), expand=0):
         cumsum += i
     output = (output + position) * outputMask
     return output[output != 0]
+
+def parseNoncoded(d=dict(), minLen=3):
+    df_output = pd.DataFrame()
+    for name in d.keys():
+        df_temp = pd.DataFrame(d[name], columns=['position','end'])
+        df_temp = df_temp[df_temp['end'].str.len() >= minLen].sort_values('end') #keep only minLen ends
+        df_short = pd.DataFrame()
+        for n,df in df_temp.groupby('end'):
+            df_short = df_short.append(df.groupby('position')['end'].count().sort_index().rename(n))
+        
+        df_short = df_short.T
+        df_short['chr'] = name
+        df_output = pd.concat([df_output, df_short.reset_index()])
+
+    return df_output.reset_index(drop=True)
+
+def selectPolyA(df=pd.DataFrame()):
+    #select columns with at least "AAA" and "A" content above 0.75
+    cols = df.columns[(df.columns.str.contains("AAA"))&((df.columns.to_series().apply(tt.methods.letterContent)>0.75))]
+    return df[['index','chr']+cols.tolist()]

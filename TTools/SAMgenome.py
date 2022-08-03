@@ -205,7 +205,7 @@ def sam2genome(filename="", path='', geneList=[], toClear='', df_details=pd.Data
     print("Done.")
 
 def sam2genome3end(filename="", path='', geneList=[], toClear='', df_details=pd.DataFrame(),
-                pickle=False,chunks=0):
+                pickle=False,chunks=0,noncoded=True):
     # making working directory
     name = filename.replace(".sam", "")
     if toClear:
@@ -267,7 +267,8 @@ def sam2genome3end(filename="", path='', geneList=[], toClear='', df_details=pd.
     #Reads to profiles
     df_profiles_fwd, df_profiles_rev, log, noncoded_fwd, noncoded_rev = reads2genome3end(name=name, dirPath=dirPath,df_details=df_details)
     
-    ### TODO - handle noncoded
+    noncoded_fwd = selectPolyA(parseNoncoded(noncoded_fwd))
+    noncoded_rev = selectPolyA(parseNoncoded(noncoded_rev))
     
     #save output
     if pickle==True:
@@ -276,6 +277,9 @@ def sam2genome3end(filename="", path='', geneList=[], toClear='', df_details=pd.
     elif pickle==False:
         df_profiles_fwd.to_csv(path + name + "_PROFILES_3end_fwd.csv")
         df_profiles_rev.to_csv(path + name + "_PROFILES_3end_rev.csv")
+    if noncoded==True:
+        noncoded_fwd.to_csv(path + name + "_noncoded_3end_fwd.csv")
+        noncoded_rev.to_csv(path + name + "_noncoded_3end_rev.csv")
     #save log
     with open(path + name + "_PROFILES_3end.log", "w") as log_file:
         for row in log:
@@ -283,6 +287,8 @@ def sam2genome3end(filename="", path='', geneList=[], toClear='', df_details=pd.
 
     # clean
     os.chdir(path)
-#     shutil.rmtree(name + timestamp)
+    shutil.rmtree(name + timestamp)
 
     print("Done.")
+
+    return noncoded_rev

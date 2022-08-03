@@ -125,6 +125,10 @@ def rollingGC(s=pd.Series, window=10): #rolling window, smoothing of data
     #be aware of win_type and center parameters
     return s.replace(['G','C'],1).replace(['T','A'],0).rolling(window=window, win_type='boxcar',center=False).mean()
 
+def letterContent(s="", letter="A"):
+    return round(len([i for i in s if i==letter])/len(s),2)
+
+    
 ################################################
 #############        importing data
 
