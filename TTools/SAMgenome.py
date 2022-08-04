@@ -17,8 +17,6 @@ def chromosome2profile3end(l=[], length=int(), strand='FWD'):
     :return: profile, noncoded
     :rtype: np.array, list of tuples
 
-    Examples
-    --------
     >>> chromosome2profile3end(l=[(10,"3S15M1D9M2S","TTTGCGCAGTCGTGCGGGGCGCAGCGCCC")],length=50,strand="FWD")
     (0     0.0
     1     0.0
@@ -184,7 +182,7 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),noncod
 ####################################################
 
 def sam2genome(filename="", path='', toClear='', pickle=False,chunks=0):
-    '''Function handling SAM files and generating profiles
+    '''Function handling SAM files and generating profiles. Executed using wrapping script SAM2profilesGenomic.py.
 
     :param filename: 
     :type filename: str
@@ -277,7 +275,7 @@ def sam2genome(filename="", path='', toClear='', pickle=False,chunks=0):
     print("Done.")
 
 def sam2genome3end(filename="", path='', toClear='', pickle=False,chunks=0,noncoded=True):
-    '''Function handling SAM files and generating profiles for the 3' end of reads
+    '''Function handling SAM files and generating profiles for the 3' end of reads. Executed using wrapping script SAM2profilesGenomic.py.
 
     :param filename:
     :type filename: str

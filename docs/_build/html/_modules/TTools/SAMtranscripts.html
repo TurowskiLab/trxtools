@@ -152,7 +152,28 @@
 
 <div class="viewcode-block" id="sam2profiles"><a class="viewcode-back" href="../../TTools.html#TTools.SAMtranscripts.sam2profiles">[docs]</a><span class="k">def</span> <span class="nf">sam2profiles</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">geneList</span><span class="o">=</span><span class="p">[],</span> <span class="n">toClear</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">df_details</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span>
                  <span class="n">deletions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">pickle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">chunks</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Tested only for PLUS strand.&#39;&#39;&#39;</span>
+    <span class="sd">&#39;&#39;&#39;Function handling SAM files and generating profiles. Executed using wrapping script SAM2profiles.py.</span>
+
+<span class="sd">    :param filename: </span>
+<span class="sd">    :type filename: str</span>
+<span class="sd">    :param path: </span>
+<span class="sd">    :type path: str</span>
+<span class="sd">    :param geneList: list of transcript to be selected</span>
+<span class="sd">    :type geneList: list</span>
+<span class="sd">    :param toClear: element of filename to be removed, defaults to &#39;&#39;</span>
+<span class="sd">    :type toClear: str, optional</span>
+<span class="sd">    :param df_details: Details of transcripts</span>
+<span class="sd">    :type df_details: DataFrame</span>
+<span class="sd">    :param deletions: Generate profile of deletions, defaults to False</span>
+<span class="sd">    :type deletions: bool, optional</span>
+<span class="sd">    :param expand: Expand deletions, defaults to 5</span>
+<span class="sd">    :type expand: int, optional</span>
+<span class="sd">    :param pickle: save output in pickle format, defaults to False</span>
+<span class="sd">    :type pickle: bool, optional</span>
+<span class="sd">    :param chunks: Read SAM file in chunks, defaults to 0</span>
+<span class="sd">    :type chunks: int, optional</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="c1"># making working directory</span>
     <span class="n">name</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.sam&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">toClear</span><span class="p">:</span>

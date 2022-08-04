@@ -87,7 +87,28 @@ def reads2profileDeletions(name=str(), dirPath=str(), df_details=pd.DataFrame(),
 
 def sam2profiles(filename="", path='', geneList=[], toClear='', df_details=pd.DataFrame(),
                  deletions=False, expand=5, pickle=False,chunks=0):
-    '''Tested only for PLUS strand.'''
+    '''Function handling SAM files and generating profiles. Executed using wrapping script SAM2profiles.py.
+
+    :param filename: 
+    :type filename: str
+    :param path: 
+    :type path: str
+    :param geneList: list of transcript to be selected
+    :type geneList: list
+    :param toClear: element of filename to be removed, defaults to ''
+    :type toClear: str, optional
+    :param df_details: Details of transcripts
+    :type df_details: DataFrame
+    :param deletions: Generate profile of deletions, defaults to False
+    :type deletions: bool, optional
+    :param expand: Expand deletions, defaults to 5
+    :type expand: int, optional
+    :param pickle: save output in pickle format, defaults to False
+    :type pickle: bool, optional
+    :param chunks: Read SAM file in chunks, defaults to 0
+    :type chunks: int, optional
+
+    '''
     # making working directory
     name = filename.replace(".sam", "")
     if toClear:
