@@ -6,7 +6,43 @@ from TTools.SAMtranscripts import transcript2profile
 ####################################################
 
 def chromosome2profile3end(l=[], length=int(), strand='FWD'):
-    '''Takes list of tuples (position,CIGARstring,sequence) and generates profile'''
+    '''Generates profile for the 3' ends of reads and saves position of non-coded end
+
+    :param l: list of triple tuples (position, cigar_string, sequence), defaults to []
+    :type l: list
+    :param length: length of chromosome
+    :type length: int
+    :param strand: ``'FWD'`` or ``'REV'``, defaults to 'FWD'
+    :type strand: str, optional
+    :return: profile, noncoded
+    :rtype: np.array, list of tuples
+
+    Examples
+    --------
+    >>> chromosome2profile3end(l=[(10,"3S15M1D9M2S","TTTGCGCAGTCGTGCGGGGCGCAGCGCCC")],length=50,strand="FWD")
+    (0     0.0
+    1     0.0
+    ...
+    34    0.0
+    35    1.0
+    36    0.0
+    ...
+    50    0.0
+    dtype: float64,
+    [(35, 'CC')])
+    >>> chromosome2profile3end(l=[(40,"3S15M1D9M2S","TTTGCGCAGTCGTGCGGGGCGCAGCGCCC")],length=50,strand="REV")
+    (0     0.0
+    1     0.0
+    ...
+    39    0.0
+    40    1.0
+    41    0.0
+    ...
+    50    0.0
+    dtype: float64,
+    [(40, 'AAA')])
+    '''
+
     hits = []
     noncoded = []
     for (position, cigar_string, sequence) in l:
@@ -40,7 +76,17 @@ def chromosome2profile3end(l=[], length=int(), strand='FWD'):
 ####################################################
 
 def reads2genome(name=str(), dirPath=str(), df_details=pd.DataFrame()):
-    '''Works for both strands, extensive testing needed.'''
+    '''Function used by sam2genome. Works for both strands.
+
+    :param name: name of experiment
+    :type name: str
+    :param dirPath:
+    :type dirPath: str
+    :param df_details: lengths of chromosomes
+    :type df_details: DataFrame
+    :return: output_df_fwd, output_df_rev, log
+    :rtype: DataFrame, DataFrame, list
+    '''
 
     cols = ['score', 'name', 'position', 'CIGAR', 'sequence', 'details']
     df_input_fwd = pd.read_csv(dirPath + "/" + name + "_fwd.tab", sep="\t", names=cols)
@@ -76,6 +122,20 @@ def reads2genome(name=str(), dirPath=str(), df_details=pd.DataFrame()):
 
 
 def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),noncoded=True):
+    '''Function used by sam2genome3end. Works for both strands.
+
+    :param name: name of experiment
+    :type name: str
+    :param dirPath:
+    :type dirPath: str
+    :param df_details: lengths of chromosomes
+    :type df_details: DataFrame
+    :param noncoded: If True then will parse and save non-coded ends, defaults to True
+    :type noncoded: bool, optional
+    :return: output_df_fwd, output_df_rev, log, noncoded_fwd, noncoded_rev
+    :rtype: DataFrame, DataFrame, list, DataFrame, DataFrame
+    '''
+
     cols = ['score', 'name', 'position', 'CIGAR', 'sequence', 'details']
     df_input_fwd = pd.read_csv(dirPath + "/" + name + "_fwd.tab", sep="\t", names=cols)
     df_input_rev = pd.read_csv(dirPath + "/" + name + "_rev.tab", sep="\t", names=cols)
@@ -85,7 +145,8 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),noncod
     noncoded_fwd = {}
     noncoded_rev = {}
     log = []
-    #strand "+"
+
+    # strand "+"
     for n, df in df_input_fwd.groupby('name'):
         try:
             length = df_details.loc[n]['length']
@@ -100,7 +161,7 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),noncod
         except:
             log.append(n + " - FWD profile and/or list of noncoded ends FAILED")
     
-    #strand "-"
+    # strand "-"
     for n, df in df_input_rev.groupby('name'):
         try:
             length = df_details.loc[n]['length']
@@ -122,9 +183,20 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),noncod
 #              final functions (level 0)           #
 ####################################################
 
-def sam2genome(filename="", path='', geneList=[], toClear='', df_details=pd.DataFrame(),
-                pickle=False,chunks=0):
-    '''Works for both strands, extensive testing needed.'''
+def sam2genome(filename="", path='', toClear='', pickle=False,chunks=0):
+    '''Function handling SAM files and generating profiles
+
+    :param filename: 
+    :type filename: str
+    :param path: 
+    :type path: str
+    :param toClear: element of filename to be removed, defaults to ''
+    :type toClear: str, optional
+    :param pickle: save output in pickle format, defaults to False
+    :type pickle: bool, optional
+    :param chunks: Read SAM file in chunks, defaults to 0
+    :type chunks: int, optional
+    '''
     # making working directory
     name = filename.replace(".sam", "")
     if toClear:
@@ -204,8 +276,23 @@ def sam2genome(filename="", path='', geneList=[], toClear='', df_details=pd.Data
 
     print("Done.")
 
-def sam2genome3end(filename="", path='', geneList=[], toClear='', df_details=pd.DataFrame(),
-                pickle=False,chunks=0,noncoded=True):
+def sam2genome3end(filename="", path='', toClear='', pickle=False,chunks=0,noncoded=True):
+    '''Function handling SAM files and generating profiles for the 3' end of reads
+
+    :param filename:
+    :type filename: str
+    :param path: 
+    :type path: str
+    :param toClear: element of filename to be removed, defaults to ''
+    :type toClear: str, optional
+    :param pickle: save output in pickle format, defaults to False
+    :type pickle: bool, optional
+    :param chunks: Read SAM file in chunks, defaults to 0
+    :type chunks: int, optional
+    :param noncoded: Process and save non-coded ends, defaults to True
+    :type noncoded: bool, optional
+    '''
+
     # making working directory
     name = filename.replace(".sam", "")
     if toClear:
@@ -265,11 +352,16 @@ def sam2genome3end(filename="", path='', geneList=[], toClear='', df_details=pd.
     print("Reads selected.")
 
     #Reads to profiles
-    df_profiles_fwd, df_profiles_rev, log, noncoded_fwd, noncoded_rev = reads2genome3end(name=name, dirPath=dirPath,df_details=df_details)
+    df_profiles_fwd, df_profiles_rev, log, noncoded_fwd, noncoded_rev = reads2genome3end(name=name, dirPath=dirPath,df_details=df_details,noncoded=noncoded)
     
-    noncoded_fwd = selectPolyA(parseNoncoded(noncoded_fwd))
-    noncoded_rev = selectPolyA(parseNoncoded(noncoded_rev))
+    #parse raw non-coded ends, keep only >=3 nt long
+    noncoded_fwd = parseNoncoded(noncoded_fwd, minLen=3)
+    noncoded_rev = parseNoncoded(noncoded_rev, minLen=3)
     
+    #select only polyA reads (>=3 and 75% of A content) and prepare profile
+    noncoded_profile_fwd = noncoded2profile(selectPolyA(noncoded_fwd),df_details=df_details)
+    noncoded_profile_rev = noncoded2profile(selectPolyA(noncoded_rev),df_details=df_details)
+
     #save output
     if pickle==True:
         df_profiles_fwd.to_pickle(path + name + "_PROFILES_3end_fwd.pcl")
@@ -278,8 +370,11 @@ def sam2genome3end(filename="", path='', geneList=[], toClear='', df_details=pd.
         df_profiles_fwd.to_csv(path + name + "_PROFILES_3end_fwd.csv")
         df_profiles_rev.to_csv(path + name + "_PROFILES_3end_rev.csv")
     if noncoded==True:
-        noncoded_fwd.to_csv(path + name + "_noncoded_3end_fwd.csv")
-        noncoded_rev.to_csv(path + name + "_noncoded_3end_rev.csv")
+        # noncoded_fwd.to_csv(path + name + "_noncoded_3end_fwd.csv")
+        # noncoded_rev.to_csv(path + name + "_noncoded_3end_rev.csv")
+        noncoded_profile_fwd.to_csv(path + name + "_noncoded_PROFILES_3end_fwd.csv")
+        noncoded_profile_rev.to_csv(path + name + "_noncoded_PROFILES_3end_rev.csv")
+    
     #save log
     with open(path + name + "_PROFILES_3end.log", "w") as log_file:
         for row in log:
@@ -290,5 +385,3 @@ def sam2genome3end(filename="", path='', geneList=[], toClear='', df_details=pd.
     shutil.rmtree(name + timestamp)
 
     print("Done.")
-
-    return noncoded_rev

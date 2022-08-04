@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TTools.assays &mdash; TTools 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> TTools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../TTools.html">TTools package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">TTools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>TTools.assays</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for TTools.assays</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">TTools.methods</span> <span class="k">as</span> <span class="nn">ttm</span>
+
+<span class="c1">### ASSAYS (ElongationAssay)</span>
+
+<span class="c1">################################################</span>
+<span class="c1">#############        input</span>
+
+<div class="viewcode-block" id="findPrimer"><a class="viewcode-back" href="../../TTools.html#TTools.assays.findPrimer">[docs]</a><span class="k">def</span> <span class="nf">findPrimer</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="nb">str</span><span class="p">(),</span> <span class="n">query</span><span class="o">=</span><span class="nb">str</span><span class="p">()):</span>
+    <span class="sd">&#39;&#39;&#39;Find query sequence within given sequence</span>
+
+<span class="sd">    :param seq: str() containing sequence</span>
+<span class="sd">    :param query: str() within searched sequences</span>
+<span class="sd">    :return: (start,stop)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">query</span><span class="p">:</span>
+        <span class="n">primerStart</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">elif</span> <span class="n">query</span><span class="p">:</span>
+        <span class="n">primerStart</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+    <span class="n">primerStop</span> <span class="o">=</span> <span class="n">primerStart</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">primerStart</span><span class="p">,</span> <span class="n">primerStop</span><span class="p">)</span></div>
+
+<span class="c1">################################################</span>
+<span class="c1">#############        selection</span>
+
+<div class="viewcode-block" id="sequenceConstrain"><a class="viewcode-back" href="../../TTools.html#TTools.assays.sequenceConstrain">[docs]</a><span class="k">def</span> <span class="nf">sequenceConstrain</span><span class="p">(</span><span class="n">structure</span><span class="o">=</span><span class="nb">str</span><span class="p">(),</span> <span class="n">stall</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">RNAprimer</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Returns sequence constrained with the 5prime RNA primer</span>
+
+<span class="sd">    :param structure: str()</span>
+<span class="sd">    :param stall: str() single letter</span>
+<span class="sd">    :param RNAprimer: str()</span>
+<span class="sd">    :return: str() with sequence constrains for folding algorithm</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">stallComplement</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span>  <span class="c1"># use nucleotides that are not present in stall sequence</span>
+                       <span class="s2">&quot;T&quot;</span><span class="p">:</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span>  <span class="c1"># IUPAC nucleotide code</span>
+                       <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="s2">&quot;D&quot;</span><span class="p">,</span>
+                       <span class="s2">&quot;G&quot;</span><span class="p">:</span> <span class="s2">&quot;H&quot;</span><span class="p">,</span>
+                       <span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="s2">&quot;N&quot;</span><span class="p">}</span>
+
+    <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span>
+    <span class="n">length2fill</span> <span class="o">=</span> <span class="n">length</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">RNAprimer</span><span class="p">)</span>
+    <span class="n">nt</span> <span class="o">=</span> <span class="n">stallComplement</span><span class="p">[</span><span class="n">stall</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">RNAprimer</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">RNAprimer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span> <span class="n">length2fill</span> <span class="o">*</span> <span class="n">nt</span>  <span class="c1"># lower provide strict constrain</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">length2fill</span> <span class="o">*</span> <span class="n">nt</span></div>
+
+<div class="viewcode-block" id="structureFile"><a class="viewcode-back" href="../../TTools.html#TTools.assays.structureFile">[docs]</a><span class="k">def</span> <span class="nf">structureFile</span><span class="p">(</span><span class="n">structure</span><span class="o">=</span><span class="nb">str</span><span class="p">(),</span> <span class="n">stall</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">RNAprimer</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Saves structure file in current directory</span>
+
+<span class="sd">    :param structure: str()</span>
+<span class="sd">    :param stall: str()</span>
+<span class="sd">    :param RNAprimer: str()</span>
+<span class="sd">    :return: True</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;structure.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">structure</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># saves structure format</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">sequenceConstrain</span><span class="p">(</span><span class="n">structure</span><span class="o">=</span><span class="n">structure</span><span class="p">,</span> <span class="n">stall</span><span class="o">=</span><span class="n">stall</span><span class="p">,</span>
+                              <span class="n">RNAprimer</span><span class="o">=</span><span class="n">RNAprimer</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># saves nt constrains, N&#39;s if no RNAprimer</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="stalled"><a class="viewcode-back" href="../../TTools.html#TTools.assays.stalled">[docs]</a><span class="k">def</span> <span class="nf">stalled</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="nb">str</span><span class="p">(),</span> <span class="n">stall</span><span class="o">=</span><span class="s2">&quot;AAA&quot;</span><span class="p">,</span> <span class="n">primer</span><span class="o">=</span><span class="nb">str</span><span class="p">()):</span>
+    <span class="sd">&#39;&#39;&#39;Finds and returns stalled sequence</span>
+
+<span class="sd">    :param seq: str()</span>
+<span class="sd">    :param stall: str() default &quot;AAA&quot;</span>
+<span class="sd">    :param primer: str()</span>
+<span class="sd">    :return: stalled sequence, str</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="p">(</span><span class="n">primerStart</span><span class="p">,</span> <span class="n">primerStop</span><span class="p">)</span> <span class="o">=</span> <span class="n">findPrimer</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">primer</span><span class="p">)</span>
+    <span class="n">stall</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">stall</span><span class="p">,</span> <span class="n">primerStop</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">seq</span><span class="p">[:</span><span class="n">stall</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="extruded"><a class="viewcode-back" href="../../TTools.html#TTools.assays.extruded">[docs]</a><span class="k">def</span> <span class="nf">extruded</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="nb">str</span><span class="p">(),</span> <span class="n">buried</span><span class="o">=</span><span class="mi">13</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    :param seq: str()</span>
+<span class="sd">    :param buried: int() length of sequence buried within RNAP</span>
+<span class="sd">    :return: Extruded sequence, str</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">seq</span><span class="p">[:</span><span class="o">-</span><span class="n">buried</span><span class="p">]</span></div>
+
+
+<span class="c1">################################################</span>
+<span class="c1">#############        ordering</span>
+
+<div class="viewcode-block" id="templateDNA"><a class="viewcode-back" href="../../TTools.html#TTools.assays.templateDNA">[docs]</a><span class="k">def</span> <span class="nf">templateDNA</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="nb">str</span><span class="p">(),</span> <span class="n">overhang5end</span><span class="o">=</span><span class="nb">str</span><span class="p">()):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    :param seq: str() sequence of RNA</span>
+<span class="sd">    :param overhang5end: str() sequence of the 5&#39;end DNA ovethang</span>
+<span class="sd">    :return: DNA sequence of template strand, str</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">ttm</span><span class="o">.</span><span class="n">reverse_complement_RNA</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span> <span class="o">+</span> <span class="n">overhang5end</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="nonTemplateDNA"><a class="viewcode-back" href="../../TTools.html#TTools.assays.nonTemplateDNA">[docs]</a><span class="k">def</span> <span class="nf">nonTemplateDNA</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">primer</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    :param seq: str() sequence</span>
+<span class="sd">    :param primer: str() sequence</span>
+<span class="sd">    :return: DNA sequence of non-template strand, str</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">seq</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="n">primer</span> <span class="o">=</span> <span class="n">primer</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+    <span class="p">(</span><span class="n">primerStart</span><span class="p">,</span> <span class="n">primerStop</span><span class="p">)</span> <span class="o">=</span> <span class="n">findPrimer</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">primer</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">seq</span><span class="p">[</span><span class="n">primerStop</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span></div>
+
+
+<div class="viewcode-block" id="bulkInputIDT"><a class="viewcode-back" href="../../TTools.html#TTools.assays.bulkInputIDT">[docs]</a><span class="k">def</span> <span class="nf">bulkInputIDT</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()):</span>
+    <span class="sd">&#39;&#39;&#39;Tranforms dataframe with colums &quot;template&quot; and &quot;non-template&quot; and prepares table to be used as bulk input</span>
+<span class="sd">    discards oligos longer than 200 nt.</span>
+
+<span class="sd">    :param data: DataFrame()</span>
+<span class="sd">    :return: DataFrame with sequences to order</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="c1"># copy data</span>
+    <span class="n">working</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">working</span><span class="p">[</span><span class="s1">&#39;template&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;template&#39;</span><span class="p">]</span>
+    <span class="n">working</span><span class="p">[</span><span class="s1">&#39;non-template&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;non-template&#39;</span><span class="p">]</span>
+
+    <span class="c1"># selecting DNA oligos that can be ordered as DNA oligo</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">working</span><span class="p">[</span><span class="n">working</span><span class="p">[</span>
+                              <span class="s1">&#39;non-template&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">200</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; constructs has been discarded due to length requirement (200 nt)&quot;</span><span class="p">)</span>
+    <span class="n">working</span> <span class="o">=</span> <span class="n">working</span><span class="p">[</span><span class="n">working</span><span class="p">[</span><span class="s1">&#39;non-template&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mi">200</span><span class="p">]</span>
+
+    <span class="c1"># table to order</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">working</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;sequence&#39;</span><span class="p">],</span> <span class="n">data</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;template&quot;</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_template&quot;</span><span class="p">))</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;sequence&#39;</span><span class="p">],</span> <span class="n">data</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;non-template&quot;</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_non-temp&quot;</span><span class="p">))</span>
+
+    <span class="c1"># synthesis scale</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;25nm&quot;</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">][</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;sequence&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">60</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;100nm&#39;</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">][</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;sequence&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;250nm&#39;</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">][</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;sequence&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;4nmU&#39;</span>
+
+    <span class="c1"># purification</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;purification&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;STD&quot;</span>
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="testScaffold"><a class="viewcode-back" href="../../TTools.html#TTools.assays.testScaffold">[docs]</a><span class="k">def</span> <span class="nf">testScaffold</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span> <span class="n">overhang5end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">RNA_primer</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Prints scaffold to test before ordering</span>
+
+<span class="sd">    :param data: DataFrame()</span>
+<span class="sd">    :param overhang5end: str() overhang to shift sequences</span>
+<span class="sd">    :param RNA_primer: str() sequence</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;template&#39;</span><span class="p">]</span>
+        <span class="n">nonTemplate</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;non-template&#39;</span><span class="p">]</span>
+        <span class="n">shift</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">overhang5end</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">template</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">shift</span> <span class="o">+</span> <span class="n">RNA_primer</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">nonTemplate</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="toOrder"><a class="viewcode-back" href="../../TTools.html#TTools.assays.toOrder">[docs]</a><span class="k">def</span> <span class="nf">toOrder</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span> <span class="n">buried</span><span class="o">=</span><span class="s2">&quot;GUCUGUUUUGUGG&quot;</span><span class="p">,</span> <span class="n">stallFull</span><span class="o">=</span><span class="s2">&quot;AAA&quot;</span><span class="p">,</span> <span class="n">afterStall</span><span class="o">=</span><span class="s2">&quot;TGATCGGTAC&quot;</span><span class="p">,</span>
+            <span class="n">overhang5end</span><span class="o">=</span><span class="s2">&quot;TGA&quot;</span><span class="p">,</span> <span class="n">RNA_primer</span><span class="o">=</span><span class="s2">&quot;AGGCCGAAA&quot;</span><span class="p">,</span> <span class="n">bulkInput</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lengthMax</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Transfers folding function to DNA sequences</span>
+
+<span class="sd">    :param data: DataFrame()</span>
+<span class="sd">    :param buried: str() sequence</span>
+<span class="sd">    :param stallFull: str() sequence</span>
+<span class="sd">    :param afterStall: str() sequence</span>
+<span class="sd">    :param overhang5end: str() sequence</span>
+<span class="sd">    :param RNA_primer: str() sequence</span>
+<span class="sd">    :param bulkInput: boolean() default True</span>
+<span class="sd">    :param test: boolean() default True</span>
+<span class="sd">    :param lengthMax: int() default 200</span>
+<span class="sd">    :return: DataFrame of sequences to order</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">buried</span> <span class="o">=</span> <span class="n">buried</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">)</span>
+    <span class="n">stallFull</span> <span class="o">=</span> <span class="n">stallFull</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">)</span>
+    <span class="n">afterStall</span> <span class="o">=</span> <span class="n">afterStall</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">)</span>
+    <span class="n">RNA_primer</span> <span class="o">=</span> <span class="n">RNA_primer</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;length_extruded&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;sequence&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span>
+
+    <span class="c1"># preparing output data</span>
+    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;stalled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;sequence&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">buried</span>
+    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;runoff&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;stalled&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">stallFull</span> <span class="o">+</span> <span class="n">afterStall</span>
+    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;non-template&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;runoff&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">nonTemplateDNA</span><span class="p">,</span> <span class="n">primer</span><span class="o">=</span><span class="n">RNA_primer</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;T&quot;</span><span class="p">)</span>
+    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;template&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;runoff&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">templateDNA</span><span class="p">,</span> <span class="n">overhang5end</span><span class="o">=</span><span class="n">overhang5end</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">test</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">testScaffold</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">overhang5end</span><span class="o">=</span><span class="n">overhang5end</span><span class="p">,</span> <span class="n">RNA_primer</span><span class="o">=</span><span class="n">RNA_primer</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">bulkInput</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">bulkInputIDT</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Tomasz W. Turowski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
