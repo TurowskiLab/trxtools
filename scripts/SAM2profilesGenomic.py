@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from TTools.SAMgenome import sam2genome, sam2genome3end
 import os, argparse
-import pandas as pd
 import TTools as tt
 
 usage = "Generates genomic profiles from SAM files."
