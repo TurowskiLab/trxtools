@@ -364,14 +364,16 @@ def sam2genome3end(filename="", path='', toClear='', pickle=False,chunks=0,nonco
     if pickle==True:
         df_profiles_fwd.to_pickle(path + name + "_PROFILES_3end_fwd.pcl")
         df_profiles_rev.to_pickle(path + name + "_PROFILES_3end_rev.pcl")
+        if noncoded==True:
+            noncoded_profile_fwd.to_pickle(path + name + "_noncoded_PROFILES_3end_fwd.pcl")
+            noncoded_profile_rev.to_pickle(path + name + "_noncoded_PROFILES_3end_rev.pcl")
+    
     elif pickle==False:
         df_profiles_fwd.to_csv(path + name + "_PROFILES_3end_fwd.csv")
         df_profiles_rev.to_csv(path + name + "_PROFILES_3end_rev.csv")
-    if noncoded==True:
-        # noncoded_fwd.to_csv(path + name + "_noncoded_3end_fwd.csv")
-        # noncoded_rev.to_csv(path + name + "_noncoded_3end_rev.csv")
-        noncoded_profile_fwd.to_csv(path + name + "_noncoded_PROFILES_3end_fwd.csv")
-        noncoded_profile_rev.to_csv(path + name + "_noncoded_PROFILES_3end_rev.csv")
+        if noncoded==True:
+            noncoded_profile_fwd.to_csv(path + name + "_noncoded_PROFILES_3end_fwd.csv")
+            noncoded_profile_rev.to_csv(path + name + "_noncoded_PROFILES_3end_rev.csv")
     
     #save log
     with open(path + name + "_PROFILES_3end.log", "w") as log_file:
