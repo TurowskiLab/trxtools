@@ -39,7 +39,11 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Scripts</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#main-scripts">Main scripts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#main-scripts">Main scripts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sam2profilesgenomic-py">SAM2profilesGenomic.py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sam2profiles-py">SAM2profiles.py</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#supporting-scripts">Supporting scripts</a></li>
 </ul>
 </li>
@@ -76,8 +80,54 @@
 <h1>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline"></a></h1>
 <section id="main-scripts">
 <h2>Main scripts<a class="headerlink" href="#main-scripts" title="Permalink to this headline"></a></h2>
-<p>SAM2profiles.py</p>
-<p>SAM2profilesGenomic.py</p>
+<section id="sam2profilesgenomic-py">
+<h3>SAM2profilesGenomic.py<a class="headerlink" href="#sam2profilesgenomic-py" title="Permalink to this headline"></a></h3>
+<blockquote>
+<div><p>usage: Generates genomic profiles from SAM files.</p>
+<p>optional arguments:
+-h, –help           show this help message and exit</p>
+<p>Options for input files:
+-f FILE              SAM file (default: None)
+-u {read,3end,5end}  Generate profiles using reads (read) or the 3’ ends (end) (default: 3end)
+-n                   Save non-coded polyA ends. Can be used ONLY with: -u 3end (default: False)
+-r                   Save all non-coded ends. Can be used ONLY with: -u 3end (default: False)
+–csv                Save output as csv. Default is pickle (default: False)
+-c TOCLEAR           String of signs to be cleared from the name of SAM file (default: _comp_flexbar_STARAligned.out)
+–chunks CHUNKS      Divide list of genes into a chunks of given size (default: 0)</p>
+</div></blockquote>
+</section>
+<section id="sam2profiles-py">
+<h3>SAM2profiles.py<a class="headerlink" href="#sam2profiles-py" title="Permalink to this headline"></a></h3>
+<blockquote>
+<div><p>usage: Generates profiles from SAM files for a list of given transcripts.</p>
+<p>optional arguments:
+-h, –help       show this help message and exit</p>
+<p>Options for input files:
+-f FILE          SAM file (default: None)
+-l FILE          list of genes file (default: None)
+-d DETAILS_FILE  file with transcriptome details. (default:</p>
+<blockquote>
+<div><p>/homes/tollervey/COVID19/databases/transcriptome_details_biomart_tRNA_rRNA_UPDATEJan2021.tab)</p>
+</div></blockquote>
+<dl class="option-list">
+<dt><kbd><span class="option">--del</span></kbd></dt>
+<dd><p>Generate additional profiles for deletions (default: False)</p>
+</dd>
+<dt><kbd><span class="option">-p</span></kbd></dt>
+<dd><p>SAve output as pickle DataFrame (default: False)</p>
+</dd>
+<dt><kbd><span class="option">-e <var>EXPAND</var></span></kbd></dt>
+<dd><p>For deletions position can be expanded by the value on each side (e=5 gives 10 nt long) (default: 5)</p>
+</dd>
+<dt><kbd><span class="option">-c <var>TOCLEAR</var></span></kbd></dt>
+<dd><p>String of signs to be cleared from the name of SAM file (default: _comp_flexbar_STARAligned.out)</p>
+</dd>
+<dt><kbd><span class="option">--chunks <var>CHUNKS</var></span></kbd></dt>
+<dd><p>Divide list of genes into a chunks of given size (default: 0)</p>
+</dd>
+</dl>
+</div></blockquote>
+</section>
 </section>
 <section id="supporting-scripts">
 <h2>Supporting scripts<a class="headerlink" href="#supporting-scripts" title="Permalink to this headline"></a></h2>
