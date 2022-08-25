@@ -18,7 +18,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="TTools package" href="TTools.html" /> 
+    <link rel="next" title="Scripts" href="scripts.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -37,7 +37,10 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="TTools.html">TTools package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripts</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="TTools.html">Modules</a></li>
 </ul>
 
         </div>
@@ -66,9 +69,32 @@
              
   <section id="ttools">
 <h1>TTools<a class="headerlink" href="#ttools" title="Permalink to this headline"></a></h1>
+<p>TTools was initiated as a storage for functions and scripts using in Turowski Lab to conduct various bioinformatics.
+There is no intention to create a comprehensive package that can be operated by non-experienced user, but some scripts are easy to run for everyone.
+Importantly the package provides useful functions for skilled individuals.</p>
+<p>Major focus is put on postprocessing of high-troughput sequencing data originating from the followin methods:</p>
+<ul class="simple">
+<li><p>CRAC/CLIP</p></li>
+<li><p>RNA-seq</p></li>
+<li><p>tRNA-seq</p></li>
+<li><p>NET-seq</p></li>
+<li><p>ChIP-seq</p></li>
+</ul>
+<p>Some functions in the package use a specific file naming system:</p>
+<p><code class="docutils literal notranslate"><span class="pre">'expID',</span> <span class="pre">'expDate',</span> <span class="pre">'protein',</span> <span class="pre">'condition1',</span> <span class="pre">'condition2',</span> <span class="pre">'condition3'</span></code></p>
+<p>i.e. <code class="docutils literal notranslate"><span class="pre">C123_JK050420_POLR2A-FLAG_wt_arsenite30min</span></code> will be used for an experiment <code class="docutils literal notranslate"><span class="pre">C123</span></code> conducted by a person <code class="docutils literal notranslate"><span class="pre">JK</span></code> on <code class="docutils literal notranslate"><span class="pre">020420</span></code>. This is puldown with <code class="docutils literal notranslate"><span class="pre">POLR2A-FLAG</span></code> in <code class="docutils literal notranslate"><span class="pre">wt</span></code> cells after <code class="docutils literal notranslate"><span class="pre">arsenite30min</span></code></p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="TTools.html">TTools package</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="scripts.html#main-scripts">Main scripts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scripts.html#supporting-scripts">Supporting scripts</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="TTools.html">Modules</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="TTools.html#module-TTools.SAMgeneral">TTools.SAMgeneral module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="TTools.html#module-TTools.SAMtranscripts">TTools.SAMtranscripts module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="TTools.html#module-TTools.SAMgenome">TTools.SAMgenome module</a></li>
@@ -97,7 +123,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="TTools.html" class="btn btn-neutral float-right" title="TTools package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="scripts.html" class="btn btn-neutral float-right" title="Scripts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
