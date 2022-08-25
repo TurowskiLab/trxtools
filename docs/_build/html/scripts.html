@@ -44,7 +44,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#sam2profiles-py">SAM2profiles.py</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#supporting-scripts">Supporting scripts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#supporting-scripts">Supporting scripts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#csv2pickle-py">csv2pickle.py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mergesalmon-py">mergeSalmon.py</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -82,34 +86,49 @@
 <h2>Main scripts<a class="headerlink" href="#main-scripts" title="Permalink to this headline"></a></h2>
 <section id="sam2profilesgenomic-py">
 <h3>SAM2profilesGenomic.py<a class="headerlink" href="#sam2profilesgenomic-py" title="Permalink to this headline"></a></h3>
-<blockquote>
-<div><p>usage: Generates genomic profiles from SAM files.</p>
-<p>optional arguments:
--h, –help           show this help message and exit</p>
-<p>Options for input files:
--f FILE              SAM file (default: None)
--u {read,3end,5end}  Generate profiles using reads (read) or the 3’ ends (end) (default: 3end)
+<p>usage: Generates genomic profiles from SAM files.</p>
+<dl>
+<dt>optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>show this help message and exit</p>
+</dd>
+</dl>
+</dd>
+<dt>Options for input files:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-f <var>FILE</var></span></kbd></dt>
+<dd><p>SAM file (default: None)</p>
+</dd>
+</dl>
+<p>-u {read,3end,5end}  Generate profiles using reads (read) or the 3’ ends (end) (default: 3end)
 -n                   Save non-coded polyA ends. Can be used ONLY with: -u 3end (default: False)
 -r                   Save all non-coded ends. Can be used ONLY with: -u 3end (default: False)
 –csv                Save output as csv. Default is pickle (default: False)
 -c TOCLEAR           String of signs to be cleared from the name of SAM file (default: _comp_flexbar_STARAligned.out)
 –chunks CHUNKS      Divide list of genes into a chunks of given size (default: 0)</p>
-</div></blockquote>
+</dd>
+</dl>
 </section>
 <section id="sam2profiles-py">
 <h3>SAM2profiles.py<a class="headerlink" href="#sam2profiles-py" title="Permalink to this headline"></a></h3>
-<blockquote>
-<div><p>usage: Generates profiles from SAM files for a list of given transcripts.</p>
-<p>optional arguments:
--h, –help       show this help message and exit</p>
-<p>Options for input files:
--f FILE          SAM file (default: None)
--l FILE          list of genes file (default: None)
--d DETAILS_FILE  file with transcriptome details. (default:</p>
-<blockquote>
-<div><p>/homes/tollervey/COVID19/databases/transcriptome_details_biomart_tRNA_rRNA_UPDATEJan2021.tab)</p>
-</div></blockquote>
-<dl class="option-list">
+<p>usage: Generates profiles from SAM files for a list of given transcripts.</p>
+<dl>
+<dt>optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>show this help message and exit</p>
+</dd>
+</dl>
+</dd>
+<dt>Options for input files:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-f <var>FILE</var></span></kbd></dt>
+<dd><p>SAM file (default: None)</p>
+</dd>
+<dt><kbd><span class="option">-l <var>FILE</var></span></kbd></dt>
+<dd><p>list of genes file (default: None)</p>
+</dd>
+<dt><kbd><span class="option">-d <var>DETAILS_FILE</var></span></kbd></dt>
+<dd><p>file with transcriptome details. (default:
+/homes/tollervey/COVID19/databases/transcriptome_details_biomart_tRNA_rRNA_UPDATEJan2021.tab)</p>
+</dd>
 <dt><kbd><span class="option">--del</span></kbd></dt>
 <dd><p>Generate additional profiles for deletions (default: False)</p>
 </dd>
@@ -126,13 +145,66 @@
 <dd><p>Divide list of genes into a chunks of given size (default: 0)</p>
 </dd>
 </dl>
-</div></blockquote>
+</dd>
+</dl>
 </section>
 </section>
 <section id="supporting-scripts">
 <h2>Supporting scripts<a class="headerlink" href="#supporting-scripts" title="Permalink to this headline"></a></h2>
-<p>csv2pickle.py
-mergeSalmon.py</p>
+<section id="csv2pickle-py">
+<h3>csv2pickle.py<a class="headerlink" href="#csv2pickle-py" title="Permalink to this headline"></a></h3>
+<p>usage: Read CSV file and save as a pickle</p>
+<dl>
+<dt>optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>show this help message and exit</p>
+</dd>
+</dl>
+</dd>
+<dt>Options for input files:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-f <var>FILE</var></span></kbd></dt>
+<dd><p>SAM file (default: None)</p>
+</dd>
+<dt><kbd><span class="option">--gzip</span></kbd></dt>
+<dd><p>gzip compression (default: False)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+<section id="mergesalmon-py">
+<h3>mergeSalmon.py<a class="headerlink" href="#mergesalmon-py" title="Permalink to this headline"></a></h3>
+<p>usage: merges Salmon quantification files to one tab file</p>
+<dl>
+<dt>optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>show this help message and exit</p>
+</dd>
+</dl>
+</dd>
+<dt>Options for input files:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-i <var>INPUT</var></span></kbd></dt>
+<dd><p>String of signs to be found in Salmon output directory (default: None)</p>
+</dd>
+<dt><kbd><span class="option">-o <var>OUTPUT</var></span></kbd></dt>
+<dd><p>Name of output file (default: merged)</p>
+</dd>
+<dt><kbd><span class="option">-u <var>USE</var></span></kbd></dt>
+<dd><p>column to be used {TPM,NumReads} (default: NumReads)</p>
+</dd>
+<dt><kbd><span class="option">-f <var>FILTER</var></span></kbd></dt>
+<dd><p>String of signs to be found in Salmon output directory. Optional as additional filter (default: None)</p>
+</dd>
+<dt><kbd><span class="option">-c <var>CLEAR</var></span></kbd></dt>
+<dd><p>String of signs to be found in Salmon output directory, will be cleared (default: None)</p>
+</dd>
+<dt><kbd><span class="option">-a <var>ADD</var></span></kbd></dt>
+<dd><p>String of signs to be added to experiment name (default: None)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
 </section>
 </section>
 
