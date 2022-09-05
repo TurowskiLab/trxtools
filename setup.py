@@ -21,6 +21,7 @@ setuptools.setup(
     scripts=['scripts/SAM2profiles.py',
              'scripts/SAM2profilesGenomic.py',
              'scripts/mergeSalmon.py',
-             'scripts/csv2pickle.py'],
+             'scripts/csv2pickle.py',
+             'scripts/genome2WindowsGTF.py'],
     python_requires='>=3.6'
 )
