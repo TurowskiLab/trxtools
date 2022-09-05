@@ -268,6 +268,54 @@ def readSalmon(nameElem="", path="", toLoad="", toClear=[], toAdd="", column='Nu
 
     return df_output.reindex(sorted(df_output.columns), axis=1)
 
+def read_featureCount(nameElem="", path="", toLoad="", toClear=[], toAdd="", df=None, overwrite=False):
+    '''
+    Read tab files with common first column
+    :param nameElem: str, present in all files
+    :param path: str, path to directory with files
+    :param toLoad: str, to be present in file name (optional)
+    :param toClear: str, will be removed from file name
+    :param toAdd: str, to be added to file name
+    :param df: DataFrame, to be appended; default=None
+    :param overwrite: boolean, allows for overwriting during appending, default = False
+    :return: DataFrame
+    '''
+    # list files
+    l1_mapping = [f for f in os.listdir(path) if nameElem in f and '.summary' not in f]
+    if toLoad:
+        l1_mapping = [f for f in l1_mapping if toLoad in f]
+
+    # check input dataframe
+    if isinstance(df, pd.DataFrame):
+        namesInUse = df.columns.tolist()
+        df_output = df.copy()
+    else:
+        if df == None:
+            df_output = pd.DataFrame()
+            namesInUse = []
+        else:
+            exit("df is not a DataFrame")   
+            
+    for f in l1_mapping:
+        tempDF = pd.read_csv(path + f, sep='\t', index_col=0, header=0, comment="#")
+
+        # clear names
+        name = f.replace(nameElem, '')
+        for c in toClear:
+            name = name.replace(c, '')
+        name = name + toAdd
+
+        # overwrite warninig
+        if name in namesInUse:
+            if overwrite == False:
+                return print(name + " exits in input df. Use overwrite=True to ignore.")
+
+        # adding to dataframe
+        last_name = tempDF.columns.values[-1:][0]
+        df_output = pd.concat([df_output, tempDF[last_name].rename(name)],axis=1)
+
+    return df_output.reindex(sorted(df_output.columns), axis=1)
+
 ################################################
 #############        handling multiple experiments
 
