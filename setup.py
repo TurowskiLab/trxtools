@@ -14,6 +14,11 @@ setuptools.setup(
     license='LICENSE.txt',
     # keywords="board games AI artificial intelligence negamax",
     packages=setuptools.find_packages(),
+    install_requires=[
+        "python_version>='3.8'",
+        "pandas",
+        "numpy"
+    ],
     # classifiers=[
     #     "Programming Language :: Python :: 3",
     #     "License :: OSI Approved :: MIT License",
