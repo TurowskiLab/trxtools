@@ -256,7 +256,8 @@ def sam2genome(filename="", path='', toClear='', pickle=False,chunks=0):
     tt.methods.bashCommand(command)
     geneList = tt.methods.read_list(dirPath + "/" + name + "_chr.list")
     #chromosome lengths from SAM header
-    command = "grep @SQ " + filename + " | cut -f4 | sed 's/LN\://' > " + dirPath + "/" + name + "_chr.len"
+    #-f4 for sam as direct STAR output, but -f3 for BAM output and samtools view -h
+    command = "grep @SQ " + filename + " | cut -f3 | sed 's/LN\://' > " + dirPath + "/" + name + "_chr.len"
     tt.methods.bashCommand(command)
     geneLen = tt.methods.read_list(dirPath + "/" + name + "_chr.len")
     
@@ -354,7 +355,7 @@ def sam2genome3end(filename="", path='', toClear='', pickle=False,chunks=0,nonco
     tt.methods.bashCommand(command)
     geneList = tt.methods.read_list(dirPath + "/" + name + "_chr.list")
     #chromosome lengths from SAM header
-    command = "grep @SQ " + filename + " | cut -f4 | sed 's/LN\://' > " + dirPath + "/" + name + "_chr.len"
+    command = "grep @SQ " + filename + " | cut -f3 | sed 's/LN\://' > " + dirPath + "/" + name + "_chr.len"
     tt.methods.bashCommand(command)
     geneLen = tt.methods.read_list(dirPath + "/" + name + "_chr.len")
     
@@ -480,7 +481,7 @@ def sam2genome5end(filename="", path='', toClear='', pickle=False,chunks=0):
     tt.methods.bashCommand(command)
     geneList = tt.methods.read_list(dirPath + "/" + name + "_chr.list")
     #chromosome lengths from SAM header
-    command = "grep @SQ " + filename + " | cut -f4 | sed 's/LN\://' > " + dirPath + "/" + name + "_chr.len"
+    command = "grep @SQ " + filename + " | cut -f3 | sed 's/LN\://' > " + dirPath + "/" + name + "_chr.len"
     tt.methods.bashCommand(command)
     geneLen = tt.methods.read_list(dirPath + "/" + name + "_chr.len")
     
