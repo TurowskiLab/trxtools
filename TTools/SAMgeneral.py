@@ -191,15 +191,18 @@ def parseNoncoded(d=dict(), minLen=3):
     0     40  1.0    NaN  chrI
     1     35  NaN    1.0  chrI
     '''
+
     df_output = pd.DataFrame()
     for name in d.keys():
         df_temp = pd.DataFrame(d[name], columns=['position','end'])
         df_temp = df_temp[df_temp['end'].str.len() >= minLen].sort_values('end') #keep only minLen ends
+        
         df_short = pd.DataFrame()
         for n,df in df_temp.groupby('end'):
-            df_short = df_short.append(df.groupby('position')['end'].count().sort_index().rename(n))
-        
-        df_short = df_short.T
+            # df_short = df_short.append(df.groupby('position')['end'].count().sort_index().rename(n))
+            s = df.groupby('position')['end'].count().sort_index().rename(n)
+            df_short = pd.concat([df_short,s],axis=1) #append
+            # df_short = pd.concat([df_short,s]) #append
         df_short['chr'] = name
         df_output = pd.concat([df_output, df_short.reset_index()])
 
@@ -213,6 +216,7 @@ def selectPolyA(df=pd.DataFrame()):
     :return: modified DataFrame
     :rtype: DataFrame
     '''
+    print(df)
     #select columns with at least "AAA" and "A" content above 0.75
     cols = df.columns[(df.columns.str.contains("AAA"))&((df.columns.to_series().apply(tt.methods.letterContent)>0.75))]
     return df[['index','chr']+cols.tolist()]
@@ -229,11 +233,12 @@ def noncoded2profile(df_input=pd.DataFrame(), df_details=pd.DataFrame()):
     '''
     df_output = pd.DataFrame()
     for i,df in df_input.groupby('chr'):
-        df = df.drop('chr',1).set_index('index')
+        df = df.drop('chr',"columns").set_index('index')
         profile = df.sum(1)
         length = df_details.loc[i]['length']
         profile = profile.reindex(pd.RangeIndex(length + 1)).fillna(0)  # fills spaces with 0 counts
         
-        df_output = df_output.append(profile.rename(i))
+        # df_output = df_output.append(profile.rename(i))
+        df_output = pd.concat([df_output,profile.rename(i)],axis=0, join='outer')
         
     return df_output

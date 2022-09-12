@@ -79,7 +79,7 @@ def prepareNascent(sequence="", name="name", strand="plus", temp=30, window=100)
                                          strand=strand, temp=temp, window=window)
     return extended.append(slided)
 
-def name2index(s1=pd.Series()):
+def name2index(s1=pd.Series(dtype=str)):
     '''Extracts position from sequence name
 
     :param s1: Series with names from prepareNascent function

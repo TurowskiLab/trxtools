@@ -527,7 +527,7 @@ def normalize(df=pd.DataFrame, log2=False, pseudocounts=0.1):
     else:
         return df
 
-def quantileCategory(s1=pd.Series(), q=4):
+def quantileCategory(s1=pd.Series(dtype=float), q=4):
     '''Quantile-based discretization function based on pandas.qcut function.
 
     :param s1: Series()

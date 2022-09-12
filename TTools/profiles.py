@@ -257,7 +257,7 @@ def preprocess(input_df=pd.DataFrame(), let_in=[''], let_out=['wont_find_this_st
             result_df['q1'], result_df['q3'] = working_df.quantile(q=0.25, axis=1), working_df.quantile(q=0.75, axis=1)
         return result_df
 
-def calculateFDR(data=pd.Series(), iterations=100, target_FDR=0.05):
+def calculateFDR(data=pd.Series(dtype=float), iterations=100, target_FDR=0.05):
     '''Calculates False Discovery Rate (FDR) for a given dataset.
 
     :param data: Series
@@ -278,7 +278,7 @@ def calculateFDR(data=pd.Series(), iterations=100, target_FDR=0.05):
     FDR = DR <= target_FDR
     return data * FDR
 
-def findPeaks(s1=pd.Series(), window=1, win_type='blackman', order=20):
+def findPeaks(s1=pd.Series(dtype=float), window=1, win_type='blackman', order=20):
     '''Find local extrema using SciPy argrelextrema function
 
     :param s1: Series data to localize peaks
@@ -296,7 +296,7 @@ def findPeaks(s1=pd.Series(), window=1, win_type='blackman', order=20):
     output = argrelextrema(data=s1.to_numpy(), comparator=np.greater, order=order)[0]
     return list(output)
 
-def findTroughs(s1=pd.Series(), window=1, win_type='blackman', order=20):
+def findTroughs(s1=pd.Series(dtype=float), window=1, win_type='blackman', order=20):
     '''Find local minima using SciPy argrelextrema function
 
     :param s1: Series data to localize peaks
@@ -315,7 +315,7 @@ def findTroughs(s1=pd.Series(), window=1, win_type='blackman', order=20):
     return list(output)
 
 
-def compare1toRef(ref, dataset=pd.Series(), ranges='mm', heatmap=False, relative=False):
+def compare1toRef(ref, dataset=pd.Series(dtype=float), ranges='mm', heatmap=False, relative=False):
     '''Takes Series and compare this with reference DataFrame()
 
     :param ref: str with path to csv file or DataFrame

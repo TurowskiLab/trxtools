@@ -1,5 +1,6 @@
 from TTools.SAMgeneral import *
 from TTools.SAMtranscripts import transcript2profile
+import time, shutil
 
 ####################################################
 #   intermediate functions level -2 (from final)   #
@@ -99,7 +100,8 @@ def reads2genome(name=str(), dirPath=str(), df_details=pd.DataFrame()):
             length = df_details.loc[n]['length']
             l = list(zip(df['position'].astype(int), df['CIGAR']))
             s1 = transcript2profile(l, length=length)
-            output_df_fwd = output_df_fwd.append(s1.rename(n))
+            # output_df_fwd = output_df_fwd.append(s1.rename(n))
+            output_df_fwd = pd.concat([output_df_fwd,s1_profile.rename(n)],axis=0, join='outer')
 
             log.append(n + " - FWD profile generated successfully")
         except:
@@ -110,13 +112,14 @@ def reads2genome(name=str(), dirPath=str(), df_details=pd.DataFrame()):
             length = df_details.loc[n]['length']
             l = list(zip(df['position'].astype(int), df['CIGAR']))
             s1 = transcript2profile(l, length=length)
-            output_df_rev = output_df_rev.append(s1.rename(n))
+            # output_df_rev = output_df_rev.append(s1.rename(n))
+            output_df_rev = pd.concat([output_df_rev,s1_profile.rename(n)],axis=0, join='outer')
 
             log.append(n + " - REV profile generated successfully")
         except:
             log.append(n + " - REV profile FAILED")
 
-    return output_df_fwd.T, output_df_rev.T, log
+    return output_df_fwd, output_df_rev, log
 
 
 def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),noncoded=True):
@@ -151,7 +154,8 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),noncod
             l = list(zip(df['position'].astype(int), df['CIGAR'], df['sequence']))         
             #processing reads
             s1_profile, l1_noncoded = chromosome2profile3end(l, length=length, strand='FWD')
-            output_df_fwd = output_df_fwd.append(s1_profile.rename(n))
+            # output_df_fwd = output_df_fwd.append(s1_profile.rename(n)) #method is deprecated
+            output_df_fwd = pd.concat([output_df_fwd,s1_profile.rename(n)],axis=0, join='outer')
             if noncoded==True:
                 noncoded_fwd[n] = l1_noncoded
 
@@ -166,7 +170,8 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),noncod
             l = list(zip(df['position'].astype(int), df['CIGAR'], df['sequence']))         
             #processing reads
             s1_profile, l1_noncoded = chromosome2profile3end(l, length=length, strand='REV')
-            output_df_rev = output_df_rev.append(s1_profile.rename(n))
+            # output_df_rev = output_df_rev.append(s1_profile.rename(n)) #method is deprecated
+            output_df_rev = pd.concat([output_df_rev,s1_profile.rename(n)],axis=0, join='outer')
             if noncoded==True:
                 noncoded_rev[n] = l1_noncoded
 
@@ -174,7 +179,7 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),noncod
         except:
             log.append(n + " - REV profile and/or list of noncoded ends FAILED")
 
-    return output_df_fwd.T, output_df_rev.T, log, noncoded_fwd, noncoded_rev
+    return output_df_fwd, output_df_rev, log, noncoded_fwd, noncoded_rev
 
 def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame()):
     '''Function used by sam2genome5end. Works for both strands.
@@ -204,7 +209,8 @@ def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame()):
             l = list(zip(df['position'].astype(int), df['CIGAR'], df['sequence']))         
             #processing reads
             s1_profile, l1_noncoded = chromosome2profile3end(l, length=length, strand='REV') #shortcut: swapping FWD and REV strands
-            output_df_fwd = output_df_fwd.append(s1_profile.rename(n))
+            # output_df_fwd = output_df_fwd.append(s1_profile.rename(n))
+            output_df_fwd = pd.concat([output_df_fwd,s1_profile.rename(n)],axis=0, join='outer')
 
             log.append(n + " - FWD profile and/or list of noncoded ends generated successfully")
         except:
@@ -217,13 +223,30 @@ def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame()):
             l = list(zip(df['position'].astype(int), df['CIGAR'], df['sequence']))         
             #processing reads
             s1_profile, l1_noncoded = chromosome2profile3end(l, length=length, strand='FWD') #shortcut: swapping FWD and REV strands
-            output_df_rev = output_df_rev.append(s1_profile.rename(n))
+            # output_df_rev = output_df_rev.append(s1_profile.rename(n))
+            output_df_rev = pd.concat([output_df_rev,s1_profile.rename(n)],axis=0, join='outer')
 
             log.append(n + " - REV profile and/or list of noncoded ends generated successfully")
         except:
             log.append(n + " - REV profile and/or list of noncoded ends FAILED")
 
-    return output_df_fwd.T, output_df_rev.T, log
+    return output_df_fwd, output_df_rev, log
+
+def parseHeader(filename,name,dirPath):
+    #geneList = chromosome list from the @SQ header of SAM file'
+    command = "grep @SQ " + filename + " | cut -f2 | sed 's/SN\://' > " + dirPath + "/" + name + "_chr.list"
+    tt.methods.bashCommand(command)
+    geneList = tt.methods.read_list(dirPath + "/" + name + "_chr.list")
+    #chromosome lengths from SAM header
+    #-f4 for sam as direct STAR output, but -f3 for BAM output and samtools view -h
+    command = "grep @SQ " + filename + " | cut -f3 | sed 's/LN\://' > " + dirPath + "/" + name + "_chr.len"
+    tt.methods.bashCommand(command)
+    geneLen = tt.methods.read_list(dirPath + "/" + name + "_chr.len")
+    
+    df_details = pd.DataFrame(data={"chrName" : geneList, "length" : geneLen}).set_index('chrName')
+    df_details['length'] = df_details['length'].astype(int)
+
+    return df_details
 
 ####################################################
 #              final functions (level 0)           #
@@ -251,19 +274,9 @@ def sam2genome(filename="", path='', toClear='', pickle=False,chunks=0):
     dirPath = path + name + timestamp
     os.makedirs(dirPath)
 
-    #geneList = chromosome list from the @SQ header of SAM file'
-    command = "grep @SQ " + filename + " | cut -f2 | sed 's/SN\://' > " + dirPath + "/" + name + "_chr.list"
-    tt.methods.bashCommand(command)
-    geneList = tt.methods.read_list(dirPath + "/" + name + "_chr.list")
-    #chromosome lengths from SAM header
-    #-f4 for sam as direct STAR output, but -f3 for BAM output and samtools view -h
-    command = "grep @SQ " + filename + " | cut -f3 | sed 's/LN\://' > " + dirPath + "/" + name + "_chr.len"
-    tt.methods.bashCommand(command)
-    geneLen = tt.methods.read_list(dirPath + "/" + name + "_chr.len")
-    
-    df_details = pd.DataFrame(data={"chrName" : geneList, "length" : geneLen}).set_index('chrName')
-    df_details['length'] = df_details['length'].astype(int)
-    
+    df_details = parseHeader(filename=filename,name=name,dirPath=dirPath)
+    geneList = df_details.index.tolist()
+
     # tempfiles
     ##list of files if red as chunks
     if chunks > 0:
@@ -319,7 +332,7 @@ def sam2genome(filename="", path='', toClear='', pickle=False,chunks=0):
 
     # clean
     os.chdir(path)
-    shutil.rmtree(name + timestamp)
+    shutil.rmtree(name + timestamp, ignore_errors=True)
 
     print("Done.")
 
@@ -350,18 +363,9 @@ def sam2genome3end(filename="", path='', toClear='', pickle=False,chunks=0,nonco
     dirPath = path + name + timestamp
     os.makedirs(dirPath)
 
-    #geneList = chromosome list from the @SQ header of SAM file'
-    command = "grep @SQ " + filename + " | cut -f2 | sed 's/SN\://' > " + dirPath + "/" + name + "_chr.list"
-    tt.methods.bashCommand(command)
-    geneList = tt.methods.read_list(dirPath + "/" + name + "_chr.list")
-    #chromosome lengths from SAM header
-    command = "grep @SQ " + filename + " | cut -f3 | sed 's/LN\://' > " + dirPath + "/" + name + "_chr.len"
-    tt.methods.bashCommand(command)
-    geneLen = tt.methods.read_list(dirPath + "/" + name + "_chr.len")
-    
-    df_details = pd.DataFrame(data={"chrName" : geneList, "length" : geneLen}).set_index('chrName')
-    df_details['length'] = df_details['length'].astype(int)
-    
+    df_details = parseHeader(filename=filename,name=name,dirPath=dirPath)
+    geneList = df_details.index.tolist()
+
     # tempfiles
     ##list of files if red as chunks
     if chunks > 0:
@@ -371,7 +375,7 @@ def sam2genome3end(filename="", path='', toClear='', pickle=False,chunks=0,nonco
         chunks = len(geneList)+1
 
     ##genes means chromosomes for this function
-    genes = pd.DataFrame(pd.Series(geneList))
+    genes = pd.DataFrame(pd.Series(geneList,dtype=str))
     for i in chunkList:
         geneListFileName = "/geneList_" + str(i) + ".tab"
         genes[i:i+chunks].to_csv(dirPath + geneListFileName, sep='\t', header=False,index=False)
@@ -417,25 +421,38 @@ def sam2genome3end(filename="", path='', toClear='', pickle=False,chunks=0,nonco
         noncoded_rev.to_pickle(path + name + "_noncoded_raw_3end_rev.pcl")
 
     #select only polyA reads (>=3 and 75% of A content) and prepare profile
-    noncoded_profile_fwd = noncoded2profile(selectPolyA(noncoded_fwd),df_details=df_details)
-    noncoded_profile_fwd = noncoded_profile_fwd.T
-    noncoded_profile_rev = noncoded2profile(selectPolyA(noncoded_rev),df_details=df_details)
-    noncoded_profile_rev = noncoded_profile_rev.T
+    try:
+        noncoded_profile_fwd = noncoded2profile(selectPolyA(noncoded_fwd),df_details=df_details)
+        noncoded_profile_fwd = noncoded_profile_fwd.T
+        name_nc_fwd = name
+    except:
+        print("polyA reads not found for FWD strand")
+        name_nc_fwd = name+"_EMPTY"
+        noncoded_profile_fwd = pd.DataFrame()
+
+    try:
+        noncoded_profile_rev = noncoded2profile(selectPolyA(noncoded_rev),df_details=df_details)
+        noncoded_profile_rev = noncoded_profile_rev.T
+        name_nc_rev = name
+    except:
+        print("polyA reads not found for REV strand")
+        name_nc_rev = name+"_EMPTY"
+        noncoded_profile_rev = pd.DataFrame()
 
     #save output
     if pickle==True:
         df_profiles_fwd.to_pickle(path + name + "_PROFILES_3end_fwd.pcl")
         df_profiles_rev.to_pickle(path + name + "_PROFILES_3end_rev.pcl")
         if noncoded_pA==True:
-            noncoded_profile_fwd.to_pickle(path + name + "_noncoded_PROFILES_3end_fwd.pcl")
-            noncoded_profile_rev.to_pickle(path + name + "_noncoded_PROFILES_3end_rev.pcl")
+            noncoded_profile_fwd.to_pickle(path + name_nc_fwd + "_noncoded_PROFILES_3end_fwd.pcl")
+            noncoded_profile_rev.to_pickle(path + name_nc_rev + "_noncoded_PROFILES_3end_rev.pcl")
     
     elif pickle==False:
         df_profiles_fwd.to_csv(path + name + "_PROFILES_3end_fwd.csv")
         df_profiles_rev.to_csv(path + name + "_PROFILES_3end_rev.csv")
         if noncoded_pA==True:
-            noncoded_profile_fwd.to_csv(path + name + "_noncoded_PROFILES_3end_fwd.csv")
-            noncoded_profile_rev.to_csv(path + name + "_noncoded_PROFILES_3end_rev.csv")
+            noncoded_profile_fwd.to_csv(path + name_nc_fwd + "_noncoded_PROFILES_3end_fwd.csv")
+            noncoded_profile_rev.to_csv(path + name_nc_rev + "_noncoded_PROFILES_3end_rev.csv")
     
     #save log
     with open(path + name + "_PROFILES_3end.log", "w") as log_file:
@@ -444,7 +461,7 @@ def sam2genome3end(filename="", path='', toClear='', pickle=False,chunks=0,nonco
 
     # clean
     os.chdir(path)
-    shutil.rmtree(name + timestamp)
+    shutil.rmtree(name + timestamp,ignore_errors=True)
 
     print("Done.")
 
@@ -476,17 +493,8 @@ def sam2genome5end(filename="", path='', toClear='', pickle=False,chunks=0):
     dirPath = path + name + timestamp
     os.makedirs(dirPath)
 
-    #geneList = chromosome list from the @SQ header of SAM file'
-    command = "grep @SQ " + filename + " | cut -f2 | sed 's/SN\://' > " + dirPath + "/" + name + "_chr.list"
-    tt.methods.bashCommand(command)
-    geneList = tt.methods.read_list(dirPath + "/" + name + "_chr.list")
-    #chromosome lengths from SAM header
-    command = "grep @SQ " + filename + " | cut -f3 | sed 's/LN\://' > " + dirPath + "/" + name + "_chr.len"
-    tt.methods.bashCommand(command)
-    geneLen = tt.methods.read_list(dirPath + "/" + name + "_chr.len")
-    
-    df_details = pd.DataFrame(data={"chrName" : geneList, "length" : geneLen}).set_index('chrName')
-    df_details['length'] = df_details['length'].astype(int)
+    df_details = parseHeader(filename=filename,name=name,dirPath=dirPath)
+    geneList = df_details.index.tolist()
     
     # tempfiles
     ##list of files if red as chunks
@@ -545,6 +553,6 @@ def sam2genome5end(filename="", path='', toClear='', pickle=False,chunks=0):
 
     # clean
     os.chdir(path)
-    shutil.rmtree(name + timestamp)
+    shutil.rmtree(name + timestamp, ignore_errors=True)
 
     print("Done.")
