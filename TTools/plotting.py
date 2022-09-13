@@ -15,6 +15,8 @@ def plotPCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize=(7,7), PC
     :param PClimit: int number of PC to plot, default 1
     :param figsize: tuple, default (7,7)
     :return:
+
+    >>> plotPCA(methods.runPCA(example_df)[0])
     '''
     nPCA = len([col for col in data.columns if 'PC' in col])
     axes = [ i +1 for i in range(nPCA)[:-1]]

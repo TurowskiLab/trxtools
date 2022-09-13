@@ -13,6 +13,7 @@
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -35,7 +36,10 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../TTools.html">TTools package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scripts.html">Scripts</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../TTools.html">Modules</a></li>
 </ul>
 
         </div>
@@ -333,6 +337,54 @@
 
     <span class="k">return</span> <span class="n">df_output</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">df_output</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="read_featureCount"><a class="viewcode-back" href="../../TTools.html#TTools.methods.read_featureCount">[docs]</a><span class="k">def</span> <span class="nf">read_featureCount</span><span class="p">(</span><span class="n">nameElem</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">toLoad</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">toClear</span><span class="o">=</span><span class="p">[],</span> <span class="n">toAdd</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Read tab files with common first column</span>
+<span class="sd">    :param nameElem: str, present in all files</span>
+<span class="sd">    :param path: str, path to directory with files</span>
+<span class="sd">    :param toLoad: str, to be present in file name (optional)</span>
+<span class="sd">    :param toClear: str, will be removed from file name</span>
+<span class="sd">    :param toAdd: str, to be added to file name</span>
+<span class="sd">    :param df: DataFrame, to be appended; default=None</span>
+<span class="sd">    :param overwrite: boolean, allows for overwriting during appending, default = False</span>
+<span class="sd">    :return: DataFrame</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># list files</span>
+    <span class="n">l1_mapping</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">if</span> <span class="n">nameElem</span> <span class="ow">in</span> <span class="n">f</span> <span class="ow">and</span> <span class="s1">&#39;.summary&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">toLoad</span><span class="p">:</span>
+        <span class="n">l1_mapping</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">l1_mapping</span> <span class="k">if</span> <span class="n">toLoad</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+
+    <span class="c1"># check input dataframe</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">namesInUse</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">df_output</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">df</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">df_output</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+            <span class="n">namesInUse</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exit</span><span class="p">(</span><span class="s2">&quot;df is not a DataFrame&quot;</span><span class="p">)</span>   
+            
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">l1_mapping</span><span class="p">:</span>
+        <span class="n">tempDF</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="n">f</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">)</span>
+
+        <span class="c1"># clear names</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">nameElem</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">toClear</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="n">toAdd</span>
+
+        <span class="c1"># overwrite warninig</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">namesInUse</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">overwrite</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; exits in input df. Use overwrite=True to ignore.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># adding to dataframe</span>
+        <span class="n">last_name</span> <span class="o">=</span> <span class="n">tempDF</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">df_output</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df_output</span><span class="p">,</span> <span class="n">tempDF</span><span class="p">[</span><span class="n">last_name</span><span class="p">]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">name</span><span class="p">)],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df_output</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">df_output</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
 <span class="c1">################################################</span>
 <span class="c1">#############        handling multiple experiments</span>
 
@@ -544,7 +596,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">df</span></div>
 
-<div class="viewcode-block" id="quantileCategory"><a class="viewcode-back" href="../../TTools.html#TTools.methods.quantileCategory">[docs]</a><span class="k">def</span> <span class="nf">quantileCategory</span><span class="p">(</span><span class="n">s1</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(),</span> <span class="n">q</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+<div class="viewcode-block" id="quantileCategory"><a class="viewcode-back" href="../../TTools.html#TTools.methods.quantileCategory">[docs]</a><span class="k">def</span> <span class="nf">quantileCategory</span><span class="p">(</span><span class="n">s1</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">q</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Quantile-based discretization function based on pandas.qcut function.</span>
 
 <span class="sd">    :param s1: Series()</span>
@@ -565,7 +617,8 @@
 
 <span class="sd">    :param data: DataFrame</span>
 <span class="sd">    :param n_components: int, default 2</span>
-<span class="sd">    :return: DataFrame</span>
+<span class="sd">    :return: tuple consisting of DataFrame with PCA results and a list of PC values</span>
+<span class="sd">    :rtype: tuple</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="c1"># x = StandardScaler().fit_transform(df1_codone_composition)</span>
 

@@ -548,7 +548,8 @@ def runPCA(data=pd.DataFrame(), n_components=2):
 
     :param data: DataFrame
     :param n_components: int, default 2
-    :return: DataFrame
+    :return: tuple consisting of DataFrame with PCA results and a list of PC values
+    :rtype: tuple
     '''
     # x = StandardScaler().fit_transform(df1_codone_composition)
 
