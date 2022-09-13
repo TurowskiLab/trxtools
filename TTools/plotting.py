@@ -41,7 +41,7 @@ def plotPCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize=(7,7), PC
             a = data['PC' +str(nPC)].tolist()
             b = data['PC' +str(nPC+1)].tolist()
             ax.scatter(x=a ,y=b ,color='lightgray')
-            for x, y, s in zip(a, b, df_temp.index.tolist()):
+            for x, y, s in zip(a, b, data.index.tolist()):
                 if s in names:
                     texts.append(plt.text(x, y, s))
 
