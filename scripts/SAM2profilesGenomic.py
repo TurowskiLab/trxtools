@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from TTools.SAMgenome import sam2genome, sam2genome3end, sam2genome5end
+from TTools.SAMgenome import sam2genome
 import os, argparse
 import TTools as tt
 
@@ -21,7 +21,7 @@ files.add_argument("-c", dest="toClear", help="String of signs to be cleared fro
 files.add_argument("--chunks", dest="chunks", help="Divide list of genes into a chunks of given size", type=int, default=0)
 args = parser.parse_args()
 
-print("Start at "+tt.methods.timestamp())
+# print("Start at "+tt.methods.timestamp())
 
 path = os.getcwd()+"/"
 
@@ -30,14 +30,15 @@ if args.csv==False:
 elif args.csv==True:
     pickle = False
 
-if args.use=="read":
-    sam2genome(filename=args.sam_file, path=path, toClear=args.toClear,
-                pickle=pickle, chunks=args.chunks)
-elif args.use=="3end":
-    sam2genome3end(filename=args.sam_file, path=path, toClear=args.toClear,
-                pickle=pickle, chunks=args.chunks, noncoded_pA=args.noncoded_pA, noncoded_raw=args.noncoded_raw)
-elif args.use=="5end":
-    sam2genome5end(filename=args.sam_file, path=path, toClear=args.toClear,
-                pickle=pickle, chunks=args.chunks)
+# if args.use=="read":
+sam2genome(filename=args.sam_file, path=path, toClear=args.toClear,
+                pickle=pickle, chunks=args.chunks, use=args.use,
+                noncoded_pA=args.noncoded_pA, noncoded_raw=args.noncoded_raw)
+# elif args.use=="3end":
+#     sam2genome3end(filename=args.sam_file, path=path, toClear=args.toClear,
+#                 pickle=pickle, chunks=args.chunks, noncoded_pA=args.noncoded_pA, noncoded_raw=args.noncoded_raw)
+# elif args.use=="5end":
+#     sam2genome5end(filename=args.sam_file, path=path, toClear=args.toClear,
+#                 pickle=pickle, chunks=args.chunks)
 
-print("Done at "+tt.methods.timestamp())
+# print("Done at "+tt.methods.timestamp())

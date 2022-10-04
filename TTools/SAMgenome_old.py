@@ -1,10 +1,6 @@
-from cmath import log
-from fileinput import filename
 from TTools.SAMgeneral import *
 from TTools.SAMtranscripts import transcript2profile
-from TTools.methods import timestamp
 import time, shutil
-import pyBigWig
 
 ####################################################
 #   intermediate functions level -2 (from final)   #
@@ -78,7 +74,7 @@ def chromosome2profile3end(l=[], length=int(), strand='FWD'):
 #   intermediate functions level -1 (from final)   #
 ####################################################
 
-def reads2genome(name=str(), dirPath=str(), df_details=pd.DataFrame(),logName=str()):
+def reads2genome(name=str(), dirPath=str(), df_details=pd.DataFrame()):
     '''Function used by sam2genome. Works for both strands.
 
     :param name: name of experiment
@@ -95,45 +91,38 @@ def reads2genome(name=str(), dirPath=str(), df_details=pd.DataFrame(),logName=st
     df_input_fwd = pd.read_csv(dirPath + "/" + name + "_fwd.tab", sep="\t", names=cols)
     df_input_rev = pd.read_csv(dirPath + "/" + name + "_rev.tab", sep="\t", names=cols)
 
-    #open log file
-    log_file = open(logName, "a")
-    log_file.write("Processing SAM to profiles: -u reads" + '\n')
-    temp_paths = {} #stores paths for each temp file
+    output_df_fwd = pd.DataFrame()
+    output_df_rev = pd.DataFrame()
+    log = []
 
     for n, df in df_input_fwd.groupby('name'):
         try:
             length = df_details.loc[n]['length']
             l = list(zip(df['position'].astype(int), df['CIGAR']))
-            s1_profile = transcript2profile(l, length=length)
-            to_save = pd.DataFrame(s1_profile.rename(n))
-            fileName = dirPath+"/temp_"+n+"_fwd.pcl"
-            to_save.to_pickle(path=fileName)
-            
-            temp_paths[n+"_fwd"] = fileName
-            log_file.write(n + " - FWD profile generated successfully" + '\n')
+            s1 = transcript2profile(l, length=length)
+            # output_df_fwd = output_df_fwd.append(s1.rename(n))
+            output_df_fwd = pd.concat([output_df_fwd,s1_profile.rename(n)],axis=0, join='outer')
+
+            log.append(n + " - FWD profile generated successfully")
         except:
-            temp_paths[n+"_fwd"] = None
-            log_file.write(n + " - FWD profile FAILED" + '\n')
+            log.append(n + " - FWD profile FAILED")
             
     for n, df in df_input_rev.groupby('name'):
         try:
             length = df_details.loc[n]['length']
             l = list(zip(df['position'].astype(int), df['CIGAR']))
-            s1_profile = transcript2profile(l, length=length)
-            to_save = pd.DataFrame(s1_profile.rename(n))
-            fileName = dirPath+"/temp_"+n+"_rev.pcl"
-            to_save.to_pickle(path=fileName)
-            
-            temp_paths[n+"_rev"] = fileName
-            log_file.write(n + " - REV profile generated successfully" + '\n')
-        except:
-            temp_paths[n+"_rev"] = None
-            log_file.write(n + " - REV profile FAILED" + '\n')
-    
-    log_file.close()
-    return temp_paths
+            s1 = transcript2profile(l, length=length)
+            # output_df_rev = output_df_rev.append(s1.rename(n))
+            output_df_rev = pd.concat([output_df_rev,s1_profile.rename(n)],axis=0, join='outer')
 
-def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),noncoded=True,logName=str()):
+            log.append(n + " - REV profile generated successfully")
+        except:
+            log.append(n + " - REV profile FAILED")
+
+    return output_df_fwd, output_df_rev, log
+
+
+def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),noncoded=True):
     '''Function used by sam2genome3end. Works for both strands.
 
     :param name: name of experiment
@@ -192,7 +181,7 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),noncod
 
     return output_df_fwd, output_df_rev, log, noncoded_fwd, noncoded_rev
 
-def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame(),logName=str()):
+def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame()):
     '''Function used by sam2genome5end. Works for both strands.
 
     :param name: name of experiment
@@ -263,7 +252,7 @@ def parseHeader(filename,name,dirPath):
 #              final functions (level 0)           #
 ####################################################
 
-def sam2genome(filename="", path='', toClear='', pickle=False,chunks=0,use="3end",noncoded_pA=True,noncoded_raw=False):
+def sam2genome(filename="", path='', toClear='', pickle=False,chunks=0):
     '''Function handling SAM files and generating profiles. Executed using wrapping script SAM2profilesGenomic.py.
 
     :param filename: 
@@ -281,15 +270,9 @@ def sam2genome(filename="", path='', toClear='', pickle=False,chunks=0,use="3end
     name = filename.replace(".sam", "")
     if toClear:
         name = name.replace(toClear, "")
-    timestampRnd = tt.methods.timestampRandomInt()
-    dirPath = path + name + timestampRnd
+    timestamp = tt.methods.timestampRandomInt()
+    dirPath = path + name + timestamp
     os.makedirs(dirPath)
-
-    #initialize log file
-    logName=path + name + ".log"
-    log_file = open(logName, "w")
-    log_file.write(timestamp()+"\t"+"Start"+"\n")
-    log_file.write(timestamp()+"\t"+"Initializing"+"\n")
 
     df_details = parseHeader(filename=filename,name=name,dirPath=dirPath)
     geneList = df_details.index.tolist()
@@ -309,12 +292,12 @@ def sam2genome(filename="", path='', toClear='', pickle=False,chunks=0,use="3end
         genes[i:i+chunks].to_csv(dirPath + geneListFileName, sep='\t', header=False,index=False)
         
     ##Select FWD and REV reads from SAM file
-    log_file.write(timestamp()+"\t"+"Selecting reads from SAM files"+"\n")
     os.chdir(dirPath)
     
     for i in chunkList:
         geneListFileName = "geneList_" + str(i) + ".tab"
-
+        
+        print
         #FLAG 0 and 256 for single end reads, aligned, forward match
         command = "grep -v ^@ ../" + filename + " | grep -f " + geneListFileName +\
                   " | awk -F'\t' 'BEGIN{OFS = FS} $2==0||$2==256{print $2,$3, $4, $6, $10, $12}' > "+\
@@ -330,43 +313,28 @@ def sam2genome(filename="", path='', toClear='', pickle=False,chunks=0,use="3end
     tt.methods.bashCommand("cat "+name+"*fwd.tab > " + name +"_fwd.tab")
     tt.methods.bashCommand("cat "+name+"*rev.tab > " + name +"_rev.tab")
 
-    #Reads to profiles
-    log_file.write(timestamp()+"\t"+"Converting reads to profiles"+"\n")
-    log_file.close()
+    print("Reads selected.")
 
-    if use=="read":
-        temp_paths = reads2genome(name=name, dirPath=dirPath,df_details=df_details, logName=logName)
-    elif use=="3end":
-        print("3end")
-    elif use=="5end":
-        print("5end")
-    else:
-        print("Wrong -u parameter selected")
+    #Reads to profiles
+    df_profiles_fwd, df_profiles_rev, log = reads2genome(name=name, dirPath=dirPath,df_details=df_details)
     
     #save output
-    log_file = open(logName, "a")
-    log_file.write(timestamp()+"\t"+"Saving output"+"\n")
-
-    chroms = list(df_details['length'].to_dict().items())
-    bw_fwd = pyBigWig.open(path + name + "_PROFILE_"+use+"_fwd.bw", "w")
-    bw_fwd.addHeader(chroms)
-    for p in temp_paths.keys():
-        if p.endswith("_fwd"):
-            c = p.strip("_fwd")
-            df = pd.read_pickle(temp_paths[p])
-            starts = pd.Series(df.index)[:-1].to_numpy()
-            ends=pd.Series(df.index)[1:].to_numpy()
-            vals=df[c][1:].to_numpy()
-            bw_fwd.addEntries([c] * len(starts), starts, ends=ends, values=vals)
-    bw_fwd.close()
+    if pickle==True:
+        df_profiles_fwd.to_pickle(path + name + "_PROFILES_reads_fwd.pcl")
+        df_profiles_rev.to_pickle(path + name + "_PROFILES_reads_rev.pcl")
+    elif pickle==False:
+        df_profiles_fwd.to_csv(path + name + "_PROFILES_reads_fwd.csv")
+        df_profiles_rev.to_csv(path + name + "_PROFILES_reads_rev.csv")
+    #save log
+    with open(path + name + "_PROFILES_reads.log", "w") as log_file:
+        for row in log:
+            log_file.write(str(row) + '\n')
 
     # clean
-    log_file.write(timestamp()+"\t"+"Cleaninig"+"\n")
     os.chdir(path)
     shutil.rmtree(name + timestamp, ignore_errors=True)
 
-    log_file.write(timestamp()+"\t"+"Done"+"\n")
-    log_file.close()
+    print("Done.")
 
 def sam2genome3end(filename="", path='', toClear='', pickle=False,chunks=0,noncoded_pA=True,noncoded_raw=False):
     '''Function handling SAM files and generating profiles for the 3' end of reads. Executed using wrapping script SAM2profilesGenomic.py.
@@ -497,6 +465,8 @@ def sam2genome3end(filename="", path='', toClear='', pickle=False,chunks=0,nonco
 
     print("Done.")
 
+
+def sam2genome5end(filename="", path='', toClear='', pickle=False,chunks=0):
     '''Function handling SAM files and generating profiles for the 3' end of reads. Executed using wrapping script SAM2profilesGenomic.py.
 
     :param filename:
