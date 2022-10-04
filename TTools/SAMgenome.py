@@ -272,7 +272,7 @@ def parseHeader(filename,name,dirPath):
 #              final functions (level 0)           #
 ####################################################
 
-def sam2genome(filename="", path='', toClear='', pickle=False,chunks=0,use="3end",noncoded_pA=True,noncoded_raw=False):
+def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded_pA=True,noncoded_raw=False):
     '''Function handling SAM files and generating profiles. Executed using wrapping script SAM2profilesGenomic.py.
 
     :param filename: 

@@ -24,6 +24,5 @@ args = parser.parse_args()
 
 path = os.getcwd()+"/"
 
-sam2genome(filename=args.sam_file, path=path, toClear=args.toClear,
-                pickle=pickle, chunks=args.chunks, use=args.use,
-                noncoded_pA=args.noncoded_pA, noncoded_raw=args.noncoded_raw)
+sam2genome(filename=args.sam_file, path=path, toClear=args.toClear,chunks=args.chunks, 
+        use=args.use, noncoded_pA=args.noncoded_pA, noncoded_raw=args.noncoded_raw)
