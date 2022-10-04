@@ -213,7 +213,7 @@ def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame(),logNam
 
     #open log file
     log_file = open(logName, "a")
-    log_file.write("Processing SAM to profiles: -u reads" + '\n')
+    log_file.write(timestamp()+"\t"+"Processing SAM to profiles: -u 5end" + '\n')
     temp_paths = {} #stores paths for each temp file
 
     # strand "+"
@@ -228,10 +228,10 @@ def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame(),logNam
             to_save.to_pickle(path=fileName)
             
             temp_paths[n+"_fwd"] = fileName
-            log_file.write(n + " - FWD profile generated successfully" + '\n')
+            log_file.write(timestamp()+"\t"+n + " - FWD profile generated successfully" + '\n')
         except:
             temp_paths[n+"_fwd"] = None
-            log_file.write(n + " - FWD profile FAILED" + '\n')
+            log_file.write(timestamp()+"\t"+n + " - FWD profile FAILED" + '\n')
     
     # strand "-"
     for n, df in df_input_rev.groupby('name'):
@@ -245,10 +245,10 @@ def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame(),logNam
             to_save.to_pickle(path=fileName)
             
             temp_paths[n+"_rev"] = fileName
-            log_file.write(n + " - REV profile generated successfully" + '\n')
+            log_file.write(timestamp()+"\t"+n + " - REV profile generated successfully" + '\n')
         except:
             temp_paths[n+"_rev"] = None
-            log_file.write(n + " - REV profile FAILED" + '\n')
+            log_file.write(timestamp()+"\t"+n + " - REV profile FAILED" + '\n')
 
     return temp_paths
 
