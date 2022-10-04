@@ -100,6 +100,7 @@ def reads2genome(name=str(), dirPath=str(), df_details=pd.DataFrame(),logName=st
     log_file.write("Processing SAM to profiles: -u reads" + '\n')
     temp_paths = {} #stores paths for each temp file
 
+    # strand "+" 
     for n, df in df_input_fwd.groupby('name'):
         try:
             length = df_details.loc[n]['length']
@@ -115,6 +116,7 @@ def reads2genome(name=str(), dirPath=str(), df_details=pd.DataFrame(),logName=st
             temp_paths[n+"_fwd"] = None
             log_file.write(n + " - FWD profile FAILED" + '\n')
             
+    # strand "-"    
     for n, df in df_input_rev.groupby('name'):
         try:
             length = df_details.loc[n]['length']
@@ -209,9 +211,10 @@ def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame(),logNam
     df_input_fwd = pd.read_csv(dirPath + "/" + name + "_fwd.tab", sep="\t", names=cols)
     df_input_rev = pd.read_csv(dirPath + "/" + name + "_rev.tab", sep="\t", names=cols)
 
-    output_df_fwd = pd.DataFrame()
-    output_df_rev = pd.DataFrame()
-    log = []
+    #open log file
+    log_file = open(logName, "a")
+    log_file.write("Processing SAM to profiles: -u reads" + '\n')
+    temp_paths = {} #stores paths for each temp file
 
     # strand "+"
     for n, df in df_input_fwd.groupby('name'):
@@ -220,12 +223,15 @@ def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame(),logNam
             l = list(zip(df['position'].astype(int), df['CIGAR'], df['sequence']))         
             #processing reads
             s1_profile, l1_noncoded = chromosome2profile3end(l, length=length, strand='REV') #shortcut: swapping FWD and REV strands
-            # output_df_fwd = output_df_fwd.append(s1_profile.rename(n))
-            output_df_fwd = pd.concat([output_df_fwd,s1_profile.rename(n)],axis=0, join='outer')
-
-            log.append(n + " - FWD profile and/or list of noncoded ends generated successfully")
+            to_save = pd.DataFrame(s1_profile.rename(n))
+            fileName = dirPath+"/temp_"+n+"_fwd.pcl"
+            to_save.to_pickle(path=fileName)
+            
+            temp_paths[n+"_fwd"] = fileName
+            log_file.write(n + " - FWD profile generated successfully" + '\n')
         except:
-            log.append(n + " - FWD profile and/or list of noncoded ends FAILED")
+            temp_paths[n+"_fwd"] = None
+            log_file.write(n + " - FWD profile FAILED" + '\n')
     
     # strand "-"
     for n, df in df_input_rev.groupby('name'):
@@ -234,14 +240,17 @@ def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame(),logNam
             l = list(zip(df['position'].astype(int), df['CIGAR'], df['sequence']))         
             #processing reads
             s1_profile, l1_noncoded = chromosome2profile3end(l, length=length, strand='FWD') #shortcut: swapping FWD and REV strands
-            # output_df_rev = output_df_rev.append(s1_profile.rename(n))
-            output_df_rev = pd.concat([output_df_rev,s1_profile.rename(n)],axis=0, join='outer')
-
-            log.append(n + " - REV profile and/or list of noncoded ends generated successfully")
+            to_save = pd.DataFrame(s1_profile.rename(n))
+            fileName = dirPath+"/temp_"+n+"_rev.pcl"
+            to_save.to_pickle(path=fileName)
+            
+            temp_paths[n+"_rev"] = fileName
+            log_file.write(n + " - REV profile generated successfully" + '\n')
         except:
-            log.append(n + " - REV profile and/or list of noncoded ends FAILED")
+            temp_paths[n+"_rev"] = None
+            log_file.write(n + " - REV profile FAILED" + '\n')
 
-    return output_df_fwd, output_df_rev, log
+    return temp_paths
 
 def parseHeader(filename,name,dirPath):
     #geneList = chromosome list from the @SQ header of SAM file'
@@ -272,10 +281,12 @@ def sam2genome(filename="", path='', toClear='', pickle=False,chunks=0,use="3end
     :type path: str
     :param toClear: element of filename to be removed, defaults to ''
     :type toClear: str, optional
-    :param pickle: save output in pickle format, defaults to False
-    :type pickle: bool, optional
     :param chunks: Read SAM file in chunks, defaults to 0
     :type chunks: int, optional
+    :param noncoded_pA: Save non-coded polyA ends, defaults to True
+    :type noncoded_pA: bool, optional
+    :param noncoded_raw: Save all non-coded ends, defaults to False
+    :type noncoded_raw: bool, optional
     '''
     # making working directory
     name = filename.replace(".sam", "")
@@ -337,252 +348,87 @@ def sam2genome(filename="", path='', toClear='', pickle=False,chunks=0,use="3end
     if use=="read":
         temp_paths = reads2genome(name=name, dirPath=dirPath,df_details=df_details, logName=logName)
     elif use=="3end":
-        print("3end")
+        exit("3end not implemented yet")
     elif use=="5end":
-        print("5end")
+        temp_paths = reads2genome5end(name=name, dirPath=dirPath,df_details=df_details, logName=logName)
     else:
-        print("Wrong -u parameter selected")
+        exit("Wrong -u parameter selected")
     
     #save output
     log_file = open(logName, "a")
     log_file.write(timestamp()+"\t"+"Saving output"+"\n")
 
     chroms = list(df_details['length'].to_dict().items())
+    ### fwd strand ###
     bw_fwd = pyBigWig.open(path + name + "_PROFILE_"+use+"_fwd.bw", "w")
     bw_fwd.addHeader(chroms)
     for p in temp_paths.keys():
         if p.endswith("_fwd"):
             c = p.strip("_fwd")
             df = pd.read_pickle(temp_paths[p])
-            starts = pd.Series(df.index)[:-1].to_numpy()
-            ends=pd.Series(df.index)[1:].to_numpy()
-            vals=df[c][1:].to_numpy()
+            starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
+            ends=pd.Series(df.index)[1:].to_numpy() #starts with 1
+            vals=df[c][1:].to_numpy() #starts with 1
             bw_fwd.addEntries([c] * len(starts), starts, ends=ends, values=vals)
     bw_fwd.close()
+    
+    ### fwd strand ###
+    bw_rev = pyBigWig.open(path + name + "_PROFILE_"+use+"_rev.bw", "w")
+    bw_rev.addHeader(chroms)
+    for p in temp_paths.keys():
+        if p.endswith("_rev"):
+            c = p.strip("_rev")
+            df = pd.read_pickle(temp_paths[p])
+            starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
+            ends=pd.Series(df.index)[1:].to_numpy() #starts with 1
+            vals=df[c][1:].to_numpy() #starts with 1
+            bw_rev.addEntries([c] * len(starts), starts, ends=ends, values=vals)
+    bw_rev.close()
 
     # clean
     log_file.write(timestamp()+"\t"+"Cleaninig"+"\n")
     os.chdir(path)
-    shutil.rmtree(name + timestamp, ignore_errors=True)
+    shutil.rmtree(name + timestampRnd, ignore_errors=True)
 
     log_file.write(timestamp()+"\t"+"Done"+"\n")
     log_file.close()
 
-def sam2genome3end(filename="", path='', toClear='', pickle=False,chunks=0,noncoded_pA=True,noncoded_raw=False):
-    '''Function handling SAM files and generating profiles for the 3' end of reads. Executed using wrapping script SAM2profilesGenomic.py.
 
-    :param filename:
-    :type filename: str
-    :param path: 
-    :type path: str
-    :param toClear: element of filename to be removed, defaults to ''
-    :type toClear: str, optional
-    :param pickle: save output in pickle format, defaults to False
-    :type pickle: bool, optional
-    :param chunks: Read SAM file in chunks, defaults to 0
-    :type chunks: int, optional
-    :param noncoded_pA: Save non-coded polyA ends, defaults to True
-    :type noncoded_pA: bool, optional
-    :param noncoded_raw: Save all non-coded ends, defaults to False
-    :type noncoded_raw: bool, optional
-    '''
+    # #Reads to profiles
+    # df_profiles_fwd, df_profiles_rev, log, noncoded_fwd, noncoded_rev = reads2genome3end(name=name, dirPath=dirPath,df_details=df_details,noncoded=noncoded)
 
-    # making working directory
-    name = filename.replace(".sam", "")
-    if toClear:
-        name = name.replace(toClear, "")
-    timestamp = tt.methods.timestampRandomInt()
-    dirPath = path + name + timestamp
-    os.makedirs(dirPath)
+    # #parse raw non-coded ends, keep only >=3 nt long
+    # noncoded_fwd = parseNoncoded(noncoded_fwd, minLen=3)
+    # noncoded_rev = parseNoncoded(noncoded_rev, minLen=3)
 
-    df_details = parseHeader(filename=filename,name=name,dirPath=dirPath)
-    geneList = df_details.index.tolist()
+    # #saving all non-coded ends
+    # if noncoded_raw == True:
+    #     noncoded_fwd.to_pickle(path + name + "_noncoded_raw_3end_fwd.pcl")
+    #     noncoded_rev.to_pickle(path + name + "_noncoded_raw_3end_rev.pcl")
 
-    # tempfiles
-    ##list of files if red as chunks
-    if chunks > 0:
-        chunkList = [i for i in range(0,len(geneList)+1,chunks)]
-    else:
-        chunkList = [0]
-        chunks = len(geneList)+1
+    # #select only polyA reads (>=3 and 75% of A content) and prepare profile
+    # try:
+    #     noncoded_profile_fwd = noncoded2profile(selectPolyA(noncoded_fwd),df_details=df_details)
+    #     noncoded_profile_fwd = noncoded_profile_fwd.T
+    #     name_nc_fwd = name
+    # except:
+    #     print("polyA reads not found for FWD strand")
+    #     name_nc_fwd = name+"_EMPTY"
+    #     noncoded_profile_fwd = pd.DataFrame()
 
-    ##genes means chromosomes for this function
-    genes = pd.DataFrame(pd.Series(geneList,dtype=str))
-    for i in chunkList:
-        geneListFileName = "/geneList_" + str(i) + ".tab"
-        genes[i:i+chunks].to_csv(dirPath + geneListFileName, sep='\t', header=False,index=False)
-        
-    ##Select FWD and REV reads from SAM file
-    os.chdir(dirPath)
-    
-    for i in chunkList:
-        geneListFileName = "geneList_" + str(i) + ".tab"
-        
-        print
-        #FLAG 0 and 256 for single end reads, aligned, forward match
-        command = "grep -v ^@ ../" + filename + " | grep -f " + geneListFileName +\
-                  " | awk -F'\t' 'BEGIN{OFS = FS} $2==0||$2==256{print $2,$3, $4, $6, $10, $12}' > "+\
-                  name + "_" + str(i) + "_fwd.tab"
-        tt.methods.bashCommand(command)
-        
-        #FLAG 16 and 272 for single end reads, aligned, forward match
-        command = "grep -v ^@ ../" + filename + " | grep -f " + geneListFileName +\
-                  " | awk -F'\t' 'BEGIN{OFS = FS} $2==16||$2==272{print $2,$3, $4, $6, $10, $12}' > "+\
-                  name + "_" + str(i) + "_rev.tab"
-        tt.methods.bashCommand(command)
-    
-    tt.methods.bashCommand("cat "+name+"*fwd.tab > " + name +"_fwd.tab")
-    tt.methods.bashCommand("cat "+name+"*rev.tab > " + name +"_rev.tab")
+    # try:
+    #     noncoded_profile_rev = noncoded2profile(selectPolyA(noncoded_rev),df_details=df_details)
+    #     noncoded_profile_rev = noncoded_profile_rev.T
+    #     name_nc_rev = name
+    # except:
+    #     print("polyA reads not found for REV strand")
+    #     name_nc_rev = name+"_EMPTY"
+    #     noncoded_profile_rev = pd.DataFrame()
 
-    print("Reads selected.")
-
-    noncoded=False
-    if noncoded_pA==True: noncoded=True
-    elif noncoded_raw==True: noncoded=True
-
-    #Reads to profiles
-    df_profiles_fwd, df_profiles_rev, log, noncoded_fwd, noncoded_rev = reads2genome3end(name=name, dirPath=dirPath,df_details=df_details,noncoded=noncoded)
-
-    #parse raw non-coded ends, keep only >=3 nt long
-    noncoded_fwd = parseNoncoded(noncoded_fwd, minLen=3)
-    noncoded_rev = parseNoncoded(noncoded_rev, minLen=3)
-
-    #saving all non-coded ends
-    if noncoded_raw == True:
-        noncoded_fwd.to_pickle(path + name + "_noncoded_raw_3end_fwd.pcl")
-        noncoded_rev.to_pickle(path + name + "_noncoded_raw_3end_rev.pcl")
-
-    #select only polyA reads (>=3 and 75% of A content) and prepare profile
-    try:
-        noncoded_profile_fwd = noncoded2profile(selectPolyA(noncoded_fwd),df_details=df_details)
-        noncoded_profile_fwd = noncoded_profile_fwd.T
-        name_nc_fwd = name
-    except:
-        print("polyA reads not found for FWD strand")
-        name_nc_fwd = name+"_EMPTY"
-        noncoded_profile_fwd = pd.DataFrame()
-
-    try:
-        noncoded_profile_rev = noncoded2profile(selectPolyA(noncoded_rev),df_details=df_details)
-        noncoded_profile_rev = noncoded_profile_rev.T
-        name_nc_rev = name
-    except:
-        print("polyA reads not found for REV strand")
-        name_nc_rev = name+"_EMPTY"
-        noncoded_profile_rev = pd.DataFrame()
-
-    #save output
-    if pickle==True:
-        df_profiles_fwd.to_pickle(path + name + "_PROFILES_3end_fwd.pcl")
-        df_profiles_rev.to_pickle(path + name + "_PROFILES_3end_rev.pcl")
-        if noncoded_pA==True:
-            noncoded_profile_fwd.to_pickle(path + name_nc_fwd + "_noncoded_PROFILES_3end_fwd.pcl")
-            noncoded_profile_rev.to_pickle(path + name_nc_rev + "_noncoded_PROFILES_3end_rev.pcl")
-    
-    elif pickle==False:
-        df_profiles_fwd.to_csv(path + name + "_PROFILES_3end_fwd.csv")
-        df_profiles_rev.to_csv(path + name + "_PROFILES_3end_rev.csv")
-        if noncoded_pA==True:
-            noncoded_profile_fwd.to_csv(path + name_nc_fwd + "_noncoded_PROFILES_3end_fwd.csv")
-            noncoded_profile_rev.to_csv(path + name_nc_rev + "_noncoded_PROFILES_3end_rev.csv")
-    
-    #save log
-    with open(path + name + "_PROFILES_3end.log", "w") as log_file:
-        for row in log:
-            log_file.write(str(row) + '\n')
-
-    # clean
-    os.chdir(path)
-    shutil.rmtree(name + timestamp,ignore_errors=True)
-
-    print("Done.")
-
-    '''Function handling SAM files and generating profiles for the 3' end of reads. Executed using wrapping script SAM2profilesGenomic.py.
-
-    :param filename:
-    :type filename: str
-    :param path: 
-    :type path: str
-    :param toClear: element of filename to be removed, defaults to ''
-    :type toClear: str, optional
-    :param pickle: save output in pickle format, defaults to False
-    :type pickle: bool, optional
-    :param chunks: Read SAM file in chunks, defaults to 0
-    :type chunks: int, optional
-    :param noncoded_pA: Save non-coded polyA ends, defaults to True
-    :type noncoded_pA: bool, optional
-    :param noncoded_raw: Save all non-coded ends, defaults to False
-    :type noncoded_raw: bool, optional
-    '''
-
-    # making working directory
-    name = filename.replace(".sam", "")
-    if toClear:
-        name = name.replace(toClear, "")
-    timestamp = tt.methods.timestampRandomInt()
-    dirPath = path + name + timestamp
-    os.makedirs(dirPath)
-
-    df_details = parseHeader(filename=filename,name=name,dirPath=dirPath)
-    geneList = df_details.index.tolist()
-    
-    # tempfiles
-    ##list of files if red as chunks
-    if chunks > 0:
-        chunkList = [i for i in range(0,len(geneList)+1,chunks)]
-    else:
-        chunkList = [0]
-        chunks = len(geneList)+1
-
-    ##genes means chromosomes for this function
-    genes = pd.DataFrame(pd.Series(geneList))
-    for i in chunkList:
-        geneListFileName = "/geneList_" + str(i) + ".tab"
-        genes[i:i+chunks].to_csv(dirPath + geneListFileName, sep='\t', header=False,index=False)
-        
-    ##Select FWD and REV reads from SAM file
-    os.chdir(dirPath)
-    
-    for i in chunkList:
-        geneListFileName = "geneList_" + str(i) + ".tab"
-        
-        print
-        #FLAG 0 and 256 for single end reads, aligned, forward match
-        command = "grep -v ^@ ../" + filename + " | grep -f " + geneListFileName +\
-                  " | awk -F'\t' 'BEGIN{OFS = FS} $2==0||$2==256{print $2,$3, $4, $6, $10, $12}' > "+\
-                  name + "_" + str(i) + "_fwd.tab"
-        tt.methods.bashCommand(command)
-        
-        #FLAG 16 and 272 for single end reads, aligned, forward match
-        command = "grep -v ^@ ../" + filename + " | grep -f " + geneListFileName +\
-                  " | awk -F'\t' 'BEGIN{OFS = FS} $2==16||$2==272{print $2,$3, $4, $6, $10, $12}' > "+\
-                  name + "_" + str(i) + "_rev.tab"
-        tt.methods.bashCommand(command)
-    
-    tt.methods.bashCommand("cat "+name+"*fwd.tab > " + name +"_fwd.tab")
-    tt.methods.bashCommand("cat "+name+"*rev.tab > " + name +"_rev.tab")
-
-    print("Reads selected.")
-
-    #Reads to profiles
-    df_profiles_fwd, df_profiles_rev, log = reads2genome5end(name=name, dirPath=dirPath,df_details=df_details)
-
-    #save output
-    if pickle==True:
-        df_profiles_fwd.to_pickle(path + name + "_PROFILES_5end_fwd.pcl")
-        df_profiles_rev.to_pickle(path + name + "_PROFILES_5end_rev.pcl")
-    
-    elif pickle==False:
-        df_profiles_fwd.to_csv(path + name + "_PROFILES_5end_fwd.csv")
-        df_profiles_rev.to_csv(path + name + "_PROFILES_5end_rev.csv")
-    
-    #save log
-    with open(path + name + "_PROFILES_5end.log", "w") as log_file:
-        for row in log:
-            log_file.write(str(row) + '\n')
-
-    # clean
-    os.chdir(path)
-    shutil.rmtree(name + timestamp, ignore_errors=True)
-
-    print("Done.")
+    # #save output
+    # if pickle==True:
+    #     df_profiles_fwd.to_pickle(path + name + "_PROFILES_3end_fwd.pcl")
+    #     df_profiles_rev.to_pickle(path + name + "_PROFILES_3end_rev.pcl")
+    #     if noncoded_pA==True:
+    #         noncoded_profile_fwd.to_pickle(path + name_nc_fwd + "_noncoded_PROFILES_3end_fwd.pcl")
+    #         noncoded_profile_rev.to_pickle(path + name_nc_rev + "_noncoded_PROFILES_3end_rev.pcl")

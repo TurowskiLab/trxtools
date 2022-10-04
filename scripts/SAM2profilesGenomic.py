@@ -16,7 +16,6 @@ files.add_argument("-n", dest="noncoded_pA", help="Save non-coded polyA ends. Ca
                         action="store_true",default=False)
 files.add_argument("-r", dest="noncoded_raw", help="Save all non-coded ends. Can be used ONLY with: -u 3end",
                         action="store_true",default=False)
-files.add_argument("--csv", dest="csv", help="Save output as csv. Default is pickle",action="store_true",default=False)
 files.add_argument("-c", dest="toClear", help="String of signs to be cleared from the name of SAM file", type=str, default='_comp_flexbar_STARAligned.out')
 files.add_argument("--chunks", dest="chunks", help="Divide list of genes into a chunks of given size", type=int, default=0)
 args = parser.parse_args()
@@ -25,20 +24,6 @@ args = parser.parse_args()
 
 path = os.getcwd()+"/"
 
-if args.csv==False:
-    pickle = True
-elif args.csv==True:
-    pickle = False
-
-# if args.use=="read":
 sam2genome(filename=args.sam_file, path=path, toClear=args.toClear,
                 pickle=pickle, chunks=args.chunks, use=args.use,
                 noncoded_pA=args.noncoded_pA, noncoded_raw=args.noncoded_raw)
-# elif args.use=="3end":
-#     sam2genome3end(filename=args.sam_file, path=path, toClear=args.toClear,
-#                 pickle=pickle, chunks=args.chunks, noncoded_pA=args.noncoded_pA, noncoded_raw=args.noncoded_raw)
-# elif args.use=="5end":
-#     sam2genome5end(filename=args.sam_file, path=path, toClear=args.toClear,
-#                 pickle=pickle, chunks=args.chunks)
-
-# print("Done at "+tt.methods.timestamp())
