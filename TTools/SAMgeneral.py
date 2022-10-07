@@ -208,6 +208,31 @@ def parseNoncoded(d=dict(), minLen=3):
 
     return df_output.reset_index(drop=True)
 
+def parseNoncodedList(l=[], minLen=3):
+    '''Parse list with non-coded ends and returns structured DataFrame
+
+    :param l: list of tuples ``[(int,str)]``, defaults to lits()
+    :type l: list
+    :param minLen: minimal length for non-coded end to keep, defaults to 3
+    :type minLen: int, optional
+    :return: DataFrame with parsed non-coded ends
+    :rtype: DataFrame
+
+    >>> parseNoncodedList([(40, 'AAA'), (35, 'AACAA')])
+       index  AAA  AACAA
+    0     40  1.0    NaN
+    1     35  NaN    1.0
+    '''
+    df_temp = pd.DataFrame(l, columns=['position','end'])
+    df_temp = df_temp[df_temp['end'].str.len() >= minLen].sort_values('end') #keep only minLen ends
+    
+    df_short = pd.DataFrame()
+    for n,df in df_temp.groupby('end'):
+        s = df.groupby('position')['end'].count().sort_index().rename(n)
+        df_short = pd.concat([df_short,s],axis=1) #append
+
+    return df_short
+
 def selectPolyA(df=pd.DataFrame()):
     '''Select only polyA non-coded ends containinig ``"AAA"`` and "A"-content above 75%
 
@@ -216,10 +241,16 @@ def selectPolyA(df=pd.DataFrame()):
     :return: modified DataFrame
     :rtype: DataFrame
     '''
-    print(df)
     #select columns with at least "AAA" and "A" content above 0.75
     cols = df.columns[(df.columns.str.contains("AAA"))&((df.columns.to_series().apply(tt.methods.letterContent)>0.75))]
-    return df[['index','chr']+cols.tolist()]
+    if 'chr' in df.columns.values:
+        return df[['index','chr']+cols.tolist()]
+    else:
+        return df[cols.tolist()]
+
+def selectEnds(df=pd.DataFrame(),ends="polyA"):
+    if ends=="polyA":
+        return selectPolyA(df=df)
 
 def noncoded2profile(df_input=pd.DataFrame(), df_details=pd.DataFrame()):
     '''Turns non-coded ends into profile
@@ -231,6 +262,7 @@ def noncoded2profile(df_input=pd.DataFrame(), df_details=pd.DataFrame()):
     :return: DataFrame with profiles
     :rtype: DataFrame
     '''
+    
     df_output = pd.DataFrame()
     for i,df in df_input.groupby('chr'):
         df = df.drop('chr',"columns").set_index('index')
@@ -242,3 +274,18 @@ def noncoded2profile(df_input=pd.DataFrame(), df_details=pd.DataFrame()):
         df_output = pd.concat([df_output,profile.rename(i)],axis=0, join='outer')
         
     return df_output
+
+def noncoded2profile1(df=pd.DataFrame(), length=int()):
+    '''Turns non-coded ends into profile
+
+    :param df_input: output of parseNoncodedList function
+    :type df_input: DataFrame
+    :param df_details: chromosome lengths
+    :type df_details: DataFrame
+    :return: Series with profiles
+    :rtype: Series
+    '''
+    
+    profile = df.sum(1)
+    profile = profile.reindex(pd.RangeIndex(length + 1)).fillna(0)  # fills spaces with 0 counts
+    return profile

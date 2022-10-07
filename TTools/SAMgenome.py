@@ -59,7 +59,7 @@ def chromosome2profile3end(l=[], length=int(), strand='FWD'):
             readLength = sum([int(i) for i, x in match])
             readEnd = position+readLength-1
             hits.append(readEnd) #appending
-            if nonMatchThree: 
+            if nonMatchThree:
                 noncoded.append((readEnd,sequence[-nonMatchThree:]))
                 
         elif strand=="REV": #strand "-"
@@ -78,7 +78,7 @@ def chromosome2profile3end(l=[], length=int(), strand='FWD'):
 #   intermediate functions level -1 (from final)   #
 ####################################################
 
-def reads2genome(name=str(), dirPath=str(), df_details=pd.DataFrame(),logName=str()):
+def reads2genome(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="read",logName=str()):
     '''Function used by sam2genome. Works for both strands.
 
     :param name: name of experiment
@@ -102,40 +102,44 @@ def reads2genome(name=str(), dirPath=str(), df_details=pd.DataFrame(),logName=st
 
     # strand "+" 
     for n, df in df_input_fwd.groupby('name'):
+        n_name = n+"_"+use
         try:
             length = df_details.loc[n]['length']
             l = list(zip(df['position'].astype(int), df['CIGAR']))
             s1_profile = transcript2profile(l, length=length)
             to_save = pd.DataFrame(s1_profile.rename(n))
-            fileName = dirPath+"/temp_"+n+"_fwd.pcl"
-            to_save.to_pickle(path=fileName)
+            fileName = dirPath+"/temp_"+n_name+"_fwd.pcl"
+            to_save.to_pickle(path=fileName,compression='gzip')
             
-            temp_paths[n+"_fwd"] = fileName
-            log_file.write(n + " - FWD profile generated successfully" + '\n')
+            temp_paths[n_name+"_fwd"] = fileName
+            log_file.write(timestamp()+"\t"+n_name + " - FWD profile generated successfully" + '\n')
         except:
-            temp_paths[n+"_fwd"] = None
-            log_file.write(n + " - FWD profile FAILED" + '\n')
+            temp_paths[n_name+"_fwd"] = None
+            log_file.write(timestamp()+"\t"+n_name + " - FWD profile FAILED" + '\n')
             
     # strand "-"    
     for n, df in df_input_rev.groupby('name'):
+        n_name = n+"_"+use
         try:
             length = df_details.loc[n]['length']
             l = list(zip(df['position'].astype(int), df['CIGAR']))
             s1_profile = transcript2profile(l, length=length)
             to_save = pd.DataFrame(s1_profile.rename(n))
-            fileName = dirPath+"/temp_"+n+"_rev.pcl"
-            to_save.to_pickle(path=fileName)
+            fileName = dirPath+"/temp_"+n_name+"_rev.pcl"
+            to_save.to_pickle(path=fileName,compression='gzip')
             
-            temp_paths[n+"_rev"] = fileName
-            log_file.write(n + " - REV profile generated successfully" + '\n')
+            temp_paths[n_name+"_rev"] = fileName
+            log_file.write(timestamp()+"\t"+n_name+ " - REV profile generated successfully" + '\n')
         except:
-            temp_paths[n+"_rev"] = None
-            log_file.write(n + " - REV profile FAILED" + '\n')
+            
+            temp_paths[n_name+"_rev"] = None
+            log_file.write(timestamp()+"\t"+n_name+" - REV profile FAILED" + '\n')
     
     log_file.close()
     return temp_paths
 
-def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),noncoded=True,logName=str()):
+def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3end",
+                noncoded=True,ends='polyA',logName=str(),minLen=3):
     '''Function used by sam2genome3end. Works for both strands.
 
     :param name: name of experiment
@@ -154,47 +158,66 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),noncod
     df_input_fwd = pd.read_csv(dirPath + "/" + name + "_fwd.tab", sep="\t", names=cols)
     df_input_rev = pd.read_csv(dirPath + "/" + name + "_rev.tab", sep="\t", names=cols)
 
-    output_df_fwd = pd.DataFrame()
-    output_df_rev = pd.DataFrame()
-    noncoded_fwd = {}
-    noncoded_rev = {}
-    log = []
-
+    #open log file
+    log_file = open(logName, "a")
+    log_file.write(timestamp()+"\t"+"Processing SAM to profiles: -u "+use+'\n')
+    temp_paths = {} #stores paths for each temp file
+    
     # strand "+"
     for n, df in df_input_fwd.groupby('name'):
-        try:
-            length = df_details.loc[n]['length']
-            l = list(zip(df['position'].astype(int), df['CIGAR'], df['sequence']))         
-            #processing reads
-            s1_profile, l1_noncoded = chromosome2profile3end(l, length=length, strand='FWD')
-            # output_df_fwd = output_df_fwd.append(s1_profile.rename(n)) #method is deprecated
-            output_df_fwd = pd.concat([output_df_fwd,s1_profile.rename(n)],axis=0, join='outer')
-            if noncoded==True:
-                noncoded_fwd[n] = l1_noncoded
+        n_name = n+"_"+use
+        # try:
+        length = df_details.loc[n]['length']
+        l = list(zip(df['position'].astype(int), df['CIGAR'], df['sequence']))         
+        #processing reads
+        s1_profile, l1_noncoded = chromosome2profile3end(l, length=length, strand='FWD')
+        to_save = pd.DataFrame(s1_profile.rename(n))
+        fileName = dirPath+"/temp_"+n_name+"_fwd.pcl.gz"
+        to_save.to_pickle(path=fileName,compression='gzip')
+        
+        temp_paths[n_name+"_fwd"] = fileName
+        log_file.write(timestamp()+"\t"+n_name + " - FWD profile generated successfully" + '\n')
 
-            log.append(n + " - FWD profile and/or list of noncoded ends generated successfully")
-        except:
-            log.append(n + " - FWD profile and/or list of noncoded ends FAILED")
-    
-    # strand "-"
-    for n, df in df_input_rev.groupby('name'):
-        try:
-            length = df_details.loc[n]['length']
-            l = list(zip(df['position'].astype(int), df['CIGAR'], df['sequence']))         
-            #processing reads
-            s1_profile, l1_noncoded = chromosome2profile3end(l, length=length, strand='REV')
-            # output_df_rev = output_df_rev.append(s1_profile.rename(n)) #method is deprecated
-            output_df_rev = pd.concat([output_df_rev,s1_profile.rename(n)],axis=0, join='outer')
-            if noncoded==True:
-                noncoded_rev[n] = l1_noncoded
+        if noncoded==True:
+            l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
+            #above file could be saved as raw noncoded ends
+            noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
+            to_save = pd.DataFrame(noncoded_profile.rename(n))
+            fileName = dirPath+"/temp_"+n_name+"_"+ends+"_fwd.pcl.gz"
+            to_save.to_pickle(path=fileName,compression="gzip")
+            temp_paths[n_name+"_"+ends+"_fwd"] = fileName
+            log_file.write(timestamp()+"\t"+n_name + " - FWD "+ends+" profile generated successfully" + '\n')
+        # except:
+        #     n = n+"_"+use
+        #     temp_paths[n+"_fwd"] = None
+        #     log_file.write(timestamp()+"\t"+n + " - FWD profile/noncode profile FAILED" + '\n')
 
-            log.append(n + " - REV profile and/or list of noncoded ends generated successfully")
-        except:
-            log.append(n + " - REV profile and/or list of noncoded ends FAILED")
+    # # strand "-"
+    # for n, df in df_input_rev.groupby('name'):
+    #     try:
+    #         length = df_details.loc[n]['length']
+    #         l = list(zip(df['position'].astype(int), df['CIGAR'], df['sequence']))         
+    #         #processing reads
+    #         s1_profile, l1_noncoded = chromosome2profile3end(l, length=length, strand='REV')
+    #         to_save = pd.DataFrame(s1_profile.rename(n))
+    #         fileName = dirPath+"/temp_"+n+"_rev.pcl"
+    #         to_save.to_pickle(path=fileName)
+            
+    #         temp_paths[n+"_rev"] = fileName
+    #         log_file.write(timestamp()+"\t"+n + " - REV profile generated successfully" + '\n')
 
-    return output_df_fwd, output_df_rev, log, noncoded_fwd, noncoded_rev
+    #         if noncoded==True:
+    #             to_save = pd.DataFrame(l1_noncoded.rename(n))
+    #             fileName = dirPath+"/tempNonCoding_"+n+"_rev.pcl.gz"
+    #             to_save.to_pickle(path=fileName,compression="gzip")
+    #             temp_paths[n+"_NCrev"] = fileName
+    #     except:
+    #         temp_paths[n+"_rev"] = None
+    #         log_file.write(timestamp()+"\t"+n + " - REV profile FAILED" + '\n')
 
-def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame(),logName=str()):
+    return temp_paths
+
+def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="5end",logName=str()):
     '''Function used by sam2genome5end. Works for both strands.
 
     :param name: name of experiment
@@ -224,12 +247,14 @@ def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame(),logNam
             #processing reads
             s1_profile, l1_noncoded = chromosome2profile3end(l, length=length, strand='REV') #shortcut: swapping FWD and REV strands
             to_save = pd.DataFrame(s1_profile.rename(n))
-            fileName = dirPath+"/temp_"+n+"_fwd.pcl"
-            to_save.to_pickle(path=fileName)
+            fileName = dirPath+"/temp_"+n+"_fwd.pcl.gz"
+            to_save.to_pickle(path=fileName,compression='gzip')
             
+            n = n+"_"+use
             temp_paths[n+"_fwd"] = fileName
             log_file.write(timestamp()+"\t"+n + " - FWD profile generated successfully" + '\n')
         except:
+            n = n+"_"+use
             temp_paths[n+"_fwd"] = None
             log_file.write(timestamp()+"\t"+n + " - FWD profile FAILED" + '\n')
     
@@ -241,12 +266,14 @@ def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame(),logNam
             #processing reads
             s1_profile, l1_noncoded = chromosome2profile3end(l, length=length, strand='FWD') #shortcut: swapping FWD and REV strands
             to_save = pd.DataFrame(s1_profile.rename(n))
-            fileName = dirPath+"/temp_"+n+"_rev.pcl"
-            to_save.to_pickle(path=fileName)
+            fileName = dirPath+"/temp_"+n+"_rev.pcl.gz"
+            to_save.to_pickle(path=fileName,compression='gzip')
             
+            n = n+"_"+use
             temp_paths[n+"_rev"] = fileName
             log_file.write(timestamp()+"\t"+n + " - REV profile generated successfully" + '\n')
         except:
+            n = n+"_"+use
             temp_paths[n+"_rev"] = None
             log_file.write(timestamp()+"\t"+n + " - REV profile FAILED" + '\n')
 
@@ -272,7 +299,7 @@ def parseHeader(filename,name,dirPath):
 #              final functions (level 0)           #
 ####################################################
 
-def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded_pA=True,noncoded_raw=False):
+def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=True,ends="polyA"):
     '''Function handling SAM files and generating profiles. Executed using wrapping script SAM2profilesGenomic.py.
 
     :param filename: 
@@ -297,7 +324,7 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded_pA=
     os.makedirs(dirPath)
 
     #initialize log file
-    logName=path + name + ".log"
+    logName=path + name + "_" + use + ".log"
     log_file = open(logName, "w")
     log_file.write(timestamp()+"\t"+"Start"+"\n")
     log_file.write(timestamp()+"\t"+"Initializing"+"\n")
@@ -348,42 +375,64 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded_pA=
     if use=="read":
         temp_paths = reads2genome(name=name, dirPath=dirPath,df_details=df_details, logName=logName)
     elif use=="3end":
-        exit("3end not implemented yet")
+        temp_paths = reads2genome3end(name=name, dirPath=dirPath, df_details=df_details,
+                                        noncoded=noncoded,ends=ends,logName=logName,minLen=3)
     elif use=="5end":
         temp_paths = reads2genome5end(name=name, dirPath=dirPath,df_details=df_details, logName=logName)
     else:
         exit("Wrong -u parameter selected")
     
+    print(temp_paths)
+
     #save output
     log_file = open(logName, "a")
     log_file.write(timestamp()+"\t"+"Saving output"+"\n")
 
     chroms = list(df_details['length'].to_dict().items())
     ### fwd strand ###
-    bw_fwd = pyBigWig.open(path + name + "_PROFILE_"+use+"_fwd.bw", "w")
-    bw_fwd.addHeader(chroms)
+    bw_name = path + name + "_PROFILE_"+use+"_fwd.bw"
+    print(bw_name)
+    bw = pyBigWig.open(bw_name, "w")
+    bw.addHeader(chroms)
     for p in temp_paths.keys():
-        if p.endswith("_fwd"):
-            c = p.strip("_fwd")
-            df = pd.read_pickle(temp_paths[p])
+        e = "_"+use+"_fwd"
+        if p.endswith(e):
+            c = p.strip(e)
+            df = pd.read_pickle(temp_paths[p],compression='gzip')
             starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
             ends=pd.Series(df.index)[1:].to_numpy() #starts with 1
             vals=df[c][1:].to_numpy() #starts with 1
-            bw_fwd.addEntries([c] * len(starts), starts, ends=ends, values=vals)
-    bw_fwd.close()
+            bw.addEntries([c] * len(starts), starts, ends=ends, values=vals)
+    bw.close()
     
-    ### fwd strand ###
-    bw_rev = pyBigWig.open(path + name + "_PROFILE_"+use+"_rev.bw", "w")
-    bw_rev.addHeader(chroms)
-    for p in temp_paths.keys():
-        if p.endswith("_rev"):
-            c = p.strip("_rev")
-            df = pd.read_pickle(temp_paths[p])
-            starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
-            ends=pd.Series(df.index)[1:].to_numpy() #starts with 1
-            vals=df[c][1:].to_numpy() #starts with 1
-            bw_rev.addEntries([c] * len(starts), starts, ends=ends, values=vals)
-    bw_rev.close()
+    # ### fwd strand ###
+    # bw = pyBigWig.open(path + name + "_PROFILE_"+use+"_rev.bw", "w")
+    # bw.addHeader(chroms)
+    # for p in temp_paths.keys():
+    #     if p.endswith("_rev"):
+    #         c = p.strip("_rev")
+    #         df = pd.read_pickle(temp_paths[p])
+    #         starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
+    #         ends=pd.Series(df.index)[1:].to_numpy() #starts with 1
+    #         vals=df[c][1:].to_numpy() #starts with 1
+    #         bw.addEntries([c] * len(starts), starts, ends=ends, values=vals)
+    # bw.close()
+
+    if use=="3end" and noncoded==True:
+        bw_name = path + name + "_PROFILE_"+use+"_"+ends+"_fwd.bw"
+        print(bw_name)
+        bw_fwd = pyBigWig.open(bw_name, "w")
+        bw_fwd.addHeader(chroms)
+        for p in temp_paths.keys():
+            e = "_"+use+"_"+ends+"_fwd"
+            if p.endswith(e):
+                c = p.strip(e)
+                df = pd.read_pickle(temp_paths[p],compression='gzip')
+                starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
+                ends=pd.Series(df.index)[1:].to_numpy() #starts with 1
+                vals=df[c][1:].to_numpy() #starts with 1
+                bw_fwd.addEntries([c] * len(starts), starts, ends=ends, values=vals)
+        bw_fwd.close()
 
     # clean
     log_file.write(timestamp()+"\t"+"Cleaninig"+"\n")
@@ -392,43 +441,3 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded_pA=
 
     log_file.write(timestamp()+"\t"+"Done"+"\n")
     log_file.close()
-
-
-    # #Reads to profiles
-    # df_profiles_fwd, df_profiles_rev, log, noncoded_fwd, noncoded_rev = reads2genome3end(name=name, dirPath=dirPath,df_details=df_details,noncoded=noncoded)
-
-    # #parse raw non-coded ends, keep only >=3 nt long
-    # noncoded_fwd = parseNoncoded(noncoded_fwd, minLen=3)
-    # noncoded_rev = parseNoncoded(noncoded_rev, minLen=3)
-
-    # #saving all non-coded ends
-    # if noncoded_raw == True:
-    #     noncoded_fwd.to_pickle(path + name + "_noncoded_raw_3end_fwd.pcl")
-    #     noncoded_rev.to_pickle(path + name + "_noncoded_raw_3end_rev.pcl")
-
-    # #select only polyA reads (>=3 and 75% of A content) and prepare profile
-    # try:
-    #     noncoded_profile_fwd = noncoded2profile(selectPolyA(noncoded_fwd),df_details=df_details)
-    #     noncoded_profile_fwd = noncoded_profile_fwd.T
-    #     name_nc_fwd = name
-    # except:
-    #     print("polyA reads not found for FWD strand")
-    #     name_nc_fwd = name+"_EMPTY"
-    #     noncoded_profile_fwd = pd.DataFrame()
-
-    # try:
-    #     noncoded_profile_rev = noncoded2profile(selectPolyA(noncoded_rev),df_details=df_details)
-    #     noncoded_profile_rev = noncoded_profile_rev.T
-    #     name_nc_rev = name
-    # except:
-    #     print("polyA reads not found for REV strand")
-    #     name_nc_rev = name+"_EMPTY"
-    #     noncoded_profile_rev = pd.DataFrame()
-
-    # #save output
-    # if pickle==True:
-    #     df_profiles_fwd.to_pickle(path + name + "_PROFILES_3end_fwd.pcl")
-    #     df_profiles_rev.to_pickle(path + name + "_PROFILES_3end_rev.pcl")
-    #     if noncoded_pA==True:
-    #         noncoded_profile_fwd.to_pickle(path + name_nc_fwd + "_noncoded_PROFILES_3end_fwd.pcl")
-    #         noncoded_profile_rev.to_pickle(path + name_nc_rev + "_noncoded_PROFILES_3end_rev.pcl")
