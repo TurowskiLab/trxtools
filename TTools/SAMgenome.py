@@ -179,41 +179,47 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3
         log_file.write(timestamp()+"\t"+n_name + " - FWD profile generated successfully" + '\n')
 
         if noncoded==True:
-            l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
-            #above file could be saved as raw noncoded ends
-            noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
-            to_save = pd.DataFrame(noncoded_profile.rename(n))
-            fileName = dirPath+"/temp_"+n_name+"_"+ends+"_fwd.pcl.gz"
-            to_save.to_pickle(path=fileName,compression="gzip")
-            temp_paths[n_name+"_"+ends+"_fwd"] = fileName
-            log_file.write(timestamp()+"\t"+n_name + " - FWD "+ends+" profile generated successfully" + '\n')
-        # except:
-        #     n = n+"_"+use
-        #     temp_paths[n+"_fwd"] = None
-        #     log_file.write(timestamp()+"\t"+n + " - FWD profile/noncode profile FAILED" + '\n')
+            try:
+                l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
+                #above file could be saved as raw noncoded ends
+                noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
+                to_save = pd.DataFrame(noncoded_profile.rename(n))
+                fileName = dirPath+"/temp_"+n_name+"_"+ends+"_fwd.pcl.gz"
+                to_save.to_pickle(path=fileName,compression="gzip")
+                temp_paths[n_name+"_"+ends+"_fwd"] = fileName
+                log_file.write(timestamp()+"\t"+n_name + " - FWD "+ends+" profile generated successfully" + '\n')
+            except:
+                # temp_paths[n+"_fwd"] = None
+                log_file.write(timestamp()+"\t"+n_name + " - FWD profile/noncode profile FAILED" + '\n')
 
-    # # strand "-"
-    # for n, df in df_input_rev.groupby('name'):
-    #     try:
-    #         length = df_details.loc[n]['length']
-    #         l = list(zip(df['position'].astype(int), df['CIGAR'], df['sequence']))         
-    #         #processing reads
-    #         s1_profile, l1_noncoded = chromosome2profile3end(l, length=length, strand='REV')
-    #         to_save = pd.DataFrame(s1_profile.rename(n))
-    #         fileName = dirPath+"/temp_"+n+"_rev.pcl"
-    #         to_save.to_pickle(path=fileName)
-            
-    #         temp_paths[n+"_rev"] = fileName
-    #         log_file.write(timestamp()+"\t"+n + " - REV profile generated successfully" + '\n')
+    # strand "-"
+    for n, df in df_input_rev.groupby('name'):
+        n_name = n+"_"+use
+        # try:
+        length = df_details.loc[n]['length']
+        l = list(zip(df['position'].astype(int), df['CIGAR'], df['sequence']))         
+        #processing reads
+        s1_profile, l1_noncoded = chromosome2profile3end(l, length=length, strand='REV')
+        to_save = pd.DataFrame(s1_profile.rename(n))
+        fileName = dirPath+"/temp_"+n_name+"_rev.pcl.gz"
+        to_save.to_pickle(path=fileName,compression='gzip')
+        
+        temp_paths[n_name+"_rev"] = fileName
+        log_file.write(timestamp()+"\t"+n_name + " - REV profile generated successfully" + '\n')
 
-    #         if noncoded==True:
-    #             to_save = pd.DataFrame(l1_noncoded.rename(n))
-    #             fileName = dirPath+"/tempNonCoding_"+n+"_rev.pcl.gz"
-    #             to_save.to_pickle(path=fileName,compression="gzip")
-    #             temp_paths[n+"_NCrev"] = fileName
-    #     except:
-    #         temp_paths[n+"_rev"] = None
-    #         log_file.write(timestamp()+"\t"+n + " - REV profile FAILED" + '\n')
+        if noncoded==True:
+            try:
+                l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
+                #above file could be saved as raw noncoded ends
+                noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
+                to_save = pd.DataFrame(noncoded_profile.rename(n))
+                fileName = dirPath+"/temp_"+n_name+"_"+ends+"_rev.pcl.gz"
+                to_save.to_pickle(path=fileName,compression="gzip")
+                temp_paths[n_name+"_"+ends+"_rev"] = fileName
+                log_file.write(timestamp()+"\t"+n_name + " - REV "+ends+" profile generated successfully" + '\n')
+            except:
+                # temp_paths[n+"_fwd"] = None
+                log_file.write(timestamp()+"\t"+n_name + " - REV profile/noncode profile FAILED" + '\n')
 
     return temp_paths
 
@@ -402,9 +408,9 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
             c = p.strip(e)
             df = pd.read_pickle(temp_paths[p],compression='gzip')
             starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
-            ends=pd.Series(df.index)[1:].to_numpy() #starts with 1
+            stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
             vals=df[c][1:].to_numpy() #starts with 1
-            bw.addEntries([c] * len(starts), starts, ends=ends, values=vals)
+            bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
     bw.close()
     
     ### rev strand ###
@@ -416,12 +422,12 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
     for p in temp_paths.keys():
         e = "_"+use+"_rev"
         if p.endswith(e):
-            c = p.strip("_rev")
+            c = p.strip(e)
             df = pd.read_pickle(temp_paths[p],compression='gzip')
             starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
-            ends=pd.Series(df.index)[1:].to_numpy() #starts with 1
+            stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
             vals=df[c][1:].to_numpy() #starts with 1
-            bw.addEntries([c] * len(starts), starts, ends=ends, values=vals)
+            bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
     bw.close()
 
     if use=="3end" and noncoded==True:
@@ -434,14 +440,14 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
         bw = pyBigWig.open(bw_name, "w")
         bw.addHeader(chroms)
         for p in temp_paths.keys():
-            e = "_"+use+"_"+ends+"_fwd"
+            e = "_"+str(use)+"_"+str(ends)+"_fwd"
             if p.endswith(e):
                 c = p.strip(e)
                 df = pd.read_pickle(temp_paths[p],compression='gzip')
                 starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
-                ends=pd.Series(df.index)[1:].to_numpy() #starts with 1
+                stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
                 vals=df[c][1:].to_numpy() #starts with 1
-                bw.addEntries([c] * len(starts), starts, ends=ends, values=vals)
+                bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
         bw.close()
 
         ### rev strand ###
@@ -456,9 +462,9 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
                 c = p.strip(e)
                 df = pd.read_pickle(temp_paths[p],compression='gzip')
                 starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
-                ends=pd.Series(df.index)[1:].to_numpy() #starts with 1
+                stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
                 vals=df[c][1:].to_numpy() #starts with 1
-                bw.addEntries([c] * len(starts), starts, ends=ends, values=vals)
+                bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
         bw.close()
 
     # clean

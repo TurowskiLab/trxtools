@@ -266,9 +266,9 @@ def noncoded2profile(df_input=pd.DataFrame(), df_details=pd.DataFrame()):
     df_output = pd.DataFrame()
     for i,df in df_input.groupby('chr'):
         df = df.drop('chr',"columns").set_index('index')
-        profile = df.sum(1)
+        profile = df.sum(1).astype(float)
         length = df_details.loc[i]['length']
-        profile = profile.reindex(pd.RangeIndex(length + 1)).fillna(0)  # fills spaces with 0 counts
+        profile = profile.reindex(pd.RangeIndex(length + 1)).fillna(0.0)  # fills spaces with 0 counts
         
         # df_output = df_output.append(profile.rename(i))
         df_output = pd.concat([df_output,profile.rename(i)],axis=0, join='outer')
