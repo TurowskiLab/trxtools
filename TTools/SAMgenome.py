@@ -382,16 +382,18 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
     else:
         exit("Wrong -u parameter selected")
     
-    print(temp_paths)
+    # print(temp_paths)
 
     #save output
     log_file = open(logName, "a")
     log_file.write(timestamp()+"\t"+"Saving output"+"\n")
 
     chroms = list(df_details['length'].to_dict().items())
+
     ### fwd strand ###
+    log_file.write(timestamp()+"\t"+"Saving FWD strand"+"\n")
+
     bw_name = path + name + "_PROFILE_"+use+"_fwd.bw"
-    print(bw_name)
     bw = pyBigWig.open(bw_name, "w")
     bw.addHeader(chroms)
     for p in temp_paths.keys():
@@ -405,24 +407,32 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
             bw.addEntries([c] * len(starts), starts, ends=ends, values=vals)
     bw.close()
     
-    # ### fwd strand ###
-    # bw = pyBigWig.open(path + name + "_PROFILE_"+use+"_rev.bw", "w")
-    # bw.addHeader(chroms)
-    # for p in temp_paths.keys():
-    #     if p.endswith("_rev"):
-    #         c = p.strip("_rev")
-    #         df = pd.read_pickle(temp_paths[p])
-    #         starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
-    #         ends=pd.Series(df.index)[1:].to_numpy() #starts with 1
-    #         vals=df[c][1:].to_numpy() #starts with 1
-    #         bw.addEntries([c] * len(starts), starts, ends=ends, values=vals)
-    # bw.close()
+    ### rev strand ###
+    log_file.write(timestamp()+"\t"+"Saving REV strand"+"\n")
+
+    bw_name = path + name + "_PROFILE_"+use+"_rev.bw"
+    bw = pyBigWig.open(bw_name, "w")
+    bw.addHeader(chroms)
+    for p in temp_paths.keys():
+        e = "_"+use+"_rev"
+        if p.endswith(e):
+            c = p.strip("_rev")
+            df = pd.read_pickle(temp_paths[p],compression='gzip')
+            starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
+            ends=pd.Series(df.index)[1:].to_numpy() #starts with 1
+            vals=df[c][1:].to_numpy() #starts with 1
+            bw.addEntries([c] * len(starts), starts, ends=ends, values=vals)
+    bw.close()
 
     if use=="3end" and noncoded==True:
+        log_file.write(timestamp()+"\t"+"Saving output for noncoded ends"+"\n")
+
+        ### fwd strand ###
+        log_file.write(timestamp()+"\t"+"Saving FWD strand (noncoded)"+"\n")
+        
         bw_name = path + name + "_PROFILE_"+use+"_"+ends+"_fwd.bw"
-        print(bw_name)
-        bw_fwd = pyBigWig.open(bw_name, "w")
-        bw_fwd.addHeader(chroms)
+        bw = pyBigWig.open(bw_name, "w")
+        bw.addHeader(chroms)
         for p in temp_paths.keys():
             e = "_"+use+"_"+ends+"_fwd"
             if p.endswith(e):
@@ -431,8 +441,25 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
                 starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
                 ends=pd.Series(df.index)[1:].to_numpy() #starts with 1
                 vals=df[c][1:].to_numpy() #starts with 1
-                bw_fwd.addEntries([c] * len(starts), starts, ends=ends, values=vals)
-        bw_fwd.close()
+                bw.addEntries([c] * len(starts), starts, ends=ends, values=vals)
+        bw.close()
+
+        ### rev strand ###
+        log_file.write(timestamp()+"\t"+"Saving REV strand (noncoded)"+"\n")
+
+        bw_name = path + name + "_PROFILE_"+use+"_"+ends+"_rev.bw"
+        bw = pyBigWig.open(bw_name, "w")
+        bw.addHeader(chroms)
+        for p in temp_paths.keys():
+            e = "_"+use+"_"+ends+"_rev"
+            if p.endswith(e):
+                c = p.strip(e)
+                df = pd.read_pickle(temp_paths[p],compression='gzip')
+                starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
+                ends=pd.Series(df.index)[1:].to_numpy() #starts with 1
+                vals=df[c][1:].to_numpy() #starts with 1
+                bw.addEntries([c] * len(starts), starts, ends=ends, values=vals)
+        bw.close()
 
     # clean
     log_file.write(timestamp()+"\t"+"Cleaninig"+"\n")
