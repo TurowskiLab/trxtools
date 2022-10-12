@@ -1,5 +1,3 @@
-from cmath import log
-from fileinput import filename
 from TTools.SAMgeneral import *
 from TTools.SAMtranscripts import transcript2profile
 from TTools.methods import timestamp
