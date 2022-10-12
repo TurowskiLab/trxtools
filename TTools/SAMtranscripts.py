@@ -9,16 +9,18 @@ def transcript2profile(l=[], length=int()):
     list_hits = [countRead(i) for i in l]  # list of lists
     hits = [item for sublist in list_hits for item in sublist]  # transforms to flat list
     # returning the profile
-    profile = pd.Series(collections.Counter(hits))  # faster that using zip and numpy
-    return profile.reindex(pd.RangeIndex(length + 1)).fillna(0)  # fills spaces with 0 counts
+    profile = pd.Series(collections.Counter(hits)).sort_index().astype(float)  # faster that using zip and numpy
+    # return profile.reindex(pd.RangeIndex(length + 1)).fillna(0)  # fills spaces with 0 counts
+    return profile
 
 def transcript2profileDeletions(l=[], expand=0, length=int()):
     '''Takes list of tuples position,CIGARstring) and generates profile. Not tested for MINUS strand.'''
     list_hits = [countDeletion(i, expand=expand) for i in l]  # list of lists
     hits = [item for sublist in list_hits for item in sublist]  # transforms to flat list
     # returning the profile
-    profile = pd.Series(collections.Counter(hits))  # faster that using zip and numpy
-    return profile.reindex(pd.RangeIndex(length + 1)).fillna(0)  # fills spaces with 0 counts
+    profile = pd.Series(collections.Counter(hits)).sort_index().astype(float)  # faster that using zip and numpy
+    # return profile.reindex(pd.RangeIndex(length + 1)).fillna(0)  # fills spaces with 0 counts
+    return profile
 
 ####################################################
 #   intermediate functions level -1 (from final)   #

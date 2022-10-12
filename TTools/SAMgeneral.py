@@ -286,6 +286,6 @@ def noncoded2profile1(df=pd.DataFrame(), length=int()):
     :rtype: Series
     '''
     
-    profile = df.sum(1).astype(float)
-    profile = profile.reindex(pd.RangeIndex(length + 1)).fillna(0.0)  # fills spaces with 0 counts
+    profile = df.sum(1).sort_index().astype(float)
+    # profile = profile.reindex(pd.RangeIndex(length + 1)).fillna(0.0)  # fills spaces with 0 counts
     return profile

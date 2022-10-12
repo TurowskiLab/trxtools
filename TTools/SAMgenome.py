@@ -70,8 +70,8 @@ def chromosome2profile3end(l=[], length=int(), strand='FWD'):
                 noncoded.append((position,revcomp))
       
     # returning the profile
-    profile = pd.Series(collections.Counter(hits))  # faster that using zip and numpy
-    profile = profile.reindex(pd.RangeIndex(length + 1)).fillna(0)  # fills spaces with 0 counts
+    profile = pd.Series(collections.Counter(hits)).sort_index().astype(float)  # faster that using zip and numpy
+    # profile = profile.reindex(pd.RangeIndex(length + 1)).fillna(0)  # fills spaces with 0 counts
     return profile, noncoded
 
 ####################################################
@@ -407,9 +407,12 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
         if p.endswith(e):
             c = p.strip(e)
             df = pd.read_pickle(temp_paths[p],compression='gzip')
-            starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
-            stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
-            vals=df[c][1:].to_numpy() #starts with 1
+            # starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
+            # stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
+            # vals=df[c][1:].to_numpy() #starts with 1
+            stops = df.index.to_numpy()
+            starts = stops-1
+            vals=df[c].to_numpy()
             bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
     bw.close()
     
@@ -424,9 +427,12 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
         if p.endswith(e):
             c = p.strip(e)
             df = pd.read_pickle(temp_paths[p],compression='gzip')
-            starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
-            stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
-            vals=df[c][1:].to_numpy() #starts with 1
+            # starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
+            # stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
+            # vals=df[c][1:].to_numpy() #starts with 1
+            stops = df.index.to_numpy()
+            starts = stops-1
+            vals=df[c].to_numpy()
             bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
     bw.close()
 
@@ -444,9 +450,12 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
             if p.endswith(e):
                 c = p.strip(e)
                 df = pd.read_pickle(temp_paths[p],compression='gzip')
-                starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
-                stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
-                vals=df[c][1:].to_numpy() #starts with 1
+                # starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
+                # stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
+                # vals=df[c][1:].to_numpy() #starts with 1
+                stops = df.index.to_numpy()
+                starts = stops-1
+                vals=df[c].to_numpy()
                 bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
         bw.close()
 
@@ -461,9 +470,12 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
             if p.endswith(e):
                 c = p.strip(e)
                 df = pd.read_pickle(temp_paths[p],compression='gzip')
-                starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
-                stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
-                vals=df[c][1:].to_numpy() #starts with 1
+                # starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
+                # stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
+                # vals=df[c][1:].to_numpy() #starts with 1
+                stops = df.index.to_numpy()
+                starts = stops-1
+                vals=df[c].to_numpy()
                 bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
         bw.close()
 
