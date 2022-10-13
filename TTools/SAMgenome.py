@@ -392,90 +392,42 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
     log_file = open(logName, "a")
     log_file.write(timestamp()+"\t"+"Saving output"+"\n")
 
-    chroms = list(df_details['length'].to_dict().items())
+    chroms = list(df_details['length'].sort_values(ascending=True).to_dict().items()) #sorted for chrom length
 
     ### fwd strand ###
     log_file.write(timestamp()+"\t"+"Saving FWD strand"+"\n")
-
+    suffix = "_"+use+"_fwd"
+    paths = selectSortPaths(paths=temp_paths,chroms=chroms,suffix=suffix)
     bw_name = path + name + "_PROFILE_"+use+"_fwd.bw"
-    bw = pyBigWig.open(bw_name, "w")
-    bw.addHeader(chroms)
-    for p in temp_paths.keys():
-        e = "_"+use+"_fwd"
-        if p.endswith(e):
-            c = p.strip(e)
-            df = pd.read_pickle(temp_paths[p],compression='gzip')
-            # starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
-            # stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
-            # vals=df[c][1:].to_numpy() #starts with 1
-            stops = df.index.to_numpy()
-            starts = stops-1
-            vals=df[c].to_numpy()
-            bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
-    bw.close()
+    l = saveBigWig(paths=paths,suffix=suffix,bw_name=bw_name,chroms=chroms)
+    log_file.write(timestamp()+"\t"+l+"\n")
     
     ### rev strand ###
     log_file.write(timestamp()+"\t"+"Saving REV strand"+"\n")
-
+    suffix = "_"+use+"_rev"
+    paths = selectSortPaths(paths=temp_paths,chroms=chroms,suffix=suffix)
     bw_name = path + name + "_PROFILE_"+use+"_rev.bw"
-    bw = pyBigWig.open(bw_name, "w")
-    bw.addHeader(chroms)
-    for p in temp_paths.keys():
-        e = "_"+use+"_rev"
-        if p.endswith(e):
-            c = p.strip(e)
-            df = pd.read_pickle(temp_paths[p],compression='gzip')
-            # starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
-            # stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
-            # vals=df[c][1:].to_numpy() #starts with 1
-            stops = df.index.to_numpy()
-            starts = stops-1
-            vals=df[c].to_numpy()
-            bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
-    bw.close()
+    l = saveBigWig(paths=paths,suffix=suffix,bw_name=bw_name,chroms=chroms)
+    log_file.write(timestamp()+"\t"+l+"\n")
 
     if use=="3end" and noncoded==True:
         log_file.write(timestamp()+"\t"+"Saving output for noncoded ends"+"\n")
 
         ### fwd strand ###
         log_file.write(timestamp()+"\t"+"Saving FWD strand (noncoded)"+"\n")
-        
+        suffix = "_"+use+"_"+ends+"_fwd"
+        paths = selectSortPaths(paths=temp_paths,chroms=chroms,suffix=suffix)
         bw_name = path + name + "_PROFILE_"+use+"_"+ends+"_fwd.bw"
-        bw = pyBigWig.open(bw_name, "w")
-        bw.addHeader(chroms)
-        for p in temp_paths.keys():
-            e = "_"+str(use)+"_"+str(ends)+"_fwd"
-            if p.endswith(e):
-                c = p.strip(e)
-                df = pd.read_pickle(temp_paths[p],compression='gzip')
-                # starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
-                # stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
-                # vals=df[c][1:].to_numpy() #starts with 1
-                stops = df.index.to_numpy()
-                starts = stops-1
-                vals=df[c].to_numpy()
-                bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
-        bw.close()
+        l = saveBigWig(paths=paths,suffix=suffix,bw_name=bw_name,chroms=chroms)
+        log_file.write(timestamp()+"\t"+l+"\n")
 
         ### rev strand ###
         log_file.write(timestamp()+"\t"+"Saving REV strand (noncoded)"+"\n")
-
+        suffix = "_"+use+"_"+ends+"_rev"
+        paths = selectSortPaths(paths=temp_paths,chroms=chroms,suffix=suffix)
         bw_name = path + name + "_PROFILE_"+use+"_"+ends+"_rev.bw"
-        bw = pyBigWig.open(bw_name, "w")
-        bw.addHeader(chroms)
-        for p in temp_paths.keys():
-            e = "_"+use+"_"+ends+"_rev"
-            if p.endswith(e):
-                c = p.strip(e)
-                df = pd.read_pickle(temp_paths[p],compression='gzip')
-                # starts = pd.Series(df.index)[:-1].to_numpy() #starts with 0
-                # stops=pd.Series(df.index)[1:].to_numpy() #starts with 1
-                # vals=df[c][1:].to_numpy() #starts with 1
-                stops = df.index.to_numpy()
-                starts = stops-1
-                vals=df[c].to_numpy()
-                bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
-        bw.close()
+        l = saveBigWig(paths=paths,suffix=suffix,bw_name=bw_name,chroms=chroms)
+        log_file.write(timestamp()+"\t"+l+"\n")
 
     # clean
     log_file.write(timestamp()+"\t"+"Cleaninig"+"\n")

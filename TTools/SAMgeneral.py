@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os, collections, shutil, re
 import TTools as tt
+import pyBigWig
 
 ####################################################
 #                 support functions                #
@@ -289,3 +290,58 @@ def noncoded2profile1(df=pd.DataFrame(), length=int()):
     profile = df.sum(1).sort_index().astype(float)
     # profile = profile.reindex(pd.RangeIndex(length + 1)).fillna(0.0)  # fills spaces with 0 counts
     return profile
+
+def saveBigWig(paths=dict(),suffix=str(),bw_name=str(),chroms=list()):
+    '''Save gzip pickle data to BigWig
+
+    :param paths: _description_, defaults to dict()
+    :type paths: _type_, optional
+    :param suffix: _description_, defaults to str()
+    :type suffix: _type_, optional
+    :param bw_name: _description_, defaults to str()
+    :type bw_name: _type_, optional
+    :param chroms: _description_, defaults to list()
+    :type chroms: _type_, optional
+    :return: _description_
+    :rtype: _type_
+    '''
+
+    bw = pyBigWig.open(bw_name, "w")
+    bw.addHeader(chroms)
+    for p in paths.keys():
+        c = p.replace(suffix,"")
+        df = pd.read_pickle(paths[p],compression='gzip')
+        try:
+            stops = df.index.to_numpy()
+            starts = stops-1
+            vals=df[c].to_numpy()
+            bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
+        except: #dealing with potential problems - unclear the origin of the problems
+            print(c+" using except")
+            df = df.sort_index()
+            stops = df.index.to_numpy()
+            starts = list(stops-1)
+            vals=df[c].to_list()
+            bw.addEntries([c] * len(starts), starts, ends=stops.tolist(), values=vals)
+    bw.close()
+    return (suffix+" saved succesfully")
+
+def selectSortPaths(paths={},chroms=[],suffix=""):
+    '''pyBigWig requires for input sorted chromsomes
+
+    :param paths: _description_, defaults to {}
+    :type paths: dict, optional
+    :param chroms: _description_, defaults to []
+    :type chroms: list, optional
+    :param suffix: _description_, defaults to ""
+    :type suffix: str, optional
+    :return: _description_
+    :rtype: _type_
+    '''
+
+    out_dict = {}
+    for i in dict(chroms).keys():
+        for p in paths.keys():
+            if (p.endswith(suffix)) and (i in p):
+                out_dict[p] = paths[p]
+    return out_dict
