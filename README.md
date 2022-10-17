@@ -1,7 +1,7 @@
 TTools
 ======
 
-Transcriptomic (T) Tools. Package of python tools facilitating bioinformatic analysis of transcriptomic data.
+Transcription/Transcriptomic (T) Tools. Package of python tools facilitating bioinformatic analysis of RNA and nascent RNA sequencing data.
 
 Installation
 ------------
