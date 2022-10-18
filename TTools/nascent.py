@@ -1,5 +1,5 @@
 import pandas as pd
-import TTools as tt
+import trxtools as tt
 import os, shutil, random
 
 ### NASCENT (nascentFolding)

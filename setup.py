@@ -5,7 +5,7 @@ import setuptools
 # TODO requirements
 
 setuptools.setup(
-    name='TTools',
+    name='trxtools',
     version='0.2.0',
     author="Tomasz W. Turowski, Jan Mikołajczyk",
     author_email="twturowski@gmail.com",

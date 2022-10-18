@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'TTools'
+project = 'trxtools'
 copyright = '2022, Tomasz W. Turowski'
 author = 'Tomasz W. Turowski, Jan Mikołajczyk'
 

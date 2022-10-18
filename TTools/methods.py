@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
-import TTools as tt
+import trxtools as tt
 
 ### METHODS ###
 # various python methods

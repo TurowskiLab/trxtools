@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import os, collections, shutil, re
-import TTools as tt
+import trxtools as tt
 import pyBigWig
 
 ####################################################

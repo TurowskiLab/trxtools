@@ -1,5 +1,5 @@
-from TTools.SAMgeneral import *
-from TTools.SAMtranscripts import transcript2profile
+from trxtools.SAMgeneral import *
+from trxtools.SAMtranscripts import transcript2profile
 import time, shutil
 
 ####################################################

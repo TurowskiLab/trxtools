@@ -5,7 +5,7 @@ import pandas as pd
 # functions to deal with RNA secondary structure files (default it Vienna)
 
 ################################################
-#############        secondary structure TTools
+#############        secondary structure trxtools
 ### all tools written using genomic positions cointer from 1 (not from 0 as python default)
 
 def checkVienna(sequence="", vienna=""):

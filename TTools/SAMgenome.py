@@ -1,6 +1,6 @@
-from TTools.SAMgeneral import *
-from TTools.SAMtranscripts import transcript2profile
-from TTools.methods import timestamp
+from trxtools.SAMgeneral import *
+from trxtools.SAMtranscripts import transcript2profile
+from trxtools.methods import timestamp
 import time, shutil
 import pyBigWig
 

@@ -218,7 +218,7 @@ def ntotal(df=pd.DataFrame, drop=True):
         return df
 
 ################################################
-#############        major TTools
+#############        major trxtools
 
 def preprocess(input_df=pd.DataFrame(), let_in=[''], let_out=['wont_find_this_string'],
               stats=False, smooth=True , window=10, win_type='blackman'):

@@ -1,12 +1,12 @@
-.. TTools documentation master file, created by
+.. trxtools documentation master file, created by
    sphinx-quickstart on Thu Jun 30 11:29:59 2022.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-TTools
+trxtools
 ======
 
-TTools was initiated as a storage for functions and scripts using in Turowski Lab to conduct various bioinformatics.
+trxtools was initiated as a storage for functions and scripts using in Turowski Lab to conduct various bioinformatics.
 There is no intention to create a comprehensive package that can be operated by non-experienced user, but some scripts are easy to run for everyone. 
 Importantly the package provides useful functions for skilled individuals.
 
@@ -33,7 +33,7 @@ i.e. ``C123_JK050420_POLR2A-FLAG_wt_arsenite30min`` will be used for an experime
 .. toctree::
    :maxdepth: 4
 
-   TTools
+   trxtools
 
 
 

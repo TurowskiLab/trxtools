@@ -1,5 +1,5 @@
 import pandas as pd
-import TTools.methods as ttm
+import trxtools.methods as ttm
 
 ### ASSAYS (ElongationAssay)
 

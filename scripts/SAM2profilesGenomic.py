@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-from TTools.SAMgenome import sam2genome
+from trxtools.SAMgenome import sam2genome
 import os, argparse
-import TTools as tt
+import trxtools as tt
 
 usage = "Generates genomic profiles from SAM files."
 

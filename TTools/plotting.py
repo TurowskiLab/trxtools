@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import TTools.profiles as profiles
+import trxtools.profiles as profiles
 from adjustText import adjust_text
 import seaborn as sns
 

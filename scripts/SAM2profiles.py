@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import TTools as tt
+import trxtools as tt
 import os, argparse
 import pandas as pd
 

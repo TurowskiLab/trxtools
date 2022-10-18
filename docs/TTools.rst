@@ -1,82 +1,82 @@
 Modules
 =======
 
-TTools.SAMgeneral module
+trxtools.SAMgeneral module
 -------------------------
 
-.. automodule:: TTools.SAMgeneral
+.. automodule:: trxtools.SAMgeneral
    :members:
    :undoc-members:
    :show-inheritance:
 
-TTools.SAMtranscripts module
+trxtools.SAMtranscripts module
 -----------------------------
 
-.. automodule:: TTools.SAMtranscripts
+.. automodule:: trxtools.SAMtranscripts
    :members:
    :undoc-members:
    :show-inheritance:
 
-TTools.SAMgenome module
+trxtools.SAMgenome module
 ------------------------
 
-.. automodule:: TTools.SAMgenome
+.. automodule:: trxtools.SAMgenome
    :members:
    :undoc-members:
    :show-inheritance:
 
-TTools.assays module
+trxtools.assays module
 --------------------
 
-.. automodule:: TTools.assays
+.. automodule:: trxtools.assays
    :members:
    :undoc-members:
    :show-inheritance:
 
-TTools.go\_enrichment module
+trxtools.go\_enrichment module
 ----------------------------
 
-.. automodule:: TTools.go_enrichment
+.. automodule:: trxtools.go_enrichment
    :members:
    :undoc-members:
    :show-inheritance:
 
-TTools.methods module
+trxtools.methods module
 ---------------------
 
-.. automodule:: TTools.methods
+.. automodule:: trxtools.methods
    :members:
    :undoc-members:
    :show-inheritance:
 
-TTools.nascent module
+trxtools.nascent module
 ---------------------
 
-.. automodule:: TTools.nascent
+.. automodule:: trxtools.nascent
    :members:
    :undoc-members:
    :show-inheritance:
 
-TTools.plotting module
+trxtools.plotting module
 ----------------------
 
-.. automodule:: TTools.plotting
+.. automodule:: trxtools.plotting
    :members:
    :undoc-members:
    :show-inheritance:
 
-TTools.profiles module
+trxtools.profiles module
 ----------------------
 
-.. automodule:: TTools.profiles
+.. automodule:: trxtools.profiles
    :members:
    :undoc-members:
    :show-inheritance:
 
-TTools.secondary module
+trxtools.secondary module
 -----------------------
 
-.. automodule:: TTools.secondary
+.. automodule:: trxtools.secondary
    :members:
    :undoc-members:
    :show-inheritance:
