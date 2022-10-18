@@ -5,7 +5,7 @@ Transcription/Transcriptomic tools. Package of python tools facilitating bioinfo
 
 Installation
 ------------
-
+```pip install trxtools```
 
 Documentation
 -------------
