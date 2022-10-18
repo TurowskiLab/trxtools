@@ -9,7 +9,7 @@ Installation
 
 Documentation
 -------------
-Documentation can be found [here](https://turowskilab.github.io/TTools/_build/html/)
+Documentation can be found [here](https://turowskilab.github.io/trxtools/_build/html/)
 
 Authors
 -------
