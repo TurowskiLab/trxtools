@@ -351,6 +351,6 @@ def selectSortPaths(paths={},chroms=[],suffix=""):
     out_dict = {}
     for i in dict(chroms).keys():
         for p in paths.keys():
-            if (p.endswith(suffix)) and (i in p):
+            if (p.endswith(suffix)) and (i+"_" in p):
                 out_dict[p] = paths[p]
     return out_dict
