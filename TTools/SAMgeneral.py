@@ -220,9 +220,9 @@ def parseNoncodedList(l=[], minLen=3):
     :rtype: DataFrame
 
     >>> parseNoncodedList([(40, 'AAA'), (35, 'AACAA')])
-       index  AAA  AACAA
-    0     40  1.0    NaN
-    1     35  NaN    1.0
+        AAA	AACAA
+    35	NaN	1.0
+    40	1.0	NaN
     '''
     df_temp = pd.DataFrame(l, columns=['position','end'])
     df_temp = df_temp[df_temp['end'].str.len() >= minLen].sort_values('end') #keep only minLen ends
@@ -237,7 +237,7 @@ def parseNoncodedList(l=[], minLen=3):
 def selectPolyA(df=pd.DataFrame()):
     '''Select only polyA non-coded ends containinig ``"AAA"`` and "A"-content above 75%
 
-    :param df: output of parseNoncoded function
+    :param df: output of parseNoncoded or parseNoncodedList
     :type df: DataFrame
     :return: modified DataFrame
     :rtype: DataFrame
@@ -250,6 +250,15 @@ def selectPolyA(df=pd.DataFrame()):
         return df[cols.tolist()]
 
 def selectEnds(df=pd.DataFrame(),ends="polyA"):
+    '''Wrapper for functions selecting non-coded ends
+
+    :param df: output of parseNoncoded or parseNoncodedList
+    :type df: DataFrame
+    :param ends: type of ends, currently only "polyA" is availible, defaults to "polyA"
+    :type ends: str
+    :return: runs selectPolyA
+    :rtype: DataFrame
+    '''
     if ends=="polyA":
         return selectPolyA(df=df)
 
@@ -269,7 +278,7 @@ def noncoded2profile(df_input=pd.DataFrame(), df_details=pd.DataFrame()):
         df = df.drop('chr',"columns").set_index('index')
         profile = df.sum(1).astype(float)
         length = df_details.loc[i]['length']
-        profile = profile.reindex(pd.RangeIndex(length + 1)).fillna(0.0)  # fills spaces with 0 counts
+        # profile = profile.reindex(pd.RangeIndex(length + 1)).fillna(0.0)  # fills spaces with 0 counts
         
         # df_output = df_output.append(profile.rename(i))
         df_output = pd.concat([df_output,profile.rename(i)],axis=0, join='outer')
