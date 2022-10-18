@@ -200,6 +200,26 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="TTools.SAMgeneral.noncoded2profile1">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">noncoded2profile1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length=0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgeneral.html#noncoded2profile1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgeneral.noncoded2profile1" title="Permalink to this definition"></a></dt>
+<dd><p>Turns non-coded ends into profile</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df_input</strong> (<em>DataFrame</em>) – output of parseNoncodedList function</p></li>
+<li><p><strong>df_details</strong> (<em>DataFrame</em>) – chromosome lengths</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Series with profiles</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="TTools.SAMgeneral.parseNoncoded">
 <span class="sig-prename descclassname"><span class="pre">TTools.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">parseNoncoded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minLen</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgeneral.html#parseNoncoded"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgeneral.parseNoncoded" title="Permalink to this definition"></a></dt>
 <dd><p>Parse dict with non-coded ends and returns structured DataFrame</p>
@@ -226,18 +246,107 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="TTools.SAMgeneral.parseNoncodedList">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">parseNoncodedList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minLen</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgeneral.html#parseNoncodedList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgeneral.parseNoncodedList" title="Permalink to this definition"></a></dt>
+<dd><p>Parse list with non-coded ends and returns structured DataFrame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>l</strong> (<em>list</em>) – list of tuples <code class="docutils literal notranslate"><span class="pre">[(int,str)]</span></code>, defaults to lits()</p></li>
+<li><p><strong>minLen</strong> (<em>int</em><em>, </em><em>optional</em>) – minimal length for non-coded end to keep, defaults to 3</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>DataFrame with parsed non-coded ends</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parseNoncodedList</span><span class="p">([(</span><span class="mi">40</span><span class="p">,</span> <span class="s1">&#39;AAA&#39;</span><span class="p">),</span> <span class="p">(</span><span class="mi">35</span><span class="p">,</span> <span class="s1">&#39;AACAA&#39;</span><span class="p">)])</span>
+<span class="go">    AAA     AACAA</span>
+<span class="go">35  NaN     1.0</span>
+<span class="go">40  1.0     NaN</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TTools.SAMgeneral.saveBigWig">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">saveBigWig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chroms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgeneral.html#saveBigWig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgeneral.saveBigWig" title="Permalink to this definition"></a></dt>
+<dd><p>Save gzip pickle data to BigWig</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>paths</strong> (<em>_type_</em><em>, </em><em>optional</em>) – _description_, defaults to dict()</p></li>
+<li><p><strong>suffix</strong> (<em>_type_</em><em>, </em><em>optional</em>) – _description_, defaults to str()</p></li>
+<li><p><strong>bw_name</strong> (<em>_type_</em><em>, </em><em>optional</em>) – _description_, defaults to str()</p></li>
+<li><p><strong>chroms</strong> (<em>_type_</em><em>, </em><em>optional</em>) – _description_, defaults to list()</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>_description_</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>_type_</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TTools.SAMgeneral.selectEnds">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">selectEnds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ends='polyA'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgeneral.html#selectEnds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgeneral.selectEnds" title="Permalink to this definition"></a></dt>
+<dd><p>Wrapper for functions selecting non-coded ends</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>DataFrame</em>) – output of parseNoncoded or parseNoncodedList</p></li>
+<li><p><strong>ends</strong> (<em>str</em>) – type of ends, currently only “polyA” is availible, defaults to “polyA”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>runs selectPolyA</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="TTools.SAMgeneral.selectPolyA">
 <span class="sig-prename descclassname"><span class="pre">TTools.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">selectPolyA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgeneral.html#selectPolyA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgeneral.selectPolyA" title="Permalink to this definition"></a></dt>
 <dd><p>Select only polyA non-coded ends containinig <code class="docutils literal notranslate"><span class="pre">&quot;AAA&quot;</span></code> and “A”-content above 75%</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>df</strong> (<em>DataFrame</em>) – output of parseNoncoded function</p>
+<dd class="field-odd"><p><strong>df</strong> (<em>DataFrame</em>) – output of parseNoncoded or parseNoncodedList</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>modified DataFrame</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TTools.SAMgeneral.selectSortPaths">
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">selectSortPaths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chroms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgeneral.html#selectSortPaths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgeneral.selectSortPaths" title="Permalink to this definition"></a></dt>
+<dd><p>pyBigWig requires for input sorted chromsomes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>paths</strong> (<em>dict</em><em>, </em><em>optional</em>) – _description_, defaults to {}</p></li>
+<li><p><strong>chroms</strong> (<em>list</em><em>, </em><em>optional</em>) – _description_, defaults to []</p></li>
+<li><p><strong>suffix</strong> (<em>str</em><em>, </em><em>optional</em>) – _description_, defaults to “”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>_description_</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>_type_</p>
 </dd>
 </dl>
 </dd></dl>
@@ -424,7 +533,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="TTools.SAMgenome.reads2genome">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">reads2genome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirPath=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgenome.html#reads2genome"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgenome.reads2genome" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">reads2genome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirPath=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use='read'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logName=''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgenome.html#reads2genome"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgenome.reads2genome" title="Permalink to this definition"></a></dt>
 <dd><p>Function used by sam2genome. Works for both strands.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -445,7 +554,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="TTools.SAMgenome.reads2genome3end">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">reads2genome3end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirPath=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noncoded=True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgenome.html#reads2genome3end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgenome.reads2genome3end" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">reads2genome3end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirPath=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use='3end'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noncoded=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ends='polyA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logName=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minLen=3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgenome.html#reads2genome3end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgenome.reads2genome3end" title="Permalink to this definition"></a></dt>
 <dd><p>Function used by sam2genome3end. Works for both strands.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -467,7 +576,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="TTools.SAMgenome.reads2genome5end">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">reads2genome5end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirPath=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgenome.html#reads2genome5end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgenome.reads2genome5end" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">reads2genome5end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirPath=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use='5end'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logName=''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgenome.html#reads2genome5end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgenome.reads2genome5end" title="Permalink to this definition"></a></dt>
 <dd><p>Function used by sam2genome5end. Works for both strands.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -488,7 +597,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="TTools.SAMgenome.sam2genome">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">sam2genome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">toClear</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pickle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgenome.html#sam2genome"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgenome.sam2genome" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">TTools.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">sam2genome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">toClear</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'3end'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noncoded</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ends</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'polyA'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgenome.html#sam2genome"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgenome.sam2genome" title="Permalink to this definition"></a></dt>
 <dd><p>Function handling SAM files and generating profiles. Executed using wrapping script SAM2profilesGenomic.py.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -496,43 +605,6 @@
 <li><p><strong>filename</strong> (<em>str</em>) – </p></li>
 <li><p><strong>path</strong> (<em>str</em>) – </p></li>
 <li><p><strong>toClear</strong> (<em>str</em><em>, </em><em>optional</em>) – element of filename to be removed, defaults to ‘’</p></li>
-<li><p><strong>pickle</strong> (<em>bool</em><em>, </em><em>optional</em>) – save output in pickle format, defaults to False</p></li>
-<li><p><strong>chunks</strong> (<em>int</em><em>, </em><em>optional</em>) – Read SAM file in chunks, defaults to 0</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="TTools.SAMgenome.sam2genome3end">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">sam2genome3end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">toClear</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pickle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noncoded_pA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noncoded_raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgenome.html#sam2genome3end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgenome.sam2genome3end" title="Permalink to this definition"></a></dt>
-<dd><p>Function handling SAM files and generating profiles for the 3’ end of reads. Executed using wrapping script SAM2profilesGenomic.py.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>filename</strong> (<em>str</em>) – </p></li>
-<li><p><strong>path</strong> (<em>str</em>) – </p></li>
-<li><p><strong>toClear</strong> (<em>str</em><em>, </em><em>optional</em>) – element of filename to be removed, defaults to ‘’</p></li>
-<li><p><strong>pickle</strong> (<em>bool</em><em>, </em><em>optional</em>) – save output in pickle format, defaults to False</p></li>
-<li><p><strong>chunks</strong> (<em>int</em><em>, </em><em>optional</em>) – Read SAM file in chunks, defaults to 0</p></li>
-<li><p><strong>noncoded_pA</strong> (<em>bool</em><em>, </em><em>optional</em>) – Save non-coded polyA ends, defaults to True</p></li>
-<li><p><strong>noncoded_raw</strong> (<em>bool</em><em>, </em><em>optional</em>) – Save all non-coded ends, defaults to False</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="TTools.SAMgenome.sam2genome5end">
-<span class="sig-prename descclassname"><span class="pre">TTools.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">sam2genome5end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">toClear</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pickle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TTools/SAMgenome.html#sam2genome5end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TTools.SAMgenome.sam2genome5end" title="Permalink to this definition"></a></dt>
-<dd><p>Function handling SAM files and generating profiles for the 3’ end of reads. Executed using wrapping script SAM2profilesGenomic.py.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>filename</strong> (<em>str</em>) – </p></li>
-<li><p><strong>path</strong> (<em>str</em>) – </p></li>
-<li><p><strong>toClear</strong> (<em>str</em><em>, </em><em>optional</em>) – element of filename to be removed, defaults to ‘’</p></li>
-<li><p><strong>pickle</strong> (<em>bool</em><em>, </em><em>optional</em>) – save output in pickle format, defaults to False</p></li>
 <li><p><strong>chunks</strong> (<em>int</em><em>, </em><em>optional</em>) – Read SAM file in chunks, defaults to 0</p></li>
 <li><p><strong>noncoded_pA</strong> (<em>bool</em><em>, </em><em>optional</em>) – Save non-coded polyA ends, defaults to True</p></li>
 <li><p><strong>noncoded_raw</strong> (<em>bool</em><em>, </em><em>optional</em>) – Save all non-coded ends, defaults to False</p></li>
