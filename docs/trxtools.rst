@@ -2,7 +2,7 @@ Modules
 =======
 
 trxtools.SAMgeneral module
--------------------------
+--------------------------
 
 .. automodule:: trxtools.SAMgeneral
    :members:
@@ -10,7 +10,7 @@ trxtools.SAMgeneral module
    :show-inheritance:
 
 trxtools.SAMtranscripts module
------------------------------
+------------------------------
 
 .. automodule:: trxtools.SAMtranscripts
    :members:
@@ -18,7 +18,7 @@ trxtools.SAMtranscripts module
    :show-inheritance:
 
 trxtools.SAMgenome module
-------------------------
+-------------------------
 
 .. automodule:: trxtools.SAMgenome
    :members:
@@ -26,7 +26,7 @@ trxtools.SAMgenome module
    :show-inheritance:
 
 trxtools.assays module
---------------------
+----------------------
 
 .. automodule:: trxtools.assays
    :members:
@@ -34,7 +34,7 @@ trxtools.assays module
    :show-inheritance:
 
 trxtools.go\_enrichment module
-----------------------------
+------------------------------
 
 .. automodule:: trxtools.go_enrichment
    :members:
@@ -42,7 +42,7 @@ trxtools.go\_enrichment module
    :show-inheritance:
 
 trxtools.methods module
----------------------
+-----------------------
 
 .. automodule:: trxtools.methods
    :members:
@@ -50,7 +50,7 @@ trxtools.methods module
    :show-inheritance:
 
 trxtools.nascent module
----------------------
+-----------------------
 
 .. automodule:: trxtools.nascent
    :members:
@@ -58,7 +58,7 @@ trxtools.nascent module
    :show-inheritance:
 
 trxtools.plotting module
-----------------------
+------------------------
 
 .. automodule:: trxtools.plotting
    :members:
@@ -66,7 +66,7 @@ trxtools.plotting module
    :show-inheritance:
 
 trxtools.profiles module
-----------------------
+------------------------
 
 .. automodule:: trxtools.profiles
    :members:
@@ -74,7 +74,7 @@ trxtools.profiles module
    :show-inheritance:
 
 trxtools.secondary module
------------------------
+-------------------------
 
 .. automodule:: trxtools.secondary
    :members:

@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>trxtools.methods &mdash; trxtools 0.2.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> trxtools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../scripts.html">Scripts</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">trxtools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>trxtools.methods</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for trxtools.methods</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">subprocess</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">re</span><span class="o">,</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">PCA</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
+<span class="kn">import</span> <span class="nn">trxtools</span> <span class="k">as</span> <span class="nn">tt</span>
+
+<span class="c1">### METHODS ###</span>
+<span class="c1"># various python methods</span>
+
+<span class="c1">################################################</span>
+<span class="c1">#############        bash</span>
+
+<div class="viewcode-block" id="list_paths_in_current_dir"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.list_paths_in_current_dir">[docs]</a><span class="k">def</span> <span class="nf">list_paths_in_current_dir</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="nb">str</span><span class="p">(),</span> <span class="n">stdin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    :param suffix: str() lists paths in current directory ending with an indicated suffix only</span>
+<span class="sd">    :param stdin: boolean() if True read from standard input instead current directory</span>
+<span class="sd">    :return: list() of paths</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1">#choosing between curr dir and std input</span>
+    <span class="k">if</span> <span class="n">stdin</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">stdin</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span>
+
+    <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">where</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="ow">and</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">paths</span></div>
+
+<div class="viewcode-block" id="bashCommand"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.bashCommand">[docs]</a><span class="k">def</span> <span class="nf">bashCommand</span><span class="p">(</span><span class="n">bashCommand</span><span class="o">=</span><span class="nb">str</span><span class="p">()):</span>
+    <span class="sd">&#39;&#39;&#39;Run command in bash using subprocess.call()&#39;&#39;&#39;</span>
+    <span class="n">pipes</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">bashCommand</span><span class="p">,</span><span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+    <span class="n">std_out</span><span class="p">,</span> <span class="n">std_err</span> <span class="o">=</span> <span class="n">pipes</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">pipes</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">err_msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">. Code: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">std_err</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">pipes</span><span class="o">.</span><span class="n">returncode</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span></div>
+
+<span class="c1">################################################</span>
+<span class="c1">#############        DNA/RNA</span>
+
+<div class="viewcode-block" id="calGC"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.calGC">[docs]</a><span class="k">def</span> <span class="nf">calGC</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span> <span class="n">calFor</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">,</span><span class="s1">&#39;C&#39;</span><span class="p">]):</span>
+    <span class="sd">&#39;&#39;&#39;Returns GC content in a given string - uses [&#39;nucleotide&#39;] column</span>
+
+<span class="sd">    :param dataset: DataFrame() with &quot;nucleotide&quot; column</span>
+<span class="sd">    :return: fraction of GC content, float</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;nucleotide&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">calFor</span><span class="p">)]))</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">))</span></div>
+
+<span class="n">alt_map</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ins&#39;</span><span class="p">:</span><span class="s1">&#39;0&#39;</span><span class="p">}</span>
+<span class="n">complement_DNA</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">:</span> <span class="s1">&#39;A&#39;</span><span class="p">}</span>
+<span class="n">complement_RNA</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;U&#39;</span><span class="p">:</span> <span class="s1">&#39;A&#39;</span><span class="p">}</span>
+
+<div class="viewcode-block" id="reverse_complement_DNA"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.reverse_complement_DNA">[docs]</a><span class="k">def</span> <span class="nf">reverse_complement_DNA</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Reverse complement</span>
+
+<span class="sd">    :param seq: str</span>
+<span class="sd">    :return: str</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="s2">&quot;U&quot;</span> <span class="ow">in</span> <span class="n">seq</span><span class="p">:</span> <span class="k">return</span> <span class="nb">str</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">alt_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
+    <span class="n">bases</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+    <span class="n">bases</span> <span class="o">=</span> <span class="nb">reversed</span><span class="p">([</span><span class="n">complement_DNA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">base</span><span class="p">,</span><span class="n">base</span><span class="p">)</span> <span class="k">for</span> <span class="n">base</span> <span class="ow">in</span> <span class="n">bases</span><span class="p">])</span>
+    <span class="n">bases</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bases</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">alt_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">bases</span> <span class="o">=</span> <span class="n">bases</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bases</span></div>
+
+<div class="viewcode-block" id="reverse_complement_RNA"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.reverse_complement_RNA">[docs]</a><span class="k">def</span> <span class="nf">reverse_complement_RNA</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Reverse complement</span>
+
+<span class="sd">    :param seq: str</span>
+<span class="sd">    :return: str</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">alt_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
+    <span class="n">bases</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+    <span class="n">bases</span> <span class="o">=</span> <span class="nb">reversed</span><span class="p">([</span><span class="n">complement_RNA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">base</span><span class="p">,</span><span class="n">base</span><span class="p">)</span> <span class="k">for</span> <span class="n">base</span> <span class="ow">in</span> <span class="n">bases</span><span class="p">])</span>
+    <span class="n">bases</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bases</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">alt_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">bases</span> <span class="o">=</span> <span class="n">bases</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bases</span></div>
+
+<div class="viewcode-block" id="reverse_complement"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.reverse_complement">[docs]</a><span class="k">def</span> <span class="nf">reverse_complement</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Reverse complement</span>
+
+<span class="sd">    :param seq: str</span>
+<span class="sd">    :return: str</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="s2">&quot;U&quot;</span> <span class="ow">in</span> <span class="n">seq</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">reverse_complement_RNA</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">reverse_complement_DNA</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="randomDNAsingle"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.randomDNAsingle">[docs]</a><span class="k">def</span> <span class="nf">randomDNAsingle</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="nb">int</span><span class="p">(),</span> <span class="n">letters</span><span class="o">=</span><span class="s2">&quot;CGTA&quot;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Random generator of nucleotide sequence</span>
+
+<span class="sd">    :param length: int()</span>
+<span class="sd">    :param letters: str() with letters that will be used</span>
+<span class="sd">    :return: str()</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">return</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">letters</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">length</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="randomDNAall"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.randomDNAall">[docs]</a><span class="k">def</span> <span class="nf">randomDNAall</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="nb">int</span><span class="p">(),</span> <span class="n">letters</span><span class="o">=</span><span class="s2">&quot;CGTA&quot;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Generates all possible random sequences of a given length</span>
+
+<span class="sd">    :param length: int()</span>
+<span class="sd">    :param letters: str() with letters that will be used</span>
+<span class="sd">    :return: list() of str()</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">output_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">letters</span><span class="p">),</span> <span class="n">repeat</span><span class="o">=</span><span class="n">length</span><span class="p">):</span>
+        <span class="n">output_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">output_list</span></div>
+
+<div class="viewcode-block" id="rollingGC"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.rollingGC">[docs]</a><span class="k">def</span> <span class="nf">rollingGC</span><span class="p">(</span><span class="n">s</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span> <span class="c1">#rolling window, smoothing of data</span>
+    <span class="sd">&#39;&#39;&#39;Calculates GC from sequence, uses &#39;boxcar&#39; window</span>
+
+<span class="sd">    :param s: Series containing sequence</span>
+<span class="sd">    :param window: window size for GC calculation</span>
+<span class="sd">    :return: Series with GC calculated, center=False</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1">#be aware of win_type and center parameters</span>
+    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">([</span><span class="s1">&#39;G&#39;</span><span class="p">,</span><span class="s1">&#39;C&#39;</span><span class="p">],</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">([</span><span class="s1">&#39;T&#39;</span><span class="p">,</span><span class="s1">&#39;A&#39;</span><span class="p">],</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span> <span class="n">win_type</span><span class="o">=</span><span class="s1">&#39;boxcar&#39;</span><span class="p">,</span><span class="n">center</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="letterContent"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.letterContent">[docs]</a><span class="k">def</span> <span class="nf">letterContent</span><span class="p">(</span><span class="n">s</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">letter</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="nb">len</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">s</span> <span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="n">letter</span><span class="p">])</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span></div>
+
+    
+<span class="c1">################################################</span>
+<span class="c1">#############        importing data</span>
+
+<div class="viewcode-block" id="read_list"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.read_list">[docs]</a><span class="k">def</span> <span class="nf">read_list</span><span class="p">(</span><span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Read list from file. Each row becomes item in the list.</span>
+<span class="sd">    </span>
+<span class="sd">    :param filepath: str</span>
+<span class="sd">    :return: list</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">txt_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+    <span class="n">content_list</span> <span class="o">=</span> <span class="n">txt_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+    <span class="n">txt_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">content_list</span></div>
+
+<div class="viewcode-block" id="read_tabFile"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.read_tabFile">[docs]</a><span class="k">def</span> <span class="nf">read_tabFile</span><span class="p">(</span><span class="n">nameElem</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">toLoad</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">toClear</span><span class="o">=</span><span class="p">[],</span> <span class="n">toAdd</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Read tab files with common first column</span>
+<span class="sd">    :param nameElem: str, present in all files</span>
+<span class="sd">    :param path: str, path to directory with files</span>
+<span class="sd">    :param toLoad: str, to be present in file name</span>
+<span class="sd">    :param toClear: str, will be removed from file name</span>
+<span class="sd">    :param toAdd: str, to be added to file name</span>
+<span class="sd">    :param df: DataFrame, to be appended; default=None</span>
+<span class="sd">    :param overwrite: boolean, allows for overwriting during appending, default = False</span>
+<span class="sd">    :return: DataFrame</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># list files with STAT mapping</span>
+    <span class="n">l1_mapping</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">if</span> <span class="n">nameElem</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">toLoad</span><span class="p">:</span>
+        <span class="n">l1_mapping</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">l1_mapping</span> <span class="k">if</span> <span class="n">toLoad</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+
+    <span class="c1"># check input dataframe</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">namesInUse</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">df_output</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">df</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">df_output</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+            <span class="n">namesInUse</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exit</span><span class="p">(</span><span class="s2">&quot;df is not a DataFrame&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">l1_mapping</span><span class="p">:</span>
+        <span class="n">tempDF</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="n">f</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">])</span>
+        <span class="n">tempDF</span> <span class="o">=</span> <span class="n">tempDF</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+        <span class="c1"># clear names</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">nameElem</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">toClear</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="n">toAdd</span>
+
+        <span class="c1"># overwrite warninig</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">namesInUse</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">overwrite</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; exits in input df. Use overwrite=True to ignore.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># adding to dataframe</span>
+        <span class="n">df_output</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df_output</span><span class="p">,</span> <span class="n">tempDF</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">name</span><span class="p">)],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df_output</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">df_output</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="read_STARstats"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.read_STARstats">[docs]</a><span class="k">def</span> <span class="nf">read_STARstats</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">toClear</span><span class="o">=</span><span class="p">[],</span> <span class="n">toAdd</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Reads multiple HTSeq tab files to one DataFrame</span>
+
+<span class="sd">    :param path: str, path to directory with files</span>
+<span class="sd">    :param toClear: str, will be removed from file name</span>
+<span class="sd">    :param toAdd: str, to be added to file name</span>
+<span class="sd">    :param df: DataFrame, to be appended; default=None</span>
+<span class="sd">    :param overwrite: boolean, allows for overwriting during appending, default = False</span>
+<span class="sd">    :return: DataFrame</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">read_tabFile</span><span class="p">(</span><span class="n">nameElem</span><span class="o">=</span><span class="s1">&#39;_STARLog.final.out&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+                        <span class="n">toClear</span><span class="o">=</span><span class="n">toClear</span><span class="p">,</span> <span class="n">toAdd</span><span class="o">=</span><span class="n">toAdd</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="read_HTSeq_output"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.read_HTSeq_output">[docs]</a><span class="k">def</span> <span class="nf">read_HTSeq_output</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">toLoad</span><span class="o">=</span><span class="s2">&quot;classes&quot;</span><span class="p">,</span> <span class="n">toClear</span><span class="o">=</span><span class="p">[],</span> <span class="n">toAdd</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Reads multiple HTSeq tab files to one DataFrame</span>
+
+<span class="sd">    :param path: str, path to directory with files</span>
+<span class="sd">    :param toClear: str, will be removed from file name</span>
+<span class="sd">    :param toAdd: str, to be added to file name</span>
+<span class="sd">    :param df: DataFrame, to be appended; default=None</span>
+<span class="sd">    :param overwrite: boolean, allows for overwriting during appending, default = False</span>
+<span class="sd">    :return: DataFrame</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">read_tabFile</span><span class="p">(</span><span class="n">nameElem</span><span class="o">=</span><span class="s1">&#39;_hittable.tab&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">toLoad</span><span class="o">=</span><span class="n">toLoad</span><span class="p">,</span>
+                        <span class="n">toClear</span><span class="o">=</span><span class="n">toClear</span><span class="p">,</span> <span class="n">toAdd</span><span class="o">=</span><span class="n">toAdd</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="readSalmon"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.readSalmon">[docs]</a><span class="k">def</span> <span class="nf">readSalmon</span><span class="p">(</span><span class="n">nameElem</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">toLoad</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">toClear</span><span class="o">=</span><span class="p">[],</span> <span class="n">toAdd</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="s1">&#39;NumReads&#39;</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+
+<span class="sd">    :param nameElem: str, elem to load</span>
+<span class="sd">    :param path: str</span>
+<span class="sd">    :param toLoad: str, additional param for filtering, by default equal to nameElem</span>
+<span class="sd">    :param toClear: str</span>
+<span class="sd">    :param toAdd: str</span>
+<span class="sd">    :param df: pd.DataFrame</span>
+<span class="sd">    :param overwrite: boolean, default=False</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># list files with STAT mapping</span>
+    <span class="n">l1_mapping</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">if</span> <span class="n">nameElem</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">toLoad</span><span class="p">:</span>
+        <span class="n">l1_mapping</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">l1_mapping</span> <span class="k">if</span> <span class="n">toLoad</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+
+    <span class="c1"># check input dataframe</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">namesInUse</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">df_output</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">df</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">df_output</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+            <span class="n">namesInUse</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exit</span><span class="p">(</span><span class="s2">&quot;df is not a DataFrame&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">l1_mapping</span><span class="p">:</span>
+        <span class="n">tempDF</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="n">f</span><span class="o">+</span><span class="s2">&quot;/quant.sf&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">tempDF</span> <span class="o">=</span> <span class="n">tempDF</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;Name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+        <span class="c1"># clear names</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">nameElem</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">toClear</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="n">toAdd</span>
+
+        <span class="c1"># overwrite warninig</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">namesInUse</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">overwrite</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; exits in input df. Use overwrite=True to ignore.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># adding to dataframe</span>
+        <span class="n">df_output</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df_output</span><span class="p">,</span> <span class="n">tempDF</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">name</span><span class="p">)],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df_output</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">df_output</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="read_featureCount"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.read_featureCount">[docs]</a><span class="k">def</span> <span class="nf">read_featureCount</span><span class="p">(</span><span class="n">nameElem</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">toLoad</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">toClear</span><span class="o">=</span><span class="p">[],</span> <span class="n">toAdd</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Read tab files with common first column</span>
+<span class="sd">    :param nameElem: str, present in all files</span>
+<span class="sd">    :param path: str, path to directory with files</span>
+<span class="sd">    :param toLoad: str, to be present in file name (optional)</span>
+<span class="sd">    :param toClear: str, will be removed from file name</span>
+<span class="sd">    :param toAdd: str, to be added to file name</span>
+<span class="sd">    :param df: DataFrame, to be appended; default=None</span>
+<span class="sd">    :param overwrite: boolean, allows for overwriting during appending, default = False</span>
+<span class="sd">    :return: DataFrame</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># list files</span>
+    <span class="n">l1_mapping</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">if</span> <span class="n">nameElem</span> <span class="ow">in</span> <span class="n">f</span> <span class="ow">and</span> <span class="s1">&#39;.summary&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">toLoad</span><span class="p">:</span>
+        <span class="n">l1_mapping</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">l1_mapping</span> <span class="k">if</span> <span class="n">toLoad</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+
+    <span class="c1"># check input dataframe</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">namesInUse</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">df_output</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">df</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">df_output</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+            <span class="n">namesInUse</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exit</span><span class="p">(</span><span class="s2">&quot;df is not a DataFrame&quot;</span><span class="p">)</span>   
+            
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">l1_mapping</span><span class="p">:</span>
+        <span class="n">tempDF</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="n">f</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">)</span>
+
+        <span class="c1"># clear names</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">nameElem</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">toClear</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="n">toAdd</span>
+
+        <span class="c1"># overwrite warninig</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">namesInUse</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">overwrite</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; exits in input df. Use overwrite=True to ignore.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># adding to dataframe</span>
+        <span class="n">last_name</span> <span class="o">=</span> <span class="n">tempDF</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">df_output</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df_output</span><span class="p">,</span> <span class="n">tempDF</span><span class="p">[</span><span class="n">last_name</span><span class="p">]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">name</span><span class="p">)],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df_output</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">df_output</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+<span class="c1">################################################</span>
+<span class="c1">#############        handling multiple experiments</span>
+
+<div class="viewcode-block" id="define_experiments"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.define_experiments">[docs]</a><span class="k">def</span> <span class="nf">define_experiments</span><span class="p">(</span><span class="n">paths_in</span><span class="p">,</span> <span class="n">whole_name</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">strip</span><span class="o">=</span><span class="s1">&#39;_hittable_reads.txt&#39;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Parse file names and extract experiment name from them</span>
+
+<span class="sd">    :param paths_in: str()</span>
+<span class="sd">    :param whole_name: boolean() default False. As defaults script takes first &#39;a_b_c&#39;</span>
+<span class="sd">    :param strip: str() to strip from filename.</span>
+<span class="sd">    :return: list() of experiment names, list() of paths.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">experiments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths_in</span><span class="p">:</span>
+        <span class="n">paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_path</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">whole_name</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span> <span class="c1">#take fist three elements of file name as experiment name</span>
+        <span class="k">elif</span> <span class="n">whole_name</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span> <span class="n">name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="n">strip</span><span class="p">)</span>
+        <span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">experiments</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">):</span>
+            <span class="n">exit</span><span class="p">(</span><span class="s2">&quot;No. of experiments is not equal to no. of paths&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">experiments</span><span class="p">,</span> <span class="n">paths</span></div>
+
+<div class="viewcode-block" id="expNameParser"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.expNameParser">[docs]</a><span class="k">def</span> <span class="nf">expNameParser</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">additional_tags</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;b_d_e_p&#39;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Function handles experiment name; recognizes AB123456 as experiment date; BY4741 or HTP or given string as bait protein</span>
+
+<span class="sd">    :param name:</span>
+<span class="sd">    :param additional_tags: list of tags</span>
+<span class="sd">    :param output: default &#39;root&#39; ; print other elements when &#39;all&#39;</span>
+<span class="sd">    :param order: defoult &#39;b_d_e_p&#39; b-bait; d-details, e-experiment, p-prefix</span>
+<span class="sd">    :return: list of reordered name</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">tag_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;HTP&#39;</span><span class="p">,</span> <span class="s1">&#39;HTG&#39;</span><span class="p">,</span> <span class="s1">&#39;HTF&#39;</span><span class="p">,</span> <span class="s1">&#39;BY4741&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">additional_tags</span>
+    <span class="n">output_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(),</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(),</span> <span class="s1">&#39;e&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(),</span> <span class="s1">&#39;p&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">()}</span>  <span class="c1"># bait; details; experiment; prefix</span>
+    <span class="n">name_elements</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">name_elements</span><span class="p">:</span>
+        <span class="n">tag_in_e</span> <span class="o">=</span> <span class="p">[</span><span class="n">tag</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tag_list</span> <span class="k">if</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">e</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">tag_in_e</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">tag_in_e</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">output_dict</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>  <span class="c1"># bait</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">output_dict</span><span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">tag_in_e</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>  <span class="c1"># details</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">output_dict</span><span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;wt&#39;</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;WARNING: wt added for &#39;</span><span class="o">+</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[a-zA-Z][a-zA-Z]\d</span><span class="si">{6}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="ow">or</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[a-zA-Z][a-zA-Z][a-zA-Z]\d</span><span class="si">{6}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+            <span class="n">output_dict</span><span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>  <span class="c1"># experiment name</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">output_dict</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>  <span class="c1"># prefix</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">output_dict</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">output_dict</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">output_dict</span><span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">output_dict</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;ERROR: Can not define experiment or bait for &quot;</span><span class="o">+</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="n">return_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">out</span> <span class="ow">in</span> <span class="n">order</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
+        <span class="n">return_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output_dict</span><span class="p">[</span><span class="n">out</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">return_list</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="cleanNames"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.cleanNames">[docs]</a><span class="k">def</span> <span class="nf">cleanNames</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span> <span class="n">additional_tags</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="sd">&#39;&#39;&#39;Cleans some problems with names if exist</span>
+
+<span class="sd">    :param df: DataFrame() where names of columns are name of experiments</span>
+<span class="sd">    :param additional_tags: list()</span>
+<span class="sd">    :return: DataFrame() with new names</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">additional_tags</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">tag</span><span class="o">+</span><span class="s1">&#39;HTP&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">)]</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;HTPHTP&#39;</span><span class="p">,</span> <span class="s1">&#39;HTP&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;HTPHTP&#39;</span><span class="p">,</span> <span class="s1">&#39;HTP&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="indexOrder"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.indexOrder">[docs]</a><span class="k">def</span> <span class="nf">indexOrder</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span> <span class="n">additional_tags</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">output</span><span class="o">=</span><span class="s1">&#39;root&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;b_d_e_p&#39;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Apply expNameParser to whole DataFrame</span>
+
+<span class="sd">    :param df: DataFrame() where names of columns are name of experiments</span>
+<span class="sd">    :param additional_tags: list()</span>
+<span class="sd">    :param output:</span>
+<span class="sd">    :param order: str() default &#39;b_d_e_p&#39; b-bait; d-details, e-experiment, p-prefix</span>
+<span class="sd">    :return: DataFrame() with new names</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">cleanNames</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">additional_tags</span><span class="o">=</span><span class="n">additional_tags</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">expNameParser</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">additional_tags</span><span class="o">=</span><span class="n">additional_tags</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="filterExp"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.filterExp">[docs]</a><span class="k">def</span> <span class="nf">filterExp</span><span class="p">(</span><span class="n">datasets</span><span class="p">,</span> <span class="n">let_in</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">],</span> <span class="n">let_out</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;wont_find_this_string&#39;</span><span class="p">],</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Returns object with filtered columns/keys.</span>
+
+<span class="sd">    :param datasets: DataFrame() or dict() with exp name as a key</span>
+<span class="sd">    :param let_in: list() with elements of name to filter in</span>
+<span class="sd">    :param let_out: list() with elements of name to filter out</span>
+<span class="sd">    :return: DataFrame() or dict()</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="c1">#for DataFrame()</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">datasets</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">output_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">datasets</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">i</span> <span class="ow">in</span> <span class="n">d</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">let_in</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">o</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">let_out</span><span class="p">)]:</span>
+            <span class="n">output_df</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">=</span><span class="n">datasets</span><span class="p">[</span><span class="n">f</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">output_df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">output_df</span>
+
+    <span class="c1">#for dict()</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">datasets</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">output_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">datasets</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">i</span> <span class="ow">in</span> <span class="n">d</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">let_in</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">o</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">let_out</span><span class="p">)]:</span>
+            <span class="n">output_dict</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">=</span><span class="n">datasets</span><span class="p">[</span><span class="n">f</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">output_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">output_dict</span></div>
+
+
+<div class="viewcode-block" id="parseCRACname"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.parseCRACname">[docs]</a><span class="k">def</span> <span class="nf">parseCRACname</span><span class="p">(</span><span class="n">s1</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Parse CRAC name into [&#39;expID&#39;, &#39;expDate&#39;, &#39;protein&#39;, &#39;condition1&#39;, &#39;condition2&#39;, &#39;condition3&#39;] using this order.</span>
+<span class="sd">     &quot;_&quot; is used to split the name</span>
+
+<span class="sd">    :param s1: Series,</span>
+<span class="sd">    :return: DataFrame</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">s1</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;expID&#39;</span><span class="p">,</span> <span class="s1">&#39;expDate&#39;</span><span class="p">,</span> <span class="s1">&#39;protein&#39;</span><span class="p">,</span> <span class="s1">&#39;condition1&#39;</span><span class="p">,</span> <span class="s1">&#39;condition2&#39;</span><span class="p">,</span> <span class="s1">&#39;condition3&#39;</span><span class="p">]</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;expFull&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;expID&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;expDate&#39;</span><span class="p">]</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sampleRep&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;condition3&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">n1</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;protein&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;condition1&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;condition2&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n1</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;protein&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;condition1&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;condition2&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;condition3&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;condition3&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">n2</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;protein&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;condition1&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n2</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;protein&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;condition1&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;condition2&#39;</span><span class="p">]</span>
+
+        <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;sampleRep&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n1</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n2</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="groupCRACsamples"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.groupCRACsamples">[docs]</a><span class="k">def</span> <span class="nf">groupCRACsamples</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">use</span><span class="o">=</span><span class="s1">&#39;protein&#39;</span><span class="p">,</span> <span class="n">toDrop</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="sd">&#39;&#39;&#39;Parse CRAC names and annotates them using on of following features</span>
+<span class="sd">    [&#39;expID&#39;, &#39;expDate&#39;, &#39;protein&#39;, &#39;condition1&#39;, &#39;condition2&#39;, &#39;condition3&#39;, &#39;sample&#39;,&#39;sampleRep&#39;]</span>
+
+<span class="sd">    :param df: DataFrame</span>
+<span class="sd">    :param use: str, choose from [&#39;expID&#39;, &#39;expDate&#39;, &#39;protein&#39;, &#39;condition1&#39;, &#39;condition2&#39;, &#39;condition3&#39;, &#39;sample&#39;,&#39;sampleRep&#39;], default = &#39;protein&#39;</span>
+<span class="sd">    :param toDrop: list of word in CRAC name that will qualify the sample to rejection, default = []</span>
+<span class="sd">    :return: DataFrame with added column [&#39;group&#39;]</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">df2</span> <span class="o">=</span> <span class="n">parseCRACname</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_series</span><span class="p">())</span>
+
+    <span class="n">df2</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">group_name</span><span class="p">,</span> <span class="n">df_temp</span> <span class="ow">in</span> <span class="n">df2</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">use</span><span class="p">):</span>
+        <span class="n">df2</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_temp</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span> <span class="o">=</span> <span class="n">group_name</span>
+
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df2</span><span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">toDrop</span><span class="p">:</span>
+        <span class="n">dropping</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">d</span> <span class="ow">in</span> <span class="n">i</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">toDrop</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">dropping</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="expStats"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.expStats">[docs]</a><span class="k">def</span> <span class="nf">expStats</span><span class="p">(</span><span class="n">input_df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">win_type</span><span class="o">=</span><span class="s1">&#39;blackman&#39;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Returns DataFrame with &#39;mean&#39;, &#39;median&#39;, &#39;min&#39;, &#39;max&#39; and quartiles if more than 2 experiments</span>
+
+<span class="sd">    :param input_df: DataFrame</span>
+<span class="sd">    :param smooth: boolean, if True apply smoothing window, default=True</span>
+<span class="sd">    :param window: int, smoothing window, default 10</span>
+<span class="sd">    :param win_type: str type of smoothing window, default &quot;blackman&quot;</span>
+<span class="sd">    :return: DataFrame</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">working_df</span><span class="p">,</span> <span class="n">result_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+    <span class="c1">#smoothing</span>
+    <span class="k">if</span> <span class="n">smooth</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">input_df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">working_df</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">=</span><span class="n">input_df</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="n">win_type</span><span class="o">=</span><span class="n">win_type</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">working_df</span> <span class="o">=</span> <span class="n">input_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1">#calculating stats</span>
+    <span class="k">for</span> <span class="n">function</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">]:</span> <span class="n">result_df</span><span class="p">[</span><span class="n">function</span><span class="p">]</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">working_df</span><span class="p">,</span> <span class="n">function</span><span class="p">)(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1">#calculates using pandas function listed in []</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">working_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span> <span class="c1">#calculating quartiles only in more than two experiments</span>
+        <span class="n">result_df</span><span class="p">[</span><span class="s1">&#39;q1&#39;</span><span class="p">],</span> <span class="n">result_df</span><span class="p">[</span><span class="s1">&#39;q3&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">working_df</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">working_df</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result_df</span></div>
+
+<span class="c1">################################################</span>
+<span class="c1">#############       statistics and analysis</span>
+
+<div class="viewcode-block" id="normalize"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.normalize">[docs]</a><span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">log2</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">pseudocounts</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+
+<span class="sd">    :param df: DataFrame</span>
+<span class="sd">    :param log2: boolean, default=False</span>
+<span class="sd">    :param pseudocounts: float, default=0.1</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pseudocounts</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span> <span class="o">/</span> <span class="n">df</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mi">1000000</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">log2</span><span class="o">==</span><span class="kc">True</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="quantileCategory"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.quantileCategory">[docs]</a><span class="k">def</span> <span class="nf">quantileCategory</span><span class="p">(</span><span class="n">s1</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">q</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Quantile-based discretization function based on pandas.qcut function.</span>
+
+<span class="sd">    :param s1: Series()</span>
+<span class="sd">    :param q: int() number of quantiles: 10 for deciles, 5 for quantiles, 4 for quartiles, etc., default q=4</span>
+<span class="sd">    :return: Series</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">temp_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">temp_df</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">s1</span>
+    <span class="n">temp_df</span><span class="p">[</span><span class="s1">&#39;quantiles&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">200</span>
+    <span class="n">quantiles</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">qcut</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">retbins</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">quantiles</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">temp_df</span><span class="p">[</span><span class="s1">&#39;quantiles&#39;</span><span class="p">][</span><span class="n">temp_df</span><span class="o">.</span><span class="n">data</span> <span class="o">&gt;=</span> <span class="n">quantiles</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">i</span>
+    <span class="k">return</span> <span class="n">temp_df</span><span class="p">[</span><span class="s1">&#39;quantiles&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="runPCA"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.runPCA">[docs]</a><span class="k">def</span> <span class="nf">runPCA</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span> <span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Run PCA analysis and re-assigns column names and index names</span>
+
+<span class="sd">    :param data: DataFrame</span>
+<span class="sd">    :param n_components: int, default 2</span>
+<span class="sd">    :return: tuple consisting of DataFrame with PCA results and a list of PC values</span>
+<span class="sd">    :rtype: tuple</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># x = StandardScaler().fit_transform(df1_codone_composition)</span>
+
+    <span class="n">pca</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">)</span>
+    <span class="n">principalComponents</span> <span class="o">=</span> <span class="n">pca</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">principalDf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">principalComponents</span><span class="p">,</span>
+                               <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PC&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_components</span><span class="p">)])</span>
+
+    <span class="n">values</span> <span class="o">=</span> <span class="n">pca</span><span class="o">.</span><span class="n">explained_variance_ratio_</span>
+
+    <span class="n">finalDf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">principalDf</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">finalDf</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s1">&#39;name&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">finalDf</span> <span class="o">=</span> <span class="n">finalDf</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">finalDf</span><span class="p">,</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span></div>
+
+<div class="viewcode-block" id="addCluster"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.addCluster">[docs]</a><span class="k">def</span> <span class="nf">addCluster</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Assigns n clusters to the data using KMeans algorithm</span>
+<span class="sd">    :param df: DataFrame</span>
+<span class="sd">    :param n: no. of clusters, int</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="s1">&#39;cluster&#39;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;cluster&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">kmeans</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;cluster&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kmeans</span><span class="o">.</span><span class="n">labels_</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;cluster&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># summary</span>
+    <span class="n">tt</span><span class="o">.</span><span class="n">plotting</span><span class="o">.</span><span class="n">clusterClusterMap</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+<span class="c1">################################################</span>
+<span class="c1">#############        other</span>
+
+<div class="viewcode-block" id="timestamp"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.timestamp">[docs]</a><span class="k">def</span> <span class="nf">timestamp</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    :return: timestamp as a str()</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="timestampRandomInt"><a class="viewcode-back" href="../../TTools.html#trxtools.methods.timestampRandomInt">[docs]</a><span class="k">def</span> <span class="nf">timestampRandomInt</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    :return: timestamp and random number as a str()</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">))</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1000</span><span class="p">))</span></div>
+
+<span class="c1">###         OLD         ###</span>
+<span class="c1"># def getRefFile(file_from_options, file_type):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Sorting out source of gtf, fasta or tab path, in order (1) from options parser, (2) from ~/bin/default.aml</span>
+<span class="c1">#      or (3) from environmental variable $xxx_PATH</span>
+<span class="c1">#     :param file_from_options: file path from options parser, can be an empty string</span>
+<span class="c1">#                 file_type: &#39;GTF&#39;, &#39;FASTA&#39;, &#39;TAB&#39;</span>
+<span class="c1">#     :return: path to the file</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     file_types = {&#39;GTF&#39; : &#39;GTF_PATH&#39;, &#39;FASTA&#39; : &#39;FASTA_PATH&#39;, &#39;TAB&#39; : &#39;TAB_PATH&#39;}</span>
+<span class="c1">#     if file_from_options:</span>
+<span class="c1">#         return file_from_options</span>
+<span class="c1">#     elif &#39;default.aml&#39; in os.listdir(os.getenv(&quot;HOME&quot;)+&#39;/bin/&#39;):</span>
+<span class="c1">#         default = yaml.load(open(os.getenv(&quot;HOME&quot;)+&#39;/bin/default.aml&#39;))</span>
+<span class="c1">#         # print &quot;# Using &quot;+file_type+&quot; file from ~/bin/default.aml&quot;</span>
+<span class="c1">#         return default[file_types[file_type]]</span>
+<span class="c1">#     else:</span>
+<span class="c1">#         if file_types[file_type] in os.environ:</span>
+<span class="c1">#             # print &quot;# Using &quot;+file_type+&quot; file from $GTF_PATH variable&quot;</span>
+<span class="c1">#             return os.environ[file_types[file_type]]</span>
+<span class="c1">#         else:</span>
+<span class="c1">#             exit(&#39;Provide &#39;+file_type+&#39; file path using -g or setup default.aml in your bin folder&#39;)</span>
+<span class="c1">#</span>
+<span class="c1"># def getGTF(gtf_from_options):</span>
+<span class="c1">#     return getRefFile(gtf_from_options, &#39;GTF&#39;)</span>
+<span class="c1">#</span>
+<span class="c1"># def getFASTA(fasta_from_options):</span>
+<span class="c1">#     return getRefFile(fasta_from_options, &#39;FASTA&#39;)</span>
+<span class="c1">#</span>
+<span class="c1"># def getTAB(tab_from_options):</span>
+<span class="c1">#     return getRefFile(tab_from_options, &#39;TAB&#39;)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Tomasz W. Turowski.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

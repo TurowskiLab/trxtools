@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 trxtools
-======
+========
 
 trxtools was initiated as a storage for functions and scripts using in Turowski Lab to conduct various bioinformatics.
 There is no intention to create a comprehensive package that can be operated by non-experienced user, but some scripts are easy to run for everyone. 
