@@ -106,7 +106,7 @@ def reads2genome(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="read"
             l = list(zip(df['position'].astype(int), df['CIGAR']))
             s1_profile = transcript2profile(l, length=length)
             to_save = pd.DataFrame(s1_profile.rename(n))
-            fileName = dirPath+"/temp_"+n_name+"_fwd.pcl"
+            fileName = dirPath+"/temp_"+n_name+"_fwd.pcl.gz"
             to_save.to_pickle(path=fileName,compression='gzip')
             
             temp_paths[n_name+"_fwd"] = fileName
@@ -123,7 +123,7 @@ def reads2genome(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="read"
             l = list(zip(df['position'].astype(int), df['CIGAR']))
             s1_profile = transcript2profile(l, length=length)
             to_save = pd.DataFrame(s1_profile.rename(n))
-            fileName = dirPath+"/temp_"+n_name+"_rev.pcl"
+            fileName = dirPath+"/temp_"+n_name+"_rev.pcl.gz"
             to_save.to_pickle(path=fileName,compression='gzip')
             
             temp_paths[n_name+"_rev"] = fileName
@@ -386,7 +386,7 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
     else:
         exit("Wrong -u parameter selected")
     
-    # print(temp_paths)
+    df_details.to_pickle("details.pcl")
 
     #save output
     log_file = open(logName, "a")
