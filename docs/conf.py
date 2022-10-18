@@ -19,10 +19,10 @@ sys.path.insert(0, os.path.abspath('..'))
 
 project = 'TTools'
 copyright = '2022, Tomasz W. Turowski'
-author = 'Tomasz W. Turowski'
+author = 'Tomasz W. Turowski, Jan Mikołajczyk'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.0'
+release = '0.2.0'
 
 
 # -- General configuration ---------------------------------------------------
