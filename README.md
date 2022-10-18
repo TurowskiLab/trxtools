@@ -9,7 +9,7 @@ Installation
 
 Documentation
 -------------
-
+Documentation can be found [here](https://turowskilab.github.io/TTools/_build/html/)
 
 Authors
 -------
