@@ -137,9 +137,55 @@ def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
     plt.show()
 
 ### profiles
-def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,
+def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,name='median',
                      figsize=(7,3),ylim=(None,0.01), dpi=150, color='green',
-                     h_lines=[], lc="red",offset=0):
+                     h_lines=[], lc="red",offset=0,fname=None):
+    '''Plots figure similar to box plot: median, 2 and 3 quartiles and min-max range
+
+    :param df: Dataframe() containing following columns:```['position'] ['mean'] ['median'] ['std']```
+        optionally ```['nucleotide'] ['q1'] ['q3'] ['max'] ['min']```
+    :param title: str
+    :param start: int
+    :param stop: int
+    :param figsize: tuple, default (7,4)
+    :param ylim: tuple OY axes lim. Default (None,0.01)
+    :param dpi: int, default 150
+    :param color: str, default "green"
+    :param h_lines: list of horizontal lines
+    :param lc: str color of horizontal lines, default "red"
+    :param offset: int number to offset position if 5' flank was used, default 0
+    :param filename: default None, string with path to file
+    :return:
+    '''
+
+    if 'nucleotide' in df.columns.values:
+        df = df.drop('nucleotide', 1)
+    s2 = df[start:stop]
+    #plotting reference dataset
+    fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
+    plt.title(title)
+    ax1.set_xlabel('position')
+    ax1.set_ylabel('fraction of reads')
+    ax1.set_ylim(ylim)
+    ax1.plot(s2.index-offset, s2['median'], color=color,label=name)
+    if set(['q1','q3']).issubset(list(s2.columns.values)):
+        ax1.fill_between(s2.index-offset, s2['q1'], s2['q3'], label='range (2nd-3rd quartile)', color=color, alpha=0.2)
+    if set(['min','max']).issubset(list(s2.columns.values)):
+        ax1.fill_between(s2.index-offset, s2['min'], s2['max'], label='range (min-max)', color=color, alpha=0.07)
+    
+    if not start: start=min(s2.index-offset)
+    if not stop: stop=max(s2.index-offset)
+    for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
+    ax1.legend()
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png')
+    else:
+        plt.show()
+
+
+def plotAndFolding(df=pd.DataFrame(),dG=pd.Series(), title="", start=None, stop=None,
+                     figsize=(7,3),ylim=(None,0.01), dpi=150, color='green', name='median',
+                     h_lines=[], lc="red",offset=0,fname=None):
     '''Plots figure similar to box plot: median, 2 and 3 quartiles and min-max range
 
     :param df: Dataframe() containing following columns:```['position'] ['mean'] ['median'] ['std']```
@@ -160,13 +206,14 @@ def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,
     if 'nucleotide' in df.columns.values:
         df = df.drop('nucleotide', 1)
     s2 = df[start:stop]
+    dG = dG[start:stop]
     #plotting reference dataset
     fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
     plt.title(title)
     ax1.set_xlabel('position')
     ax1.set_ylabel('fraction of reads')
     ax1.set_ylim(ylim)
-    ax1.plot(s2.index-offset, s2['median'], color=color)
+    ax1.plot(s2.index-offset, s2['median'], color=color,label=name)
     if set(['q1','q3']).issubset(list(s2.columns.values)):
         ax1.fill_between(s2.index-offset, s2['q1'], s2['q3'], label='range (2nd-3rd quartile)', color=color, alpha=0.2)
     if set(['min','max']).issubset(list(s2.columns.values)):
@@ -175,11 +222,28 @@ def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,
     if not start: start=min(s2.index-offset)
     if not stop: stop=max(s2.index-offset)
     for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
-    ax1.legend()
+    ax1.legend(loc=2)
+        
+    #plotting delta G
+    ax2 = ax1.twinx()
+    ax2.plot(dG.index-offset, dG, color="orange", label="dG_@30")
+    ax2.set_ylabel(r'delta'+' G', color='orange')
+#     ax2.set_yticks(np.arange(0,1,0.1))
+    ax2.set_ylim(-50,20)
+    for tl in ax2.get_yticklabels():
+        tl.set_color('orange')
+    ax2.grid()
+    ax2.legend(loc=1)
+    
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png')
+    else:
+        plt.show()
+
 
 def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',
                     ref_label="", label="", title="", start=None, stop=None, figsize=(7,3),
-                    ylim=(None,0.01), h_lines=[], lc="red", dpi=150,offset=300):
+                    ylim=(None,0.01), h_lines=[], lc="red", dpi=150,offset=300,fname=None):
     '''Figure to compare to plots similar to box plot: median, 2 and 3 quartiles and min-max range
 
     :param ref: str with path to csv file or DataFrame
@@ -237,8 +301,13 @@ def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',
     for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
     ax1.legend()
 
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png')
+    else:
+        plt.show()
+
 def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label="", start=None, stop=None, plot_medians=True,
-              plot_ranges=True, figsize=(7, 3), ylim=(None,0.01), h_lines=list(), offset=0):
+              plot_ranges=True, figsize=(7, 3), ylim=(None,0.01), h_lines=list(), offset=0,fname=None):
     '''Plot given dataset and reference, differences are marked
 
     :param ref: str with path to csv file or DataFrame
@@ -292,8 +361,13 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label="", start=None, st
     for i in [i for i in h_lines if i in range(start, stop)]: ax1.axvline(i, color='red')
     plt.legend()
 
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png')
+    else:
+        plt.show()
+
 def plot_heatmap(df=pd.DataFrame(), title='Heatmap of differences between dataset and reference plot for RDN37-1',
-                 vmin=None, vmax=None, figsize=(20,10)):
+                 vmin=None, vmax=None, figsize=(20,10),dpi=300,fname=None):
     '''Plot heat map of differences, from dataframe generated by compare1toRef(dataset, heatmap=True) function
 
     :param df: DataFrame
@@ -304,7 +378,7 @@ def plot_heatmap(df=pd.DataFrame(), title='Heatmap of differences between datase
     :return:
     '''
 
-    fig, ax = plt.subplots(figsize=figsize)
+    fig, ax = plt.subplots(figsize=figsize,dpi=dpi)
     if not vmin:
         vmin = -np.absolute(df.max().median())
     if not vmax:
@@ -314,6 +388,10 @@ def plot_heatmap(df=pd.DataFrame(), title='Heatmap of differences between datase
     ax.set_yticklabels(list(df.columns.values), minor=False)
     fig.colorbar(heatmap)
     ax.set_title(title)
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png')
+    else:
+        plt.show()
 
 ################################################
 #############       STAR mapping statistics

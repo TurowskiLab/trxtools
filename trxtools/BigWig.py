@@ -62,7 +62,7 @@ def geneFromBigWig(gene_name, data_path, data_files, gtf, ranges=0,verbose=False
         df_t1[name] = getSeqData(gene_name, data_path, name, gtf, ranges=ranges)
     return df_t1
 
-def foldingFromBigWig(gene_name, data_path, data_files, gtf, ranges=0,offset=15):
+def foldingFromBigWig(gene_name, data_path, data_files, gtf, ranges=0,range5end=0,offset=15):
     '''_summary_
 
     :param gene_name: _description_
@@ -75,6 +75,8 @@ def foldingFromBigWig(gene_name, data_path, data_files, gtf, ranges=0,offset=15)
     :type gtf: _type_
     :param ranges: _description_, defaults to 0
     :type ranges: int, optional
+    :param range5end: _description_, defaults to 0
+    :type range5end: int, optional
     :param offset: _description_, defaults to 15
     :type offset: int, optional
     :return: _description_
@@ -84,6 +86,6 @@ def foldingFromBigWig(gene_name, data_path, data_files, gtf, ranges=0,offset=15)
     df_t1["nucleotide"] = "_".join(gtf.genomicSequence(gene_name,ranges=ranges)).split("_")
     for name in strip_BigWig_names(data_files):
         df_t1[name] = getSeqData(gene_name, data_path, name, gtf, ranges=ranges)
-        df_t1[name][0:ranges+int(name.replace("w","").replace("_dG",""))] = np.nan #remove folding for the 5'end
+        df_t1[name][0:ranges-range5end+int(name.replace("w","").replace("_dG",""))] = np.nan #remove folding for the 5'end
         df_t1[name+"_add"+str(offset)+"nt"] = pd.Series((offset*[np.nan])+df_t1[name].tolist()) #shifting to the extrustion point
     return df_t1
