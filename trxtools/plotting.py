@@ -82,7 +82,7 @@ def clusterClusterMap(df):
 ### Peaks metaplot
 def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
                         title="", start=None, stop=None, window=50, figsize=(4,3),
-                        color1='green', color2="magenta", lc='red'):
+                        color1='green', color2="magenta", lc='red',fname=None):
     '''Plot single gene peaks metaplot.
 
     :param ref: str with path to csv file or DataFrame
@@ -134,7 +134,10 @@ def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
 
     ax1.axvline(0, color=lc, alpha=0.5)
     ax1.legend(loc=2)
-    plt.show()
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+    else:
+        plt.show()
 
 ### profiles
 def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,name='median',
@@ -178,7 +181,7 @@ def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,name='med
     for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
     ax1.legend()
     if fname:
-        plt.savefig(fname=fname,dpi=dpi,format='png')
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
     else:
         plt.show()
 
@@ -236,7 +239,7 @@ def plotAndFolding(df=pd.DataFrame(),dG=pd.Series(), title="", start=None, stop=
     ax2.legend(loc=1)
     
     if fname:
-        plt.savefig(fname=fname,dpi=dpi,format='png')
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
     else:
         plt.show()
 
@@ -282,7 +285,7 @@ def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',
         ax1.fill_between(dataset.index-offset, dataset['min'], dataset['max'], color=color2, alpha=0.3, label='range (min-max)')
     else: #if more than two experiments
         ax1.plot(dataset.index-offset, dataset['median'], color2, label=label)
-        ax1.fill_between(dataset.index-offset, dataset['q1'], dataset['q3'], color=color2, alpha=0.2, label='range (2nd-3rd quartile)')
+        ax1.fill_between(dataset.index-offset, dataset['q1'], dataset['q3'], color=color2, alpha=0.2, label='range (q2-q3)')
     ax1.set_xlabel('position')
     ax1.set_ylim(ylim)
     # Make the y-axis label and tick labels match the line color.
@@ -302,7 +305,7 @@ def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',
     ax1.legend()
 
     if fname:
-        plt.savefig(fname=fname,dpi=dpi,format='png')
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
     else:
         plt.show()
 
@@ -362,7 +365,7 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label="", start=None, st
     plt.legend()
 
     if fname:
-        plt.savefig(fname=fname,dpi=dpi,format='png')
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
     else:
         plt.show()
 
@@ -388,8 +391,9 @@ def plot_heatmap(df=pd.DataFrame(), title='Heatmap of differences between datase
     ax.set_yticklabels(list(df.columns.values), minor=False)
     fig.colorbar(heatmap)
     ax.set_title(title)
+
     if fname:
-        plt.savefig(fname=fname,dpi=dpi,format='png')
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
     else:
         plt.show()
 
