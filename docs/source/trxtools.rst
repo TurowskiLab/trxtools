@@ -17,18 +17,18 @@ trxtools.SAMgenome module
    :undoc-members:
    :show-inheritance:
 
-trxtools.SAMgenome\_old module
-------------------------------
-
-.. automodule:: trxtools.SAMgenome_old
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 trxtools.SAMtranscripts module
 ------------------------------
 
 .. automodule:: trxtools.SAMtranscripts
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+trxtools.BigWig module
+------------------------------
+
+.. automodule:: trxtools.BigWig
    :members:
    :undoc-members:
    :show-inheritance:

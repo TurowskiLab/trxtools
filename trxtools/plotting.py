@@ -1,3 +1,4 @@
+from turtle import st
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -170,6 +171,9 @@ def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,
         ax1.fill_between(s2.index-offset, s2['q1'], s2['q3'], label='range (2nd-3rd quartile)', color=color, alpha=0.2)
     if set(['min','max']).issubset(list(s2.columns.values)):
         ax1.fill_between(s2.index-offset, s2['min'], s2['max'], label='range (min-max)', color=color, alpha=0.07)
+    
+    if not start: start=min(s2.index-offset)
+    if not stop: stop=max(s2.index-offset)
     for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
     ax1.legend()
 

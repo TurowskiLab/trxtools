@@ -221,7 +221,7 @@ def ntotal(df=pd.DataFrame, drop=True):
 #############        major trxtools
 
 def preprocess(input_df=pd.DataFrame(), let_in=[''], let_out=['wont_find_this_string'],
-              stats=False, smooth=True , window=10, win_type='blackman'):
+              stats=False, smooth=True , window=10, win_type='blackman', pseudocounts_param=True, ntotal_param=True):
     '''Combines methods.filterExp and expStats. Returns DataFrame with choosen experiments, optionally apply smoothing and stats
 
     :param input_df: DataFrame
@@ -231,6 +231,8 @@ def preprocess(input_df=pd.DataFrame(), let_in=[''], let_out=['wont_find_this_st
     :param smooth: boolean, if True apply smoothing window, default True
     :param window: int smoothing window, default 10
     :param win_type: str type of smoothing window, default "blackman"
+    :param pseudocounts_param: boolean, add 0.01 pseudocounts
+    :param ntotal_param: boolean, apply ntotal normalization
     :return: DataFrame with 'mean', 'median', 'min', 'max' and quartiles if more than 2 experiments
     '''
     # filtering
@@ -238,6 +240,12 @@ def preprocess(input_df=pd.DataFrame(), let_in=[''], let_out=['wont_find_this_st
                 all(i in d for i in let_in) and all(o not in d for o in let_out)]
     print("Experiments: ")
     print(selected)
+
+    # optional arguments
+    if pseudocounts_param == True:
+        input_df = pseudocounts(input_df)
+    if ntotal_param == True:
+        input_df = ntotal(input_df)
 
     # selecting data
     working_df, result_df = pd.DataFrame(), pd.DataFrame()

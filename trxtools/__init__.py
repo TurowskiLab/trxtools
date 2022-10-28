@@ -8,3 +8,4 @@ import trxtools.SAMgeneral
 import trxtools.SAMtranscripts
 import trxtools.SAMgenome
 import trxtools.go_enrichment
+import trxtools.BigWig
