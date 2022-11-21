@@ -5,6 +5,14 @@ import numpy as np
 import trxtools.profiles as profiles
 from adjustText import adjust_text
 import seaborn as sns
+import matplotlib
+
+#### general functions ####
+
+def select_colors(n=int(), name_cmap='Spectral'):
+    cmap = matplotlib.cm.get_cmap(name_cmap)
+    numbers = np.linspace(0, 1, n).tolist()
+    return [cmap(i) for i in numbers]
 
 #### PCA
 def plotPCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize=(7,7), PCval=[]):
@@ -79,6 +87,81 @@ def clusterClusterMap(df):
                    linewidths=.75, figsize=(7, 7))
     plt.show()
 
+## boxplots
+
+def boxplot1(data,labels=None,title="",figsize=(7, 6),dpi=150,log=False,lim=None,
+            name_cmap='Spectral',vert=1,color=None,grid=False,fname=None):
+
+    fig = plt.figure(figsize=figsize,dpi=dpi)
+    ax = fig.add_subplot()
+
+    # Creating axes instance
+    bp = ax.boxplot(data, patch_artist = True,
+                    notch ='True', vert = vert)
+
+    ### colors ###
+    if color:
+        colors = [color]*len(data)
+    else:
+        colors = select_colors(n=len(data),name_cmap=name_cmap)
+
+    for patch, color in zip(bp['boxes'], colors):
+        patch.set_facecolor(color)
+
+    # whiskers
+    for whisker in bp['whiskers']:
+        whisker.set(color ='black', linewidth = 1.5,
+                    linestyle =":")
+    # caps
+    for cap in bp['caps']:
+        cap.set(color ='black', linewidth = 2)
+    # median
+    for median in bp['medians']:
+        median.set(color ='black', linewidth = 3)
+    
+    # style of fliers
+    for flier in bp['fliers']:
+        flier.set(marker ='.',
+                color ='grey',
+                alpha = 0.5)
+
+    # x-axis labels
+    if labels: pass
+    elif (isinstance(data, pd.DataFrame) or isinstance(data, pd.Series)):
+        labels = data.index.tolist()
+    else:
+        labels = ["data_"+str(i) for i in range(1,len(data)+1)]
+    
+    if vert==0:
+        ax.set_yticklabels(labels)
+        if lim:
+            ax.set_xlim(lim)
+        if log==True:
+            ax.set_xscale('log')
+        if grid==True:
+            ax.xaxis.grid(True, linestyle='-', which='major', color='lightgrey',
+               alpha=0.5)
+    elif vert==1:
+        ax.set_xticklabels(labels)
+        if lim:
+            ax.set_ylim(lim)
+        if log==True:
+            ax.set_yscale('log')
+        if grid==True:
+            ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',
+               alpha=0.5)
+
+    # Removing top axes and right axes ticks
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+
+    plt.title(title)
+    
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+    else:
+        plt.show()
+
 ### Peaks metaplot
 def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
                         title="", start=None, stop=None, window=50, figsize=(4,3),
@@ -134,6 +217,7 @@ def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
 
     ax1.axvline(0, color=lc, alpha=0.5)
     ax1.legend(loc=2)
+
     if fname:
         plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
     else:
@@ -309,8 +393,9 @@ def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',
     else:
         plt.show()
 
-def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label="", start=None, stop=None, plot_medians=True,
-              plot_ranges=True, figsize=(7, 3), ylim=(None,0.01), h_lines=list(), offset=0,fname=None):
+def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label1='reference', label2="", 
+              start=None, stop=None, plot_medians=True, title="", plot_ranges=True,
+              dpi=150, figsize=(7, 3), ylim=(None,0.01), h_lines=list(), offset=0,fname=None):
     '''Plot given dataset and reference, differences are marked
 
     :param ref: str with path to csv file or DataFrame
@@ -339,17 +424,17 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label="", start=None, st
     if isinstance(reference, str):
         reference = pd.read_csv(reference, index_col=0)
 
-    differences_df = profiles.compareMoretoRef(dataset=dataset, ranges=ranges, reference=reference)[start:stop]
+    differences_df = profiles.compareMoretoRef(dataset=dataset, ranges=ranges, ref=reference)[start:stop]
     dataset, s2 = dataset[start:stop], reference[start:stop]  # prepating datasets
     # plotting
-    fig, ax1 = plt.subplots(figsize=figsize)
+    fig, ax1 = plt.subplots(figsize=figsize,dpi=dpi)
     ax1.fill_between(differences_df.index-offset, differences_df['ear_min'], differences_df['ear_max'], color='red',
                      where=(differences_df['ear_max'] > 0), label='increased pausing (' + ranges_dict[ranges] + ')')
     ax1.fill_between(differences_df.index-offset, differences_df['rae_min'], differences_df['rae_max'], color='blue',
                      where=(differences_df['rae_max'] > 0), label='decreased pausing (' + ranges_dict[ranges] + ')')
     if plot_medians == True:
-        ax1.plot(dataset.index-offset, dataset['median'], 'black', label=label)
-        ax1.plot(s2.index-offset, s2['median'], 'green', label='reference RDN37-1')
+        ax1.plot(dataset.index-offset, dataset['median'], 'black', label=label2)
+        ax1.plot(s2.index-offset, s2['median'], 'green', label=label1)
     if plot_ranges == True:
         if len(dataset.columns) == 4:  # if only two experiments
             ax1.fill_between(dataset.index-offset, dataset['min'], dataset['max'], color='black', alpha=0.3, label='min-max')
@@ -360,8 +445,9 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label="", start=None, st
         ax1.fill_between(s2.index-offset, s2['min'], s2['max'], color='green', alpha=0.07, label='min=max')
     ax1.set_ylim(ylim)
     ax1.set_xlabel('position')
-    ax1.set_ylabel('fraction of reads ' + label, color='black')
+    ax1.set_ylabel('fraction of reads', color='black')
     for i in [i for i in h_lines if i in range(start, stop)]: ax1.axvline(i, color='red')
+    ax1.set_title(title)
     plt.legend()
 
     if fname:
