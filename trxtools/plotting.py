@@ -165,7 +165,7 @@ def boxplot1(data,labels=None,title="",figsize=(7, 6),dpi=150,log=False,lim=None
 ### Peaks metaplot
 def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
                         title="", start=None, stop=None, window=50, figsize=(4,3),
-                        color1='green', color2="magenta", lc='red',fname=None):
+                        color1='green', color2="magenta", lc='red',fname=None, use="mean"):
     '''Plot single gene peaks metaplot.
 
     :param ref: str with path to csv file or DataFrame
@@ -201,14 +201,18 @@ def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
         s3_dataset2 = df2['median'][loc - window:loc + window]
         df_dataset2[i] = s3_dataset2.reset_index()['median']
 
-    s_data1 = df_dataset1.mean(axis=1)
-    s_data2 = df_dataset2.mean(axis=1)
+    if use=='mean':
+        s_data1 = df_dataset1.mean(axis=1)
+        s_data2 = df_dataset2.mean(axis=1)
+    elif use=='median':
+        s_data1 = df_dataset1.median(axis=1)
+        s_data2 = df_dataset2.median(axis=1)
 
     # plotting reference dataset
     fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
     plt.title(title)
     ax1.set_xlabel('position')
-    ax1.set_ylabel('fraction of reads')
+    ax1.set_ylabel('fraction of reads ('+use+')')
     #     ax1.set_ylim(ylim)
     ax1.plot(np.arange(-window, window), s_data1, color=color1)
 
@@ -216,7 +220,7 @@ def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
     ax1.plot(np.arange(-window, window), s_data2, color=color2)
 
     ax1.axvline(0, color=lc, alpha=0.5)
-    ax1.legend(loc=2)
+    # ax1.legend(loc=2)
 
     if fname:
         plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
