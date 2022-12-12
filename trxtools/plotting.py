@@ -82,7 +82,7 @@ def clusterClusterMap(df):
 ### Peaks metaplot
 def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
                         title="", start=None, stop=None, window=50, figsize=(4,3),
-                        color1='green', color2="magenta", lc='red',fname=None):
+                        color1='green', color2="magenta", lc='red',fname=None,use="mean",ylim=None):
     '''Plot single gene peaks metaplot.
 
     :param ref: str with path to csv file or DataFrame
@@ -118,15 +118,20 @@ def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
         s3_dataset2 = df2['median'][loc - window:loc + window]
         df_dataset2[i] = s3_dataset2.reset_index()['median']
 
-    s_data1 = df_dataset1.mean(axis=1)
-    s_data2 = df_dataset2.mean(axis=1)
+    if use=='mean':
+        s_data1 = df_dataset1.mean(axis=1)
+        s_data2 = df_dataset2.mean(axis=1)
+    elif use=='median':
+        s_data1 = df_dataset1.median(axis=1)
+        s_data2 = df_dataset2.median(axis=1)
 
     # plotting reference dataset
     fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
     plt.title(title)
     ax1.set_xlabel('position')
-    ax1.set_ylabel('fraction of reads')
-    #     ax1.set_ylim(ylim)
+    ax1.set_ylabel(f'fraction of reads ({use})')
+    if ylim:
+        ax1.set_ylim(ylim)
     ax1.plot(np.arange(-window, window), s_data1, color=color1)
 
     # plotting dataset2
@@ -309,8 +314,9 @@ def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',
     else:
         plt.show()
 
-def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label="", start=None, stop=None, plot_medians=True,
-              plot_ranges=True, figsize=(7, 3), ylim=(None,0.01), h_lines=list(), offset=0,fname=None):
+def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label1="reference", label2="", 
+              title="", start=None, stop=None, plot_medians=True, plot_ranges=True,
+              dpi=150, figsize=(7, 3), ylim=(None,0.01), h_lines=list(), offset=0,fname=None):
     '''Plot given dataset and reference, differences are marked
 
     :param ref: str with path to csv file or DataFrame
@@ -339,17 +345,17 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label="", start=None, st
     if isinstance(reference, str):
         reference = pd.read_csv(reference, index_col=0)
 
-    differences_df = profiles.compareMoretoRef(dataset=dataset, ranges=ranges, reference=reference)[start:stop]
+    differences_df = profiles.compareMoretoRef(dataset=dataset, ranges=ranges, ref=reference)[start:stop]
     dataset, s2 = dataset[start:stop], reference[start:stop]  # prepating datasets
     # plotting
-    fig, ax1 = plt.subplots(figsize=figsize)
+    fig, ax1 = plt.subplots(figsize=figsize,dpi=dpi)
     ax1.fill_between(differences_df.index-offset, differences_df['ear_min'], differences_df['ear_max'], color='red',
                      where=(differences_df['ear_max'] > 0), label='increased pausing (' + ranges_dict[ranges] + ')')
     ax1.fill_between(differences_df.index-offset, differences_df['rae_min'], differences_df['rae_max'], color='blue',
                      where=(differences_df['rae_max'] > 0), label='decreased pausing (' + ranges_dict[ranges] + ')')
     if plot_medians == True:
-        ax1.plot(dataset.index-offset, dataset['median'], 'black', label=label)
-        ax1.plot(s2.index-offset, s2['median'], 'green', label='reference RDN37-1')
+        ax1.plot(dataset.index-offset, dataset['median'], 'black', label=label2)
+        ax1.plot(s2.index-offset, s2['median'], 'green', label=label1)
     if plot_ranges == True:
         if len(dataset.columns) == 4:  # if only two experiments
             ax1.fill_between(dataset.index-offset, dataset['min'], dataset['max'], color='black', alpha=0.3, label='min-max')
@@ -360,9 +366,10 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label="", start=None, st
         ax1.fill_between(s2.index-offset, s2['min'], s2['max'], color='green', alpha=0.07, label='min=max')
     ax1.set_ylim(ylim)
     ax1.set_xlabel('position')
-    ax1.set_ylabel('fraction of reads ' + label, color='black')
+    ax1.set_ylabel('fraction of reads', color='black')
     for i in [i for i in h_lines if i in range(start, stop)]: ax1.axvline(i, color='red')
     plt.legend()
+    plt.title(title)
 
     if fname:
         plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
