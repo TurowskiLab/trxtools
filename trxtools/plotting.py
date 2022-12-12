@@ -5,6 +5,14 @@ import numpy as np
 import trxtools.profiles as profiles
 from adjustText import adjust_text
 import seaborn as sns
+import matplotlib
+
+#### general functions ####
+
+def select_colors(n=int(), name_cmap='Spectral'):
+    cmap = matplotlib.cm.get_cmap(name_cmap)
+    numbers = np.linspace(0, 1, n).tolist()
+    return [cmap(i) for i in numbers]
 
 #### PCA
 def plotPCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize=(7,7), PCval=[]):
@@ -79,6 +87,81 @@ def clusterClusterMap(df):
                    linewidths=.75, figsize=(7, 7))
     plt.show()
 
+## boxplots
+
+def boxplot1(data,labels=None,title="",figsize=(7, 6),dpi=150,log=False,lim=None,
+            name_cmap='Spectral',vert=1,color=None,grid=False,fname=None):
+
+    fig = plt.figure(figsize=figsize,dpi=dpi)
+    ax = fig.add_subplot()
+
+    # Creating axes instance
+    bp = ax.boxplot(data, patch_artist = True,
+                    notch ='True', vert = vert)
+
+    ### colors ###
+    if color:
+        colors = [color]*len(data)
+    else:
+        colors = select_colors(n=len(data),name_cmap=name_cmap)
+
+    for patch, color in zip(bp['boxes'], colors):
+        patch.set_facecolor(color)
+
+    # whiskers
+    for whisker in bp['whiskers']:
+        whisker.set(color ='black', linewidth = 1.5,
+                    linestyle =":")
+    # caps
+    for cap in bp['caps']:
+        cap.set(color ='black', linewidth = 2)
+    # median
+    for median in bp['medians']:
+        median.set(color ='black', linewidth = 3)
+    
+    # style of fliers
+    for flier in bp['fliers']:
+        flier.set(marker ='.',
+                color ='grey',
+                alpha = 0.5)
+
+    # x-axis labels
+    if labels: pass
+    elif (isinstance(data, pd.DataFrame) or isinstance(data, pd.Series)):
+        labels = data.index.tolist()
+    else:
+        labels = ["data_"+str(i) for i in range(1,len(data)+1)]
+    
+    if vert==0:
+        ax.set_yticklabels(labels)
+        if lim:
+            ax.set_xlim(lim)
+        if log==True:
+            ax.set_xscale('log')
+        if grid==True:
+            ax.xaxis.grid(True, linestyle='-', which='major', color='lightgrey',
+               alpha=0.5)
+    elif vert==1:
+        ax.set_xticklabels(labels)
+        if lim:
+            ax.set_ylim(lim)
+        if log==True:
+            ax.set_yscale('log')
+        if grid==True:
+            ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',
+               alpha=0.5)
+
+    # Removing top axes and right axes ticks
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+
+    plt.title(title)
+    
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+    else:
+        plt.show()
+
 ### Peaks metaplot
 def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
                         title="", start=None, stop=None, window=50, figsize=(4,3),
@@ -138,7 +221,8 @@ def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
     ax1.plot(np.arange(-window, window), s_data2, color=color2)
 
     ax1.axvline(0, color=lc, alpha=0.5)
-    ax1.legend(loc=2)
+    # ax1.legend(loc=2)
+
     if fname:
         plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
     else:
@@ -368,6 +452,7 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label1="reference", labe
     ax1.set_xlabel('position')
     ax1.set_ylabel('fraction of reads', color='black')
     for i in [i for i in h_lines if i in range(start, stop)]: ax1.axvline(i, color='red')
+    ax1.set_title(title)
     plt.legend()
     plt.title(title)
 
