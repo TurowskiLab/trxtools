@@ -164,7 +164,7 @@ def boxplot1(data,labels=None,title="",figsize=(7, 6),dpi=150,log=False,lim=None
 
 ### Peaks metaplot
 def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
-                        title="", start=None, stop=None, window=50, figsize=(4,3),
+                        title="", start=None, stop=None, window=50, figsize=(4,3),equal_weight=False,
                         color1='green', color2="magenta", lc='red',fname=None,use="mean",ylim=None):
     '''Plot single gene peaks metaplot.
 
@@ -197,9 +197,14 @@ def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
 
     for i, loc in enumerate(local_pos):
         s2_dataset1 = reference['median'][loc - window:loc + window]
-        df_dataset1[i] = s2_dataset1.reset_index()['median']
         s3_dataset2 = df2['median'][loc - window:loc + window]
-        df_dataset2[i] = s3_dataset2.reset_index()['median']
+        if equal_weight == True: #to be tested
+            s2_pseudocounts = s2_dataset1.min() / 100
+            s2_dataset1 = s2_dataset1.add(s2_pseudocounts) / s2_dataset1.add(s2_pseudocounts).sum()
+            s3_pseudocounts = s3_dataset2.min() / 100
+            s3_dataset2 = s3_dataset2.add(s3_pseudocounts) / s3_dataset2.add(s3_pseudocounts).sum()
+        df_dataset1[i] = s2_dataset1.reset_index()['median'] #for multigene metaplot this value could/should be normalized
+        df_dataset2[i] = s3_dataset2.reset_index()['median'] #for multigene metaplot this value could/should be normalized
 
     if use=='mean':
         s_data1 = df_dataset1.mean(axis=1)
@@ -207,6 +212,9 @@ def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
     elif use=='median':
         s_data1 = df_dataset1.median(axis=1)
         s_data2 = df_dataset2.median(axis=1)
+    elif use=='sum':
+        s_data1 = df_dataset1.sum(axis=1)
+        s_data2 = df_dataset2.sum(axis=1)
 
     # plotting reference dataset
     fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
