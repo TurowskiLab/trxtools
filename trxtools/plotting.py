@@ -5,6 +5,14 @@ import numpy as np
 import trxtools.profiles as profiles
 from adjustText import adjust_text
 import seaborn as sns
+import matplotlib
+
+#### general functions ####
+
+def select_colors(n=int(), name_cmap='Spectral'):
+    cmap = matplotlib.cm.get_cmap(name_cmap)
+    numbers = np.linspace(0, 1, n).tolist()
+    return [cmap(i) for i in numbers]
 
 #### PCA
 def plotPCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize=(7,7), PCval=[]):
@@ -79,10 +87,85 @@ def clusterClusterMap(df):
                    linewidths=.75, figsize=(7, 7))
     plt.show()
 
+## boxplots
+
+def boxplot1(data,labels=None,title="",figsize=(7, 6),dpi=150,log=False,lim=None,
+            name_cmap='Spectral',vert=1,color=None,grid=False,fname=None):
+
+    fig = plt.figure(figsize=figsize,dpi=dpi)
+    ax = fig.add_subplot()
+
+    # Creating axes instance
+    bp = ax.boxplot(data, patch_artist = True,
+                    notch ='True', vert = vert)
+
+    ### colors ###
+    if color:
+        colors = [color]*len(data)
+    else:
+        colors = select_colors(n=len(data),name_cmap=name_cmap)
+
+    for patch, color in zip(bp['boxes'], colors):
+        patch.set_facecolor(color)
+
+    # whiskers
+    for whisker in bp['whiskers']:
+        whisker.set(color ='black', linewidth = 1.5,
+                    linestyle =":")
+    # caps
+    for cap in bp['caps']:
+        cap.set(color ='black', linewidth = 2)
+    # median
+    for median in bp['medians']:
+        median.set(color ='black', linewidth = 3)
+    
+    # style of fliers
+    for flier in bp['fliers']:
+        flier.set(marker ='.',
+                color ='grey',
+                alpha = 0.5)
+
+    # x-axis labels
+    if labels: pass
+    elif (isinstance(data, pd.DataFrame) or isinstance(data, pd.Series)):
+        labels = data.index.tolist()
+    else:
+        labels = ["data_"+str(i) for i in range(1,len(data)+1)]
+    
+    if vert==0:
+        ax.set_yticklabels(labels)
+        if lim:
+            ax.set_xlim(lim)
+        if log==True:
+            ax.set_xscale('log')
+        if grid==True:
+            ax.xaxis.grid(True, linestyle='-', which='major', color='lightgrey',
+               alpha=0.5)
+    elif vert==1:
+        ax.set_xticklabels(labels)
+        if lim:
+            ax.set_ylim(lim)
+        if log==True:
+            ax.set_yscale('log')
+        if grid==True:
+            ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',
+               alpha=0.5)
+
+    # Removing top axes and right axes ticks
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+
+    plt.title(title)
+    
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+    else:
+        plt.show()
+
 ### Peaks metaplot
 def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
-                        title="", start=None, stop=None, window=50, figsize=(4,3),
-                        color1='green', color2="magenta", lc='red'):
+                        title="", start=None, stop=None, window=50, figsize=(4,3),equal_weight=False,
+                        color1='green', color2="magenta", lc='red',fname=None,use="mean",ylim=None):
     '''Plot single gene peaks metaplot.
 
     :param ref: str with path to csv file or DataFrame
@@ -114,32 +197,95 @@ def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
 
     for i, loc in enumerate(local_pos):
         s2_dataset1 = reference['median'][loc - window:loc + window]
-        df_dataset1[i] = s2_dataset1.reset_index()['median']
         s3_dataset2 = df2['median'][loc - window:loc + window]
-        df_dataset2[i] = s3_dataset2.reset_index()['median']
+        if equal_weight == True: #to be tested
+            s2_pseudocounts = s2_dataset1.min() / 100
+            s2_dataset1 = s2_dataset1.add(s2_pseudocounts) / s2_dataset1.add(s2_pseudocounts).sum()
+            s3_pseudocounts = s3_dataset2.min() / 100
+            s3_dataset2 = s3_dataset2.add(s3_pseudocounts) / s3_dataset2.add(s3_pseudocounts).sum()
+        df_dataset1[i] = s2_dataset1.reset_index()['median'] #for multigene metaplot this value could/should be normalized
+        df_dataset2[i] = s3_dataset2.reset_index()['median'] #for multigene metaplot this value could/should be normalized
 
-    s_data1 = df_dataset1.mean(axis=1)
-    s_data2 = df_dataset2.mean(axis=1)
+    if use=='mean':
+        s_data1 = df_dataset1.mean(axis=1)
+        s_data2 = df_dataset2.mean(axis=1)
+    elif use=='median':
+        s_data1 = df_dataset1.median(axis=1)
+        s_data2 = df_dataset2.median(axis=1)
+    elif use=='sum':
+        s_data1 = df_dataset1.sum(axis=1)
+        s_data2 = df_dataset2.sum(axis=1)
 
     # plotting reference dataset
     fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
     plt.title(title)
     ax1.set_xlabel('position')
-    ax1.set_ylabel('fraction of reads')
-    #     ax1.set_ylim(ylim)
+    ax1.set_ylabel(f'fraction of reads ({use})')
+    if ylim:
+        ax1.set_ylim(ylim)
     ax1.plot(np.arange(-window, window), s_data1, color=color1)
 
     # plotting dataset2
     ax1.plot(np.arange(-window, window), s_data2, color=color2)
 
     ax1.axvline(0, color=lc, alpha=0.5)
-    ax1.legend(loc=2)
-    plt.show()
+    # ax1.legend(loc=2)
+
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+    else:
+        plt.show()
 
 ### profiles
-def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,
+def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,name='median',
                      figsize=(7,3),ylim=(None,0.01), dpi=150, color='green',
-                     h_lines=[], lc="red",offset=0):
+                     h_lines=[], lc="red",offset=0,fname=None):
+    '''Plots figure similar to box plot: median, 2 and 3 quartiles and min-max range
+
+    :param df: Dataframe() containing following columns:```['position'] ['mean'] ['median'] ['std']```
+        optionally ```['nucleotide'] ['q1'] ['q3'] ['max'] ['min']```
+    :param title: str
+    :param start: int
+    :param stop: int
+    :param figsize: tuple, default (7,4)
+    :param ylim: tuple OY axes lim. Default (None,0.01)
+    :param dpi: int, default 150
+    :param color: str, default "green"
+    :param h_lines: list of horizontal lines
+    :param lc: str color of horizontal lines, default "red"
+    :param offset: int number to offset position if 5' flank was used, default 0
+    :param filename: default None, string with path to file
+    :return:
+    '''
+
+    if 'nucleotide' in df.columns.values:
+        df = df.drop('nucleotide', 1)
+    s2 = df[start:stop]
+    #plotting reference dataset
+    fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
+    plt.title(title)
+    ax1.set_xlabel('position')
+    ax1.set_ylabel('fraction of reads')
+    ax1.set_ylim(ylim)
+    ax1.plot(s2.index-offset, s2['median'], color=color,label=name)
+    if set(['q1','q3']).issubset(list(s2.columns.values)):
+        ax1.fill_between(s2.index-offset, s2['q1'], s2['q3'], label='range (2nd-3rd quartile)', color=color, alpha=0.2)
+    if set(['min','max']).issubset(list(s2.columns.values)):
+        ax1.fill_between(s2.index-offset, s2['min'], s2['max'], label='range (min-max)', color=color, alpha=0.07)
+    
+    if not start: start=min(s2.index-offset)
+    if not stop: stop=max(s2.index-offset)
+    for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
+    ax1.legend()
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+    else:
+        plt.show()
+
+
+def plotAndFolding(df=pd.DataFrame(),dG=pd.Series(), title="", start=None, stop=None,
+                     figsize=(7,3),ylim=(None,0.01), dpi=150, color='green', name='median',
+                     h_lines=[], lc="red",offset=0,fname=None):
     '''Plots figure similar to box plot: median, 2 and 3 quartiles and min-max range
 
     :param df: Dataframe() containing following columns:```['position'] ['mean'] ['median'] ['std']```
@@ -160,13 +306,14 @@ def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,
     if 'nucleotide' in df.columns.values:
         df = df.drop('nucleotide', 1)
     s2 = df[start:stop]
+    dG = dG[start:stop]
     #plotting reference dataset
     fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
     plt.title(title)
     ax1.set_xlabel('position')
     ax1.set_ylabel('fraction of reads')
     ax1.set_ylim(ylim)
-    ax1.plot(s2.index-offset, s2['median'], color=color)
+    ax1.plot(s2.index-offset, s2['median'], color=color,label=name)
     if set(['q1','q3']).issubset(list(s2.columns.values)):
         ax1.fill_between(s2.index-offset, s2['q1'], s2['q3'], label='range (2nd-3rd quartile)', color=color, alpha=0.2)
     if set(['min','max']).issubset(list(s2.columns.values)):
@@ -175,11 +322,28 @@ def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,
     if not start: start=min(s2.index-offset)
     if not stop: stop=max(s2.index-offset)
     for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
-    ax1.legend()
+    ax1.legend(loc=2)
+        
+    #plotting delta G
+    ax2 = ax1.twinx()
+    ax2.plot(dG.index-offset, dG, color="orange", label="dG_@30")
+    ax2.set_ylabel(r'delta'+' G', color='orange')
+#     ax2.set_yticks(np.arange(0,1,0.1))
+    ax2.set_ylim(-50,20)
+    for tl in ax2.get_yticklabels():
+        tl.set_color('orange')
+    ax2.grid()
+    ax2.legend(loc=1)
+    
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+    else:
+        plt.show()
+
 
 def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',
                     ref_label="", label="", title="", start=None, stop=None, figsize=(7,3),
-                    ylim=(None,0.01), h_lines=[], lc="red", dpi=150,offset=300):
+                    ylim=(None,0.01), h_lines=[], lc="red", dpi=150,offset=300,fname=None):
     '''Figure to compare to plots similar to box plot: median, 2 and 3 quartiles and min-max range
 
     :param ref: str with path to csv file or DataFrame
@@ -218,7 +382,7 @@ def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',
         ax1.fill_between(dataset.index-offset, dataset['min'], dataset['max'], color=color2, alpha=0.3, label='range (min-max)')
     else: #if more than two experiments
         ax1.plot(dataset.index-offset, dataset['median'], color2, label=label)
-        ax1.fill_between(dataset.index-offset, dataset['q1'], dataset['q3'], color=color2, alpha=0.2, label='range (2nd-3rd quartile)')
+        ax1.fill_between(dataset.index-offset, dataset['q1'], dataset['q3'], color=color2, alpha=0.2, label='range (q2-q3)')
     ax1.set_xlabel('position')
     ax1.set_ylim(ylim)
     # Make the y-axis label and tick labels match the line color.
@@ -237,8 +401,14 @@ def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',
     for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
     ax1.legend()
 
-def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label="", start=None, stop=None, plot_medians=True,
-              plot_ranges=True, figsize=(7, 3), ylim=(None,0.01), h_lines=list(), offset=0):
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+    else:
+        plt.show()
+
+def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label1="reference", label2="", 
+              title="", start=None, stop=None, plot_medians=True, plot_ranges=True,
+              dpi=150, figsize=(7, 3), ylim=(None,0.01), h_lines=list(), offset=0,fname=None):
     '''Plot given dataset and reference, differences are marked
 
     :param ref: str with path to csv file or DataFrame
@@ -267,17 +437,17 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label="", start=None, st
     if isinstance(reference, str):
         reference = pd.read_csv(reference, index_col=0)
 
-    differences_df = profiles.compareMoretoRef(dataset=dataset, ranges=ranges, reference=reference)[start:stop]
+    differences_df = profiles.compareMoretoRef(dataset=dataset, ranges=ranges, ref=reference)[start:stop]
     dataset, s2 = dataset[start:stop], reference[start:stop]  # prepating datasets
     # plotting
-    fig, ax1 = plt.subplots(figsize=figsize)
+    fig, ax1 = plt.subplots(figsize=figsize,dpi=dpi)
     ax1.fill_between(differences_df.index-offset, differences_df['ear_min'], differences_df['ear_max'], color='red',
                      where=(differences_df['ear_max'] > 0), label='increased pausing (' + ranges_dict[ranges] + ')')
     ax1.fill_between(differences_df.index-offset, differences_df['rae_min'], differences_df['rae_max'], color='blue',
                      where=(differences_df['rae_max'] > 0), label='decreased pausing (' + ranges_dict[ranges] + ')')
     if plot_medians == True:
-        ax1.plot(dataset.index-offset, dataset['median'], 'black', label=label)
-        ax1.plot(s2.index-offset, s2['median'], 'green', label='reference RDN37-1')
+        ax1.plot(dataset.index-offset, dataset['median'], 'black', label=label2)
+        ax1.plot(s2.index-offset, s2['median'], 'green', label=label1)
     if plot_ranges == True:
         if len(dataset.columns) == 4:  # if only two experiments
             ax1.fill_between(dataset.index-offset, dataset['min'], dataset['max'], color='black', alpha=0.3, label='min-max')
@@ -288,12 +458,19 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label="", start=None, st
         ax1.fill_between(s2.index-offset, s2['min'], s2['max'], color='green', alpha=0.07, label='min=max')
     ax1.set_ylim(ylim)
     ax1.set_xlabel('position')
-    ax1.set_ylabel('fraction of reads ' + label, color='black')
+    ax1.set_ylabel('fraction of reads', color='black')
     for i in [i for i in h_lines if i in range(start, stop)]: ax1.axvline(i, color='red')
+    ax1.set_title(title)
     plt.legend()
+    plt.title(title)
+
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+    else:
+        plt.show()
 
 def plot_heatmap(df=pd.DataFrame(), title='Heatmap of differences between dataset and reference plot for RDN37-1',
-                 vmin=None, vmax=None, figsize=(20,10)):
+                 vmin=None, vmax=None, figsize=(20,10),dpi=300,fname=None):
     '''Plot heat map of differences, from dataframe generated by compare1toRef(dataset, heatmap=True) function
 
     :param df: DataFrame
@@ -304,7 +481,7 @@ def plot_heatmap(df=pd.DataFrame(), title='Heatmap of differences between datase
     :return:
     '''
 
-    fig, ax = plt.subplots(figsize=figsize)
+    fig, ax = plt.subplots(figsize=figsize,dpi=dpi)
     if not vmin:
         vmin = -np.absolute(df.max().median())
     if not vmax:
@@ -314,6 +491,11 @@ def plot_heatmap(df=pd.DataFrame(), title='Heatmap of differences between datase
     ax.set_yticklabels(list(df.columns.values), minor=False)
     fig.colorbar(heatmap)
     ax.set_title(title)
+
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+    else:
+        plt.show()
 
 ################################################
 #############       STAR mapping statistics
