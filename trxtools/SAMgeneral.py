@@ -330,6 +330,7 @@ def saveBigWig(paths=dict(),suffix=str(),bw_name=str(),chroms=list()):
             df = df.sort_index()
             stops = df.index.to_numpy()
             starts = list(stops-1)
+            if len(starts)==0: continue
             vals=df[c].to_list()
             bw.addEntries([c] * len(starts), starts, ends=stops.tolist(), values=vals)
     bw.close()
