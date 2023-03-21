@@ -19,7 +19,12 @@ def get_bw_data(bed_row, bw, flank=0):
         return pd.Series(bw.values(bed_row[0], bed_row[1]-flank, bed_row[2]+flank))
     if bed_row[5] == '-':
         # flip orientation on minus strand
-        return pd.Series(bw.values(bed_row[0], bed_row[1]-flank, bed_row[2]+flank))[::-1]
+        # keep the index so pandas doesn't flip it again
+        outseries = pd.Series(bw.values(bed_row[0], bed_row[1]-flank, bed_row[2]+flank))
+        rev_index = outseries.index
+        outseries = outseries.iloc[::-1]
+        outseries.index = rev_index
+        return outseries
 
 ### level -1    
 def bed_split_strands(bed_df):
@@ -54,6 +59,7 @@ def join_strand_matrices(plus_dict, minus_dict):
     out_dict={}
     for key in plus_dict.keys():
         key_min = key.replace("plus", "minus")
+        key_min = key.replace("fwd", "rev")
         if key_min not in minus_dict.keys():
             raise Exception("Keys in dictionaries do not match")
             break
@@ -102,9 +108,10 @@ def metaprofile(matrix_dict, agg_type='mean', normalize=False):
     :return: dataframe containing metaprofile values for each position in each of the input matrices (i.e. bigwig files)
     :rtype: pandas.DataFrame
     '''    
-    if agg_type not in ['mean', 'meadian', 'sum']:
+    if agg_type not in ['mean', 'median', 'sum']:
         raise Exception("Wrong agg_type; available values: 'mean', 'median', 'sum'")
     if normalize:
-        return pd.DataFrame({key: value.apply(lambda x: x/sum(x),axis=1).agg(agg_type) for key, value in matrix_dict.items()})
+        dropped = {key: value/value.sum(axis=1,numeric_only=True) for key, value in matrix_dict.items()}
+        return pd.DataFrame({key: value.agg(agg_type,numeric_only=True) for key, value in dropped.items()})
     else:
-        return pd.DataFrame({key: value.agg(agg_type) for key, value in matrix_dict.items()})
+        return pd.DataFrame({key: value.agg(agg_type, numeric_only=True) for key, value in matrix_dict.items()})
