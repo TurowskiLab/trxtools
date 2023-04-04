@@ -38,7 +38,7 @@ def bed_split_strands(bed_df):
     bed_minus = bed_df[bed_df[5] == "-"]
     return bed_plus, bed_minus
 
-def matrix_from_bigwig(bw_path, bed_df, flank_5=0, flank_3=0):
+def matrix_from_bigwig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True):
     '''
     Get matrix with bigwig scores for all regions in a bed df.
     Matrix rows correspond to regions in BED.
@@ -46,10 +46,19 @@ def matrix_from_bigwig(bw_path, bed_df, flank_5=0, flank_3=0):
     '''
     bw = pyBigWig.open(bw_path)
     out_df = bed_df.apply(get_bw_data, bw=bw, flank_5=flank_5, flank_3=flank_3, axis=1)
-    bw.close()
     if out_df.columns[0] != 0:
         out_df.columns = out_df.columns[::-1]
     out_df['region'] = bed_df[3]
+    out_df = out_df.set_index('region')
+    if fill_na:
+        out_df = out_df.fillna(0)
+    if isinstance(pseudocounts, float):
+        out_df = out_df+pseudocounts
+    if normalize_libsize:
+        libsize = bw.header()['sumData']
+        out_df = out_df/libsize
+    bw.close()
+    out_df = out_df.reset_index()
     return out_df
 
 def join_strand_matrices(plus_dict, minus_dict):
@@ -68,35 +77,40 @@ def join_strand_matrices(plus_dict, minus_dict):
     return out_dict
 
 ### level 0
-def get_multiple_matrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0):
-    '''
-    Get score matrices for positions in given regions (with optional flanks) from multiple BigWig files.
+def get_multiple_matrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True):
+    """Get score matrices for positions in given regions (with optional flanks) from multiple BigWig files.
     Matrix rows correspond to regions in BED.
     Columns correpond to nucleotide positions in regions + flanks.
 
     :param bw_paths_plus: list of paths to BigWig files (+ strand)
     :type bw_paths_plus: list
-    :param bw_paths_minus: list of paths to BigWig files (+ strand)
+    :param bw_paths_minus: list of paths to BigWig files (- strand)
     :type bw_paths_minus: list
     :param bed_df: dataframe in BED format containing genomic coordinates of target regions
     :type bed_df: pandas.DataFrame
-    :param flank_5: number of nt that input regions will be extended by on 5' side
-    :type flank_5: int
-    :param flank_3: number of nt that input regions will be extended by on 3' side
-    :type flank_3: int
-    :returns: A dictionary containing score matrices for individual BigWig files. Dictionary keys are BigWig file names.
+    :param flank_5: number of nt that input regions will be extended by on 5' side, defaults to 0
+    :type flank_5: int, optional
+    :param flank_3: number of nt that input regions will be extended by on 3' side, defaults to 0
+    :type flank_3: int, optional
+    :param fill_na: _description_, defaults to True
+    :type fill_na: bool, optional
+    :param pseudocounts: pseudocounts to add to datapoints, defaults to None
+    :type pseudocounts: float, optional
+    :param normalize_libsize: normalization to library size (sum of scores in a bigwig file), defaults to True
+    :type normalize_libsize: bool, optional
+    :return:  A dictionary containing score matrices for individual BigWig files. Dictionary keys are BigWig file names.
     :rtype: dict
-    '''
+    """    
     bed_plus, bed_minus = bed_split_strands(bed_df)
     plus_dict = {}
     for bw in bw_paths_plus:
-        plus_dict[bw] = matrix_from_bigwig(bw_path=bw, bed_df=bed_plus, flank_5=flank_5, flank_3=flank_3)
+        plus_dict[bw] = matrix_from_bigwig(bw_path=bw, bed_df=bed_plus, flank_5=flank_5, flank_3=flank_3, fill_na=fill_na, pseudocounts=pseudocounts, normalize_libsize=normalize_libsize)
     minus_dict = {}
     for bw in bw_paths_minus:
-        minus_dict[bw] = matrix_from_bigwig(bw_path=bw, bed_df=bed_minus, flank_5=flank_5, flank_3=flank_3)
+        minus_dict[bw] = matrix_from_bigwig(bw_path=bw, bed_df=bed_minus, flank_5=flank_5, flank_3=flank_3, fill_na=fill_na, pseudocounts=pseudocounts, normalize_libsize=normalize_libsize)
     return join_strand_matrices(plus_dict, minus_dict)
 
-def metaprofile(matrix_dict, agg_type='mean', normalize=False):
+def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False):
     '''
     Calculate metaprofiles from score matrices by aggregating each position in all regions. These can then be plotted with your favorite lib.
 
@@ -112,8 +126,8 @@ def metaprofile(matrix_dict, agg_type='mean', normalize=False):
     '''    
     if agg_type not in ['mean', 'median', 'sum']:
         raise Exception("Wrong agg_type; available values: 'mean', 'median', 'sum'")
-    if normalize:
-        dropped = {key: value/value.sum(axis=1,numeric_only=True) for key, value in matrix_dict.items()}
+    if normalize_internal:
+        dropped = {key: value.drop('region', axis=1).div(value.sum(axis=1,numeric_only=True),axis=0) for key, value in matrix_dict.items()}
         return pd.DataFrame({key: value.agg(agg_type,numeric_only=True) for key, value in dropped.items()})
     else:
         return pd.DataFrame({key: value.agg(agg_type, numeric_only=True) for key, value in matrix_dict.items()})
