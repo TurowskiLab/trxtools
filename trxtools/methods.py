@@ -181,7 +181,6 @@ def nested_region_cleanup(df, start_col='start', end_col='end'):
             continue
         else:
             if ((row[start_col] > last_start) & (row['end'] < last_end)):
-                print("drop: " + str(index))
                 drop_list.append(index)
             last_start = row[start_col]
             last_end = row[end_col]
