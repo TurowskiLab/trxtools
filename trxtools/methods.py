@@ -142,7 +142,7 @@ def DNA_string_positions(df, string, name_col='name', seq_col='sequence'):
     :return: Dataframe in long format containing positionsof found string
     :rtype: pandas.DataFrame
     """    
-    out_df = pd.DataFrame({name_col:[], 'position':[], 'length':[]})
+    out_df = pd.DataFrame({name_col:[], 'length':[]})
     for index, row in df.iterrows():
         positions = [m.start() for m in re.finditer(string, row[seq_col])]
         results = pd.DataFrame(
@@ -154,6 +154,12 @@ def DNA_string_positions(df, string, name_col='name', seq_col='sequence'):
         )
         out_df = pd.concat([out_df, results], ignore_index=True)
     return out_df
+
+def is_inside(inner_start, inner_end, outer_start, outer_end):
+    left_border = ((inner_start == outer_start) & (inner_end < outer_end))
+    inside = ((inner_start > outer_start) & (inner_end < outer_end))
+    right_border = ((inner_start > outer_start) & (inner_end == outer_end))
+    return (left_border | inside | right_border)
 
 def nested_region_cleanup(df, start_col='start', end_col='end'):
     """Helper function to remove shorter regions nested in longer ones
@@ -169,23 +175,49 @@ def nested_region_cleanup(df, start_col='start', end_col='end'):
     :return: dataframe with nested regions removed
     :rtype: pandas.DataFrame
     """    
-    i = 0
-    last_start = 0
-    last_end = 0
-    drop_list = []
-    for index, row in df.iterrows():
-        if i == 0:
-            last_start = row[start_col]
-            last_end = row[end_col]
-            i += 1
-            continue
-        else:
-            if ((row[start_col] > last_start) & (row['end'] < last_end)):
-                drop_list.append(index)
-            last_start = row[start_col]
-            last_end = row[end_col]
-            i += 1
-    return df.drop(drop_list)
+    drop_series = []
+    out_df = df.copy()
+    # out_df['length'] = out_df[end_col] - out_df[start_col]
+    out_df = out_df.sort_values('length')
+    for index, row in out_df.iterrows():   
+        #in each iteration compare all other rows to current row
+        for index2, row2 in out_df.iterrows():
+            if is_inside(row2[start_col], row2[end_col], row[start_col], row[end_col]):
+                drop_series.append(index2)
+                # print(index, index2)
+    drop_series = pd.Series(drop_series).unique()
+    # print(drop_series)
+    out_df = out_df.drop(drop_series)
+    return out_df
+        
+    #v1
+    # for index, row in df.iterrows():
+    #     if i == 0:
+    #         last_start = row[start_col]
+    #         last_end = row[end_col]
+    #         i += 1
+    #         continue
+    #     else:
+    #         if ((row[start_col] > last_start) & (row['end'] < last_end)):
+    #             drop_list.append(index)
+    #         last_start = row[start_col]
+    #         last_end = row[end_col]
+    #         i += 1
+
+    #v2
+    # for index, row in df.iterrows():
+    #     if i == 0:
+    #         last_row = row
+    #         i += 1
+    #         continue
+    #     elif is_inside(row[start_col], row[end_col], last_row[start_col], last_row[end_col]):
+    #         drop_list.append(index)
+    #     last_row = row
+    #     i += 1
+    # print(drop_list)
+    # return df.drop(drop_list)
+
+
 
 def DNA_stretch_positions(df, char, min_len, max_len, name_col='name', seq_col='sequence'):
     """Finds all character stretches of given length in a string (i.e. DNA sequence) and reports their positions. Wrapper for DNA_string_positions()
@@ -205,22 +237,20 @@ def DNA_stretch_positions(df, char, min_len, max_len, name_col='name', seq_col='
     :return: Dataframe in long format containing positions of found string
     :rtype: pandas.DataFrame
     """    
-    out_df = pd.DataFrame({name_col: [], 'position': [], 'length': []})
+    out_df = pd.DataFrame({name_col: [], 'length': []})
     for i in range(min_len, max_len+1):
         string = i*char
         out_df = pd.concat([out_df, DNA_string_positions(
             df, string, name_col=name_col, seq_col=seq_col)], ignore_index=True)
-    out_df =  pd.DataFrame(out_df.groupby(['name', 'start'])['length'].max()).reset_index()
+    # out_df =  pd.DataFrame(out_df.groupby(['name', 'start'])['length'].max()).reset_index()
     out_df['end'] = out_df['start'] + out_df['length']
-    return nested_region_cleanup(out_df)
+    return out_df.groupby(name_col, group_keys=False).apply(nested_region_cleanup)
 
 def find_pol3_terminators(df, min_T, max_T, name_col='name', seq_col='sequence'):
     """Finds all Pol3 terminators (T stretches) of given length in a string (i.e. DNA sequence) and reports their positions. Wrapper for DNA_string_positions()
 
     :param df: Input dataframe
     :type df: pandas.DataFrame
-    :param char: Query character (base)
-    :type char: str
     :param min_T: minimum length of T stretch to look for
     :type min_T: int
     :param min_T: maximum length of T stretch to look for
