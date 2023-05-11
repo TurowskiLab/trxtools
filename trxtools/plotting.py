@@ -408,7 +408,7 @@ def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',
 
 def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label1="reference", label2="", 
               title="", start=None, stop=None, plot_medians=True, plot_ranges=True,
-              dpi=150, figsize=(7, 3), ylim=(None,0.01), h_lines=list(), offset=0,fname=None):
+              dpi=150, figsize=(7, 3), ylim=(None,0.01), h_lines=list(),lc="red", offset=0,fname=None):
     '''Plot given dataset and reference, differences are marked
 
     :param ref: str with path to csv file or DataFrame
@@ -442,9 +442,9 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label1="reference", labe
     # plotting
     fig, ax1 = plt.subplots(figsize=figsize,dpi=dpi)
     ax1.fill_between(differences_df.index-offset, differences_df['ear_min'], differences_df['ear_max'], color='red',
-                     where=(differences_df['ear_max'] > 0), label='increased pausing (' + ranges_dict[ranges] + ')')
+                     where=(differences_df['ear_max'] > 0), label='increased occupancy (' + ranges_dict[ranges] + ')')
     ax1.fill_between(differences_df.index-offset, differences_df['rae_min'], differences_df['rae_max'], color='blue',
-                     where=(differences_df['rae_max'] > 0), label='decreased pausing (' + ranges_dict[ranges] + ')')
+                     where=(differences_df['rae_max'] > 0), label='decreased occupancy (' + ranges_dict[ranges] + ')')
     if plot_medians == True:
         ax1.plot(dataset.index-offset, dataset['median'], 'black', label=label2)
         ax1.plot(s2.index-offset, s2['median'], 'green', label=label1)
@@ -459,7 +459,7 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label1="reference", labe
     ax1.set_ylim(ylim)
     ax1.set_xlabel('position')
     ax1.set_ylabel('fraction of reads', color='black')
-    for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color='red')
+    for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
     ax1.set_title(title)
     plt.legend()
     plt.title(title)
