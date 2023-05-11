@@ -459,7 +459,7 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label1="reference", labe
     ax1.set_ylim(ylim)
     ax1.set_xlabel('position')
     ax1.set_ylabel('fraction of reads', color='black')
-    for i in [i for i in h_lines if i in range(start, stop)]: ax1.axvline(i, color='red')
+    for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color='red')
     ax1.set_title(title)
     plt.legend()
     plt.title(title)
