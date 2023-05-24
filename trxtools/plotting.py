@@ -6,13 +6,172 @@ import trxtools.profiles as profiles
 from adjustText import adjust_text
 import seaborn as sns
 import matplotlib
+from matplotlib_venn import venn2, venn3, venn3_circles
+import matplotlib.patches as mpatches
+import os, math
 
 #### general functions ####
 
 def select_colors(n=int(), name_cmap='Spectral'):
+    '''_summary_
+
+    :param n: _description_, defaults to int()
+    :type n: _type_, optional
+    :param name_cmap: _description_, defaults to 'Spectral'
+    :type name_cmap: str, optional
+    :return: _description_
+    :rtype: _type_
+    '''
     cmap = matplotlib.cm.get_cmap(name_cmap)
     numbers = np.linspace(0, 1, n).tolist()
     return [cmap(i) for i in numbers]
+
+####### Statistical plots  ########
+
+### Volcano
+
+def plot_enhancedVolcano(df, x_fc='log2FoldChange', y_pval='padj', pval_cutoff=0.01, fc_cutoff=2,
+                         plot_n=True, labels=True, xlim=None, ylim=None,
+                         figsize=(4, 4), dpi=300, title=None, save=None):
+    '''Generate an enhanced volcano plot based on DataFrame values.
+
+    :param df: Input DataFrame containing the data.
+    :type df: DataFrame
+    :param x_fc: The column name for the x-axis values (fold change). Defaults to 'log2FoldChange'.
+    :type x_fc: str, optional
+    :param y_pval: The column name for the y-axis values (adjusted p-value). Defaults to 'padj'.
+    :type y_pval: str, optional
+    :param pval_cutoff: The p-value cutoff for significance. Defaults to 0.01.
+    :type pval_cutoff: float, optional
+    :param fc_cutoff: The fold change cutoff for significance. Defaults to 2.
+    :type fc_cutoff: float, optional
+    :param plot_n: Whether to plot non-significant points. Defaults to True.
+    :type plot_n: bool, optional
+    :param labels: Whether to add labels to significant points. Defaults to True.
+    :type labels: bool, optional
+    :param xlim: The x-axis limits. Defaults to None.
+    :type xlim: tuple, optional
+    :param ylim: The y-axis limits. Defaults to None.
+    :type ylim: tuple, optional
+    :param figsize: The figure size. Defaults to (4, 4).
+    :type figsize: tuple, optional
+    :param dpi: The resolution of the saved figure. Defaults to 300.
+    :type dpi: int, optional
+    :param title: The title of the plot. Defaults to None.
+    :type title: str, optional
+    :param save: The file path to save the figure. Defaults to None.
+    :type save: str, optional
+
+    :return: None
+
+    '''
+
+    # Filter DataFrame into different subsets based on conditions
+    df_s_fc = df[(df[y_pval] < pval_cutoff) & ((df[x_fc] <= -fc_cutoff) | (df[x_fc] >= fc_cutoff))]  # significant and fold change
+    df_s_nf = df[(df[y_pval] < pval_cutoff) & ((df[x_fc] > -fc_cutoff) & (df[x_fc] < fc_cutoff))]   # significant, no fold change
+    df_ns_fc = df[(df[y_pval] >= pval_cutoff) & ((df[x_fc] <= -fc_cutoff) | (df[x_fc] >= fc_cutoff))]  # non-significant, fold change
+    df_ns_nf = df[(df[y_pval] >= pval_cutoff) & ((df[x_fc] > -fc_cutoff) & (df[x_fc] < fc_cutoff))]  # non-significant, no fold change
+    
+    # Create a new figure
+    plt.figure(figsize=figsize, dpi=dpi)
+    
+    # Plot the scatter plots for different subsets
+    a = sns.scatterplot(data=df_s_fc, x=df_s_fc[x_fc], y=-np.log10(df_s_fc[y_pval]), color='red', s=4, alpha=0.4)
+    b = sns.scatterplot(data=df_s_nf, x=df_s_nf[x_fc], y=-np.log10(df_s_nf[y_pval]), color='blue', s=4, alpha=0.4)
+    c = sns.scatterplot(data=df_ns_fc, x=df_ns_fc[x_fc], y=-np.log10(df_ns_fc[y_pval]), color='green', s=4, alpha=0.4)
+    d = sns.scatterplot(data=df_ns_nf, x=df_ns_nf[x_fc], y=-np.log10(df_ns_nf[y_pval]), color='grey', s=4, alpha=0.4)
+    
+    # Set the x-axis and y-axis labels
+    a.set(ylabel='-log10(Pval)')
+    a.set(xlabel='log2FC')
+    
+    # Add vertical and horizontal lines
+    a.axvline(0, alpha=0.5, c='grey')
+    a.axhline(-np.log10(pval_cutoff), alpha=0.75, c='black', ls="--")
+    a.axvline(-fc_cutoff, alpha=0.75, c='black', ls="--")
+    a.axvline(fc_cutoff, alpha=0.75, c='black', ls="--")
+    
+    # Set limist
+    if xlim:
+        a.set(xlim=xlim)
+    if ylim:
+        a.set(ylim=ylim)
+    
+    if labels:
+        texts = []
+        # Add labels to significant points
+        for x, y, s in zip(df_s_fc[x_fc].tolist(), (-np.log10(df_s_fc[y_pval])).tolist(), df_s_fc.index.tolist()):
+            texts.append(plt.text(x, y, s, fontsize=12))
+        adjust_text(texts, only_move={'points': 'y', 'texts': 'y'}, arrowprops=dict(arrowstyle="->", color='r', lw=0.5), expand_points=(2, 2))
+        
+        # Increase font size for titles and labels
+        for item in ([a.title, a.xaxis.label, a.yaxis.label] + a.get_xticklabels() + a.get_yticklabels()):
+            item.set_fontsize(15)
+    
+    # Create legend patches for different subsets
+    patch_labels = ["p < {} and log2FC (n={})".format(pval_cutoff, len(df_s_fc)),
+                    "p < {}".format(pval_cutoff),
+                    "log2FC",
+                    "n.s."]
+    legend_patches = [mpatches.Patch(color='red', label=patch_labels[0]),
+                      mpatches.Patch(color='blue', label=patch_labels[1]),
+                      mpatches.Patch(color='green', label=patch_labels[2]),
+                      mpatches.Patch(color='grey', label=patch_labels[3])]
+    
+    # Adjust the layout and add legend
+    plt.subplots_adjust(top=0.85)
+    plt.legend(handles=legend_patches, fontsize=8, loc='upper center', ncol=4, bbox_to_anchor=(0.5, 1.12), frameon=False)
+    
+    # Set the title
+    plt.suptitle(title)
+    
+    # Save the figure if a file path is provided
+    if save is not None:
+        plt.savefig(save, dpi=300, bbox_inches='tight')
+    
+    # Show the plot
+    plt.show()
+
+def plot_venn_diagram(*dataframes, colors=('skyblue', 'lightgreen', 'lightpink')):
+    '''_summary_
+
+    :param colors: _description_, defaults to ('skyblue', 'lightgreen', 'lightpink')
+    :type colors: tuple, optional
+    :raises ValueError: _description_
+    '''
+    # Prepare the data for the Venn diagram
+    sets = [set(df['A']) for df in dataframes]
+    labels = [f"DataFrame {i+1}" for i in range(len(dataframes))]
+
+    # Determine the type of Venn diagram based on the number of DataFrames
+    if len(dataframes) == 2:
+        venn_func = venn2
+    elif len(dataframes) == 3:
+        venn_func = venn3
+    else:
+        raise ValueError("Venn diagram is supported for 2 or 3 DataFrames only.")
+
+    # Create the Venn diagram
+    venn = venn_func(sets, set_labels=labels)
+
+    # Customize the Venn diagram colors
+    for i, patch in enumerate(venn.patches):
+        if patch: patch.set_color(colors[i % len(colors)])
+
+    # Customize the Venn diagram labels
+    for i, label in enumerate(venn.set_labels):
+        label.set_fontsize(12)
+        label.set_fontweight('bold')
+
+    # Customize the Venn diagram title
+    plt.title("Venn Diagram", fontsize=14, fontweight='bold')
+
+    # Customize the Venn diagram circles (applicable for 3 DataFrames only)
+    if len(dataframes) == 3:
+        venn3_circles(sets)
+
+    # Display the Venn diagram
+    plt.show()
 
 #### PCA
 def plotPCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize=(7,7), PCval=[]):
