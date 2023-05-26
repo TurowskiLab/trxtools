@@ -133,16 +133,13 @@ def plot_enhancedVolcano(df, x_fc='log2FoldChange', y_pval='padj', pval_cutoff=0
     # Show the plot
     plt.show()
 
-def plot_venn_diagram(*dataframes, colors=('skyblue', 'lightgreen', 'lightpink')):
-    '''_summary_
-
-    :param colors: _description_, defaults to ('skyblue', 'lightgreen', 'lightpink')
-    :type colors: tuple, optional
-    :raises ValueError: _description_
+def plot_venn_diagram(*dataframes, labels=['df1','df2','df3'], colors=('skyblue', 'lightgreen', 'lightpink'),
+                      title=None, save=None):
+    '''
     '''
     # Prepare the data for the Venn diagram
-    sets = [set(df['A']) for df in dataframes]
-    labels = [f"DataFrame {i+1}" for i in range(len(dataframes))]
+    sets = [set(df['gene_name']) for df in dataframes]
+    labels = [labels[i] for i in range(len(dataframes))]
 
     # Determine the type of Venn diagram based on the number of DataFrames
     if len(dataframes) == 2:
@@ -165,12 +162,16 @@ def plot_venn_diagram(*dataframes, colors=('skyblue', 'lightgreen', 'lightpink')
         label.set_fontweight('bold')
 
     # Customize the Venn diagram title
-    plt.title("Venn Diagram", fontsize=14, fontweight='bold')
+    plt.title(title, fontsize=14, fontweight='bold')
 
     # Customize the Venn diagram circles (applicable for 3 DataFrames only)
     if len(dataframes) == 3:
         venn3_circles(sets)
-
+    
+    # Save the figure if a file path is provided
+    if save is not None:
+        plt.savefig(save, dpi=300, bbox_inches='tight')
+    
     # Display the Venn diagram
     plt.show()
 
