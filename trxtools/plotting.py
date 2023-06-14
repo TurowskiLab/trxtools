@@ -31,7 +31,7 @@ def select_colors(n=int(), name_cmap='Spectral'):
 
 ### Volcano
 
-def plot_enhancedVolcano(df, x_fc='log2FoldChange', y_pval='padj', pval_cutoff=0.01, fc_cutoff=2,
+def enhancedVolcano(df, x_fc='log2FoldChange', y_pval='padj', pval_cutoff=0.01, fc_cutoff=2,
                          plot_n=True, labels=True, xlim=None, ylim=None,
                          figsize=(4, 4), dpi=300, title=None, save=None):
     '''Generate an enhanced volcano plot based on DataFrame values.
@@ -133,7 +133,7 @@ def plot_enhancedVolcano(df, x_fc='log2FoldChange', y_pval='padj', pval_cutoff=0
     # Show the plot
     plt.show()
 
-def plot_venn_diagram(*dataframes, labels=['df1','df2','df3'], colors=('skyblue', 'lightgreen', 'lightpink'),
+def vennDiagram(*dataframes, labels=['df1','df2','df3'], colors=('skyblue', 'lightgreen', 'lightpink'),
                       title=None, save=None):
     '''
     '''
@@ -175,8 +175,46 @@ def plot_venn_diagram(*dataframes, labels=['df1','df2','df3'], colors=('skyblue'
     # Display the Venn diagram
     plt.show()
 
+#### GO term
+
+def GOterm(df, x='fdr',y='term.label',normalizer='pValue', count=10, figsize=(4, 4), dpi=300, title=None, fname=None):
+    
+    # Select data
+    if count == None:
+        df = df[df[normalizer] < 0.05]
+        df = df.sort_values(normalizer,ascending=True)
+    else:
+        df = df.sort_values(normalizer,ascending=True)[:count]
+    y_pos = np.arange(len(df))
+    # Create a new figure
+    fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+    
+    # Color map and normalization
+    data_color = [x / max(df[normalizer]) for x in df[normalizer]]
+    my_cmap = plt.cm.get_cmap('autumn')
+    colors = my_cmap(data_color)
+    
+    # Plot barplot
+    ax.barh(y_pos, df[x], align='center', color = colors)
+    ax.set_yticks(y_pos, labels=df[y])
+    ax.invert_yaxis()  # labels read top-to-bottom
+    ax.set_xlabel('FDR')
+    ax.set_title(title)
+    
+    # color map
+    sm = plt.cm.ScalarMappable(cmap=my_cmap, norm=plt.Normalize(0,max(df[normalizer])))
+    sm.set_array([])
+    cbar = plt.colorbar(sm)
+    cbar.set_label(normalizer, rotation=270,labelpad=25)
+    
+    # output
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+    else:
+        plt.show()
+
 #### PCA
-def plotPCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize=(7,7), PCval=[]):
+def PCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize=(7,7), PCval=[]):
     '''Plot PCA plot
 
     :param data: DataFrame
@@ -324,7 +362,7 @@ def boxplot1(data,labels=None,title="",figsize=(7, 6),dpi=150,log=False,lim=None
         plt.show()
 
 ### Peaks metaplot
-def plotCumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
+def cumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
                         title="", start=None, stop=None, window=50, figsize=(4,3),equal_weight=False,
                         color1='green', color2="magenta", lc='red',fname=None,use="mean",ylim=None):
     '''Plot single gene peaks metaplot.
