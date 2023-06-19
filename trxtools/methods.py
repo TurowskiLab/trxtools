@@ -451,6 +451,19 @@ def read_featureCount(nameElem="", path="", toLoad="", toClear=[], toAdd="", df=
 
     return df_output.reindex(sorted(df_output.columns), axis=1)
 
+def read_DEseq(p):
+    df = pd.read_csv(p, header=0, index_col=0)
+    #adding gene name
+    df.index = df.index.str.split(".").str[0]
+    df["gene_name"] = df00_genename['Gene name']
+    df["gene_name"] = df["gene_name"].astype(str)
+    df["gene_name"][df["gene_name"]=='nan'] = df[df["gene_name"] =='nan'].index.tolist()
+    
+    return df[~df['padj'].isnull()]
+
+def enriched(df, padj=0.05, fc=2):
+    return df[(df['padj'] < padj) & (df['log2FoldChange'] > fc)]
+
 ################################################
 #############        handling multiple experiments
 
