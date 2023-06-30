@@ -452,6 +452,13 @@ def read_featureCount(nameElem="", path="", toLoad="", toClear=[], toAdd="", df=
     return df_output.reindex(sorted(df_output.columns), axis=1)
 
 def read_DEseq(p):
+    '''_summary_ BROKEN
+
+    :param p: _description_
+    :type p: _type_
+    :return: _description_
+    :rtype: _type_
+    '''
     df = pd.read_csv(p, header=0, index_col=0)
     #adding gene name
     df.index = df.index.str.split(".").str[0]
