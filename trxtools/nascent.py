@@ -233,7 +233,7 @@ class Fold:
 
         # return dG
         df_temp['dG'] = df_temp['dG'].str.replace("(","0.0)")       # trick to avoid crushing for 0.0
-        df_temp['dG'] = df_temp['dG'].str.replace("0.0\)-", "-")    # not very elegant but works
+        df_temp['dG'] = df_temp['dG'].str.replace("0.0)-", "-")    # not very elegant but works
         df_temp['dG'] = df_temp['dG'].str.strip(")").astype(float)
         return df_temp
 
