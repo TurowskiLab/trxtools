@@ -77,7 +77,7 @@ def prepareNascent(sequence="", name="name", strand="plus", temp=30, window=100)
                                          strand=strand, temp=temp)
     slided = slidingWindow(sequence=sequence, name=name,
                                          strand=strand, temp=temp, window=window)
-    return extended.append(slided)
+    return pd.concat([extended, slided])
 
 def name2index(s1=pd.Series(dtype=str)):
     '''Extracts position from sequence name
@@ -421,7 +421,7 @@ def selectFoldedN(data=pd.DataFrame(), n=5, pattern="(((((....)))))"):
             if take == True:
                 if row['vienna'].startswith(pattern):
                     take = False
-                    df_output = df_output.append(row)
+                    df_output = pd.concat([df_output, row])
 
             if ((i + 1) % step) == 0:
                 take = True
