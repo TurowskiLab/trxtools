@@ -32,6 +32,6 @@ setuptools.setup(
     install_requires=[
         'scikit-learn','pandas', 'numpy', 
         'pyBigWig', 'adjustText', 'scipy',
-        'seaborn', 'matplotlib'],
+        'seaborn', 'matplotlib', 'requests'],
     python_requires='>=3.6'
 )
