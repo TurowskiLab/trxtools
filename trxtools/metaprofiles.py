@@ -3,6 +3,13 @@ import pyBigWig
 
 ### level -3
 def read_bed(bed_path):
+    """Simple BED file parser
+
+    :param bed_path: Path to BED file
+    :type bed_path: str
+    :return: pandas.DataFrame
+    :rtype: Contents of BED file in DataFrame form
+    """
     bed_df = pd.read_csv(bed_path, sep='\t', header=None)
     if len(bed_df.columns) > 6:
         bed_df.drop([6,7,8,9,10,11], axis=1, inplace=True)
@@ -12,9 +19,7 @@ def read_bed(bed_path):
 
 ### level -2
 def get_bw_data(bed_row, bw, flank_5=0, flank_3=0, align_3end=False):
-    '''
-    Retrieve BigWig scores for positions in a given region, optionally including flanks of given length.
-    '''
+    # Retrieve BigWig scores for positions in a given region, optionally including flanks of given length.
     if bed_row[5] == '+':
         outseries = pd.Series(bw.values(bed_row[0], bed_row[1]-flank_5, bed_row[2]+flank_3))
     if bed_row[5] == '-':
@@ -32,22 +37,37 @@ def get_bw_data(bed_row, bw, flank_5=0, flank_3=0, align_3end=False):
 
 ### level -1    
 def bed_split_strands(bed_df):
-    '''
-    Split a BED dataframe by strand.
-    
-    :returns: bed_plus, bed_minus
-    :rtype: pandas.DataFrame
-    '''
+    # Split dataframe (from read_bw) by strand
     bed_plus = bed_df[bed_df[5] == "+"]
     bed_minus = bed_df[bed_df[5] == "-"]
     return bed_plus, bed_minus
 
 def matrix_from_bigwig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
-    '''
-    Get matrix with bigwig scores for all regions in a bed df.
+    """
+    Get matrix with BigWig scores for all regions in a bed df from a single BigWig file.
     Matrix rows correspond to regions in BED.
     Columns correpond to nucleotide positions in regions + flanks.
-    '''
+    Flanks are strand-aware.
+
+    :param bw_path: Path to target BigWig file
+    :type bw_path: str
+    :param bed_df: DataFrame with BED data (use read_bed())
+    :type bed_df: pandas.DataFrame
+    :param flank_5: length of 5'flank to extend BED regions by, defaults to 0
+    :type flank_5: int, optional
+    :param flank_3: length of 3'flank to extend BED regions by, defaults to 0
+    :type flank_3: int, optional
+    :param fill_na: If true replace NaN values with 0 (pybigwig returns positions with 0 coverage as NaN), defaults to True
+    :type fill_na: bool, optional
+    :param pseudocounts: pseudocounts to add to retrieved scores, defaults to None
+    :type pseudocounts: float, optional
+    :param normalize_libsize: Whether to normalize output to library size, this is usually the right thing to do, defaults to True
+    :type normalize_libsize: bool, optional
+    :param align_3end: If true, position 0 in the resulting matrix will be set at the target region's 3'end instead of 5'end, defaults to False
+    :type align_3end: bool, optional
+    :return: DataFrame with the result score matrix
+    :rtype: pandas.DataFrame
+    """    
     bw = pyBigWig.open(bw_path)
     out_df = bed_df.apply(get_bw_data, bw=bw, flank_5=flank_5, flank_3=flank_3, align_3end=align_3end, axis=1)
     # if out_df.columns[0] != 0:
@@ -66,9 +86,7 @@ def matrix_from_bigwig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseu
     return out_df
 
 def join_strand_matrices(plus_dict, minus_dict):
-    '''
-    Combine score matrices for regions on + and - strands.
-    '''
+    # Combine score matrices for regions on + and - strands.
     out_dict={}
     for key in plus_dict.keys():
         key_min = key.replace("plus", "minus")
@@ -82,7 +100,8 @@ def join_strand_matrices(plus_dict, minus_dict):
 
 ### level 0
 def get_multiple_matrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
-    """Get score matrices for positions in given regions (with optional flanks) from multiple BigWig files.
+    """
+    Get score matrices for positions in given regions (with optional flanks) from multiple BigWig files.
     Matrix rows correspond to regions in BED.
     Columns correpond to nucleotide positions in regions + flanks.
 
