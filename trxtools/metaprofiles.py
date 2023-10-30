@@ -3,7 +3,8 @@ import pyBigWig
 
 ### level -3
 def read_bed(bed_path):
-    """Simple BED file parser
+    """
+    Simple BED file parser
 
     :param bed_path: Path to BED file
     :type bed_path: str
