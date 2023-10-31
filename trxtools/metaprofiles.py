@@ -8,8 +8,8 @@ def read_bed(bed_path):
 
     :param bed_path: Path to BED file
     :type bed_path: str
-    :return: pandas.DataFrame
-    :rtype: Contents of BED file in DataFrame form
+    :return: Contents of BED file in DataFrame form
+    :rtype: pandas.DataFrame
     """
     bed_df = pd.read_csv(bed_path, sep='\t', header=None)
     if len(bed_df.columns) > 6:
