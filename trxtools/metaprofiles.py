@@ -1,8 +1,52 @@
 import pandas as pd
 import pyBigWig
+import warnings
+
+### ALIAS FUNCTIONS
+### these will be removed in a later release!
+
+def read_bed(bed_path):
+    warnings.warn(
+        'read_bed() will be renamed to readBED() in a future release. Update your code to silence this warning.',
+        FutureWarning
+        )
+    return readBED(bed_path)
+
+def matrix_from_bigwig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
+    warnings.warn(
+        'matrix_from_bigwig() will be renamed to matrixFromBigWig() in a future release. Update your code to silence this warning.',
+        FutureWarning
+    )
+    return matrixFromBigWig(
+        bw_path=bw_path,
+        bed_df=bed_df,
+        flank_5=flank_5,
+        flank_3=flank_3,
+        fill_na=fill_na,
+        pseudocounts=pseudocounts,
+        normalize_libsize=normalize_libsize,
+        align_3end=align_3end
+        )
+def get_multiple_matrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
+    warnings.warn(
+        'get_multiple_matrices() will be renamed to getMultipleMatrices() in a fututre release. Update your code to silence this warning.',
+        FutureWarning
+    )
+    return getMultipleMatrices(
+        bw_paths_plus=bw_paths_plus,
+        bw_paths_minus=bw_paths_minus,
+        bed_df=bed_df,
+        flank_5=flank_5,
+        flank_3=flank_3,
+        fill_na=fill_na,
+        pseudocounts=pseudocounts,
+        normalize_libsize=normalize_libsize,
+        align_3end=align_3end
+    )
+
 
 ### level -3
-def read_bed(bed_path):
+def readBED(bed_path):
     """
     Simple BED file parser
 
@@ -43,7 +87,7 @@ def bed_split_strands(bed_df):
     bed_minus = bed_df[bed_df[5] == "-"]
     return bed_plus, bed_minus
 
-def matrix_from_bigwig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
+def matrixFromBigWig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
     """
     Get matrix with BigWig scores for all regions in a bed df from a single BigWig file.
     Matrix rows correspond to regions in BED.
@@ -100,7 +144,7 @@ def join_strand_matrices(plus_dict, minus_dict):
     return out_dict
 
 ### level 0
-def get_multiple_matrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
+def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
     """
     Get score matrices for positions in given regions (with optional flanks) from multiple BigWig files.
     Matrix rows correspond to regions in BED.
