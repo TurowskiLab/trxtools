@@ -29,7 +29,7 @@ def matrix_from_bigwig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseu
         )
 def get_multiple_matrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
     warnings.warn(
-        'get_multiple_matrices() will be renamed to getMultipleMatrices() in a fututre release. Update your code to silence this warning.',
+        'get_multiple_matrices() will be renamed to getMultipleMatrices() in a future release. Update your code to silence this warning.',
         FutureWarning
     )
     return getMultipleMatrices(
@@ -132,6 +132,13 @@ def matrixFromBigWig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudo
 
 def join_strand_matrices(plus_dict, minus_dict):
     # Combine score matrices for regions on + and - strands.
+
+    
+    # /home/jm/repos/trxtools/trxtools/metaprofiles.py:143: FutureWarning:
+    # The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. 
+    # In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. 
+    # To retain the old behavior, exclude the relevant entries before the concat operation.
+    
     out_dict={}
     for key in plus_dict.keys():
         key_min = key.replace("plus", "minus")
@@ -140,6 +147,11 @@ def join_strand_matrices(plus_dict, minus_dict):
             raise Exception("Keys in dictionaries do not match")
             break
         else:
+            # This raises this FutureWarning:
+            # /home/jm/repos/trxtools/trxtools/metaprofiles.py:143: FutureWarning:
+            # The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. 
+            # In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. 
+            # To retain the old behavior, exclude the relevant entries before the concat operation.
             out_dict[key] = pd.concat([plus_dict[key], minus_dict[key_min]], ignore_index=True)
     return out_dict
 
@@ -174,10 +186,10 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
     bed_plus, bed_minus = bed_split_strands(bed_df)
     plus_dict = {}
     for bw in bw_paths_plus:
-        plus_dict[bw] = matrix_from_bigwig(bw_path=bw, bed_df=bed_plus, flank_5=flank_5, flank_3=flank_3, fill_na=fill_na, pseudocounts=pseudocounts, normalize_libsize=normalize_libsize, align_3end=align_3end)
+        plus_dict[bw] = matrixFromBigWig(bw_path=bw, bed_df=bed_plus, flank_5=flank_5, flank_3=flank_3, fill_na=fill_na, pseudocounts=pseudocounts, normalize_libsize=normalize_libsize, align_3end=align_3end)
     minus_dict = {}
     for bw in bw_paths_minus:
-        minus_dict[bw] = matrix_from_bigwig(bw_path=bw, bed_df=bed_minus, flank_5=flank_5, flank_3=flank_3, fill_na=fill_na, pseudocounts=pseudocounts, normalize_libsize=normalize_libsize, align_3end=align_3end)
+        minus_dict[bw] = matrixFromBigWig(bw_path=bw, bed_df=bed_minus, flank_5=flank_5, flank_3=flank_3, fill_na=fill_na, pseudocounts=pseudocounts, normalize_libsize=normalize_libsize, align_3end=align_3end)
     return join_strand_matrices(plus_dict, minus_dict)
 
 def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False):
@@ -201,3 +213,47 @@ def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False):
         return pd.DataFrame({key: value.agg(agg_type,numeric_only=True) for key, value in dropped.items()})
     else:
         return pd.DataFrame({key: value.agg(agg_type, numeric_only=True) for key, value in matrix_dict.items()})
+    
+def regionScore(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True):
+    """
+    Calculate coverage or statistic for multiple regions in multiple BigWig files.
+
+    :param bw_paths_plus: list of paths to BigWig files (+ strand)
+    :type bw_paths_plus: list
+    :param bw_paths_minus: list of paths to BigWig files (- strand)
+    :type bw_paths_minus: list
+    :param bed_df: dataframe in BED format containing genomic coordinates of target regions
+    :type bed_df: pandas.DataFrame
+    :param agg_type: operation to perform on region scores. Available options: 'sum', 'mean', 'median', defaults to 'sum'
+    :type agg_type: str, optional
+    :param flank_5: number of nt that input regions will be extended by on 5' side, defaults to 0
+    :type flank_5: int, optional
+    :param flank_3: number of nt that input regions will be extended by on 3' side, defaults to 0
+    :type flank_3: int, optional
+    :param fill_na: If true, NaNs will be replaced with zeroes (recommended, as pyBigWig reports positions with 0 score as NaN), defaults to True
+    :type fill_na: bool, optional
+    :param pseudocounts: pseudocounts to add to datapoints, defaults to None
+    :type pseudocounts: float, optional
+    :param normalize_libsize: normalization to library size (sum of scores in a bigwig file), defaults to True
+    :type normalize_libsize: bool, optional
+    :return:  DataFrame with calculated scores. Rows are regions/genes, columns are BigWig files.
+    :rtype: pandas.DataFrame
+    """    
+    if agg_type not in ['mean', 'median', 'sum']:
+        raise Exception("Wrong agg_type; available values: 'mean', 'median', 'sum'")
+    # Get score matrices
+    outdict = getMultipleMatrices(
+        bw_paths_plus=bw_paths_plus,
+        bw_paths_minus=bw_paths_minus,
+        bed_df=bed_df,
+        flank_5=flank_5,
+        flank_3=flank_3,
+        fill_na=fill_na,
+        pseudocounts=pseudocounts,
+        normalize_libsize=normalize_libsize,
+        align_3end=False
+        )
+    # Aggregate all positions per gene using chosen function
+    outdict = {key:value.set_index('region').agg(func=agg_type, axis=1) for key, value in outdict.items()}
+    out_df = pd.DataFrame(outdict)
+    return out_df
