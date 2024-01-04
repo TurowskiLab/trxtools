@@ -32,7 +32,7 @@ def select_colors(n=int(), name_cmap='Spectral'):
 ### Volcano
 
 def enhancedVolcano(df, x_fc='log2FoldChange', y_pval='padj', pval_cutoff=0.01, fc_cutoff=2,
-                         plot_n=True, labels=True, xlim=None, ylim=None,
+                         plot_n=True, labels=True, xlim=None, ylim=None, markNames=None, markNames_label="",
                          figsize=(4, 4), dpi=300, title=None, save=None):
     '''Generate an enhanced volcano plot based on DataFrame values.
 
@@ -72,7 +72,8 @@ def enhancedVolcano(df, x_fc='log2FoldChange', y_pval='padj', pval_cutoff=0.01, 
     df_s_nf = df[(df[y_pval] < pval_cutoff) & ((df[x_fc] > -fc_cutoff) & (df[x_fc] < fc_cutoff))]   # significant, no fold change
     df_ns_fc = df[(df[y_pval] >= pval_cutoff) & ((df[x_fc] <= -fc_cutoff) | (df[x_fc] >= fc_cutoff))]  # non-significant, fold change
     df_ns_nf = df[(df[y_pval] >= pval_cutoff) & ((df[x_fc] > -fc_cutoff) & (df[x_fc] < fc_cutoff))]  # non-significant, no fold change
-    
+    if markNames:
+        df_markNames = df[df.index.isin(markNames)] #genes to be marked
     # Create a new figure
     plt.figure(figsize=figsize, dpi=dpi)
     
@@ -81,6 +82,8 @@ def enhancedVolcano(df, x_fc='log2FoldChange', y_pval='padj', pval_cutoff=0.01, 
     b = sns.scatterplot(data=df_s_nf, x=df_s_nf[x_fc], y=-np.log10(df_s_nf[y_pval]), color='blue', s=4, alpha=0.4)
     c = sns.scatterplot(data=df_ns_fc, x=df_ns_fc[x_fc], y=-np.log10(df_ns_fc[y_pval]), color='green', s=4, alpha=0.4)
     d = sns.scatterplot(data=df_ns_nf, x=df_ns_nf[x_fc], y=-np.log10(df_ns_nf[y_pval]), color='grey', s=4, alpha=0.4)
+    if markNames:
+        e = sns.scatterplot(data=df_markNames, x=df_markNames[x_fc], y=-np.log10(df_markNames[y_pval]), color='black', s=6, alpha=0.6)
     
     # Set the x-axis and y-axis labels
     a.set(ylabel='-log10(Pval)')
@@ -134,11 +137,14 @@ def enhancedVolcano(df, x_fc='log2FoldChange', y_pval='padj', pval_cutoff=0.01, 
     plt.show()
 
 def vennDiagram(*dataframes, labels=['df1','df2','df3'], colors=('skyblue', 'lightgreen', 'lightpink'),
-                      title=None, save=None):
+                      title=None, save=None, use='gene_name'):
     '''
     '''
     # Prepare the data for the Venn diagram
-    sets = [set(df['gene_name']) for df in dataframes]
+    if use=='index':
+        sets = [set(df.index.tolist()) for df in dataframes]
+    else:
+        sets = [set(df['gene_name'].tolist()) for df in dataframes]
     labels = [labels[i] for i in range(len(dataframes))]
 
     # Determine the type of Venn diagram based on the number of DataFrames
