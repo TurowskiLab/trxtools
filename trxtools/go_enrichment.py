@@ -11,21 +11,21 @@ go_mappings = {
 available_test_types = ["FISHER", "BINOMIAL"]
 available_corrections = ["FDR", "BONFERRONI", "NONE"]
 
-def get_enrichment(query_genes, organism, use_reference_set=False, ref_genes=None, ref_organism=None, go_dataset='biological_process', test_type="FISHER", correction="FDR"):
+def get_enrichment(query_genes, organism, go_dataset='biological_process', use_reference_set=False, ref_genes=None, ref_organism=None, test_type="FISHER", correction="FDR"):
     '''Run a GO term enrichment test using PANTHER API
 
     :param query_genes: List of sequence identifiers of queried genes (e.g. transcript ids, gene ids)
     :type query_genes: list
     :param organism: Taxid of query species (e.g. "9606" for H. sapiens)
     :type organism: str
+    :param go_dataset: Which annotation dataset to query, "biological_process" or "molecular_function"
+    :type go_dataset: str
     :param use_reference_set: Use a custom set of rerence (background) genes? Default False. If True, ref_genes and ref_species need to be specifed.
     :type use_reference_set: bool
     :param ref_genes: *optional* list of reference genes. Specifying None (default) will use the whole genome of species specified in organism. When passing a list, ref_organism taxid must also be provided.
     :type ref_genes: list
     :param ref_species: Taxid of reference species, required when ref_genes is not None
     :type ref_species: str
-    :param go_dataset: Which annotation dataset to query, "biological_process" or "molecular_function"
-    :type go_dataset: str
     :param test_type: Which tatistical test to use. Available: "FISHER" (default), "BINOMIAL"
     :type test_type: str
     :param correction: Which multiple testing correction method to use. Available: "FDR" (default), "BONFERRONI", "NONE"
@@ -74,6 +74,12 @@ def get_enrichment(query_genes, organism, use_reference_set=False, ref_genes=Non
             "enrichmentTestType": test_type,
             "correction": correction
         }
-    response = requests.post('http://pantherdb.org/services/oai/pantherdb/enrich/overrep', data=query)
+    response = requests.post('http://pantherdb.org/services/oai/pantherdb/enrich/overrep', params=query)
     ## extract data to a dataframe
-    return pd.json_normalize(response.json()['results']['result'])
+    try:
+        out_df = pd.json_normalize(response.json()['results']['result'])
+    except KeyError:
+        print("Response from server:")
+        print(response.json())
+        raise ValueError("Improper request data provided, check output for details")
+    return out_df
