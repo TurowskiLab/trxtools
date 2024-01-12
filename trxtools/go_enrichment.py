@@ -74,7 +74,7 @@ def get_enrichment(query_genes, organism, go_dataset='biological_process', use_r
             "enrichmentTestType": test_type,
             "correction": correction
         }
-    response = requests.post('http://pantherdb.org/services/oai/pantherdb/enrich/overrep', params=query)
+    response = requests.post('https://pantherdb.org/services/oai/pantherdb/enrich/overrep', data=query)
     ## extract data to a dataframe
     try:
         out_df = pd.json_normalize(response.json()['results']['result'])
