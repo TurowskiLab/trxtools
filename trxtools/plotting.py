@@ -177,20 +177,29 @@ def vennDiagram(*dataframes, labels=['df1','df2','df3'], colors=('skyblue', 'lig
 
 #### GO term
 
-def GOterm(df, x='fdr',y='term.label',normalizer='pValue', count=10, figsize=(4, 4), dpi=300, title=None, fname=None):
+def GOterm(df, x='fdr',y='term.label',normalizer='pValue', cutoff=0.05, count=20, figsize=(4, 4), dpi=300, title=None, fname=None):
     
     # Select data
+    df = df[(df[normalizer] < cutoff ) & (df[x] < cutoff )]
+    
     if count == None:
-        df = df[df[normalizer] < 0.05]
         df = df.sort_values(normalizer,ascending=True)
     else:
         df = df.sort_values(normalizer,ascending=True)[:count]
+    
+    if len(df) == 0:
+        print("No significant GO terms found.")
+        return True
+
+    hight = 1.1 + (len(df)/6.9) # 6.9 is a magic number to adjust the height of the plot
+    figsize = (figsize[0], hight)
+
     y_pos = np.arange(len(df))
     # Create a new figure
     fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
     
     # Color map and normalization
-    data_color = [x / max(df[normalizer]) for x in df[normalizer]]
+    data_color = [x / cutoff for x in df[normalizer]]
     my_cmap = plt.cm.get_cmap('autumn')
     colors = my_cmap(data_color)
     
@@ -202,7 +211,7 @@ def GOterm(df, x='fdr',y='term.label',normalizer='pValue', count=10, figsize=(4,
     ax.set_title(title)
     
     # color map
-    sm = plt.cm.ScalarMappable(cmap=my_cmap, norm=plt.Normalize(0,max(df[normalizer])))
+    sm = plt.cm.ScalarMappable(cmap=my_cmap, norm=plt.Normalize(0,cutoff))
     sm.set_array([])
     cbar = plt.colorbar(sm)
     cbar.set_label(normalizer, rotation=270,labelpad=25)
