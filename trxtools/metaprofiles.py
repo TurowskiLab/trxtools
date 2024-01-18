@@ -140,12 +140,14 @@ def join_strand_matrices(plus_dict, minus_dict):
     # To retain the old behavior, exclude the relevant entries before the concat operation.
     
     out_dict={}
-    for key in plus_dict.keys():
+    for key in list(plus_dict.keys()):
+        print(key) #REMOVE
+        print(type(key)) #REMOVE
         key_min = key.replace("plus", "minus")
-        key_min = key.replace("fwd", "rev")
+        key_min = key_min.replace("fwd", "rev")
         if key_min not in minus_dict.keys():
-            raise Exception("Keys in dictionaries do not match")
-            break
+            print("key:" + key) #REMOVE
+            raise Exception("Keys in dictionaries do not match: " + str(key_min))
         else:
             # This raises this FutureWarning:
             # /home/jm/repos/trxtools/trxtools/metaprofiles.py:143: FutureWarning:
@@ -257,3 +259,62 @@ def regionScore(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0
     outdict = {key:value.set_index('region').agg(func=agg_type, axis=1) for key, value in outdict.items()}
     out_df = pd.DataFrame(outdict)
     return out_df
+
+# def regionScore2(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True):
+#     """
+#     Calculate coverage or statistic for multiple regions in multiple BigWig files.
+
+#     :param bw_paths_plus: list of paths to BigWig files (+ strand)
+#     :type bw_paths_plus: list
+#     :param bw_paths_minus: list of paths to BigWig files (- strand)
+#     :type bw_paths_minus: list
+#     :param bed_df: dataframe in BED format containing genomic coordinates of target regions
+#     :type bed_df: pandas.DataFrame
+#     :param agg_type: operation to perform on region scores. Available options: 'sum', 'mean', 'median', defaults to 'sum'
+#     :type agg_type: str, optional
+#     :param flank_5: number of nt that input regions will be extended by on 5' side, defaults to 0
+#     :type flank_5: int, optional
+#     :param flank_3: number of nt that input regions will be extended by on 3' side, defaults to 0
+#     :type flank_3: int, optional
+#     :param fill_na: If true, NaNs will be replaced with zeroes (recommended, as pyBigWig reports positions with 0 score as NaN), defaults to True
+#     :type fill_na: bool, optional
+#     :param pseudocounts: pseudocounts to add to datapoints, defaults to None
+#     :type pseudocounts: float, optional
+#     :param normalize_libsize: normalization to library size (sum of scores in a bigwig file), defaults to True
+#     :type normalize_libsize: bool, optional
+#     :return:  DataFrame with calculated scores. Rows are regions/genes, columns are BigWig files.
+#     :rtype: pandas.DataFrame
+#     """    
+#     if agg_type not in ['mean', 'median', 'sum']:
+#         raise Exception("Wrong agg_type; available values: 'mean', 'median', 'sum'")
+    
+#     bed_plus, bed_minus = bed_split_strands(bed_df)
+    
+#     out_df_list = []
+#     # Get scores from BigWig
+#     for bigwig in zip(bw_paths_plus, bw_paths_minus):
+#         out_plus = matrixFromBigWig(
+#             bigwig[0],
+#             bed_plus,
+#             flank_5=flank_5,
+#             flank_3=flank_3,
+#             fill_na=fill_na,
+#             pseudocounts=pseudocounts,
+#             normalize_libsize=normalize_libsize
+#             ).set_index('region')
+#         out_minus = matrixFromBigWig(
+#             bigwig[0],
+#             bed_minus,
+#             flank_5=flank_5,
+#             flank_3=flank_3,
+#             fill_na=fill_na,
+#             pseudocounts=pseudocounts,
+#             normalize_libsize=normalize_libsize
+#             ).set_index('region')
+#         # Merge strands and aggregate
+#         out_merged = pd.concat([out_plus, out_minus]).agg(func=agg_type, axis=1)
+#         out_merged.columns = [bigwig[0]]
+#         print(out_merged)
+#         out_df_list.append(out_merged)
+#     # Join df's as columns
+#     return pd.concat(out_df_list, axis=1)
