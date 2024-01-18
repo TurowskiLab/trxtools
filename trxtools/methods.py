@@ -403,6 +403,11 @@ def readSalmon(nameElem="", path="", toLoad="", toClear=[], toAdd="", column='Nu
 
     return df_output.reindex(sorted(df_output.columns), axis=1)
 
+def loadGTF(gtf_path=""):
+    names = ['chr','source','type','start','end','score','strand','phase','attributes']
+    df_GTF_ncRNA = pd.read_csv(gtf_path,sep="\t",names=names,index_col=False)
+    return df_GTF_ncRNA
+
 def read_featureCount(nameElem="", path="", toLoad="", toClear=[], toAdd="", df=None, overwrite=False):
     '''
     Read tab files with common first column
@@ -666,7 +671,7 @@ def expStats(input_df=pd.DataFrame(), smooth=True, window=10, win_type='blackman
 ################################################
 #############       statistics and analysis
 
-def normalize(df=pd.DataFrame, log2=False, pseudocounts=0.1):
+def normalize(df=pd.DataFrame, log2=False, pseudocounts=0.1, CPM=True):
     '''
 
     :param df: DataFrame
@@ -676,7 +681,9 @@ def normalize(df=pd.DataFrame, log2=False, pseudocounts=0.1):
     '''
     df = df.add(pseudocounts)
     df = df / df.sum()
-    df = df.multiply(1000000)
+    if CPM==True:
+        df = df.multiply(1000000)
+    
     if log2==True:
         return df.apply(np.log2)
     else:

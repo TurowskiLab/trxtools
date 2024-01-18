@@ -1029,3 +1029,43 @@ def hplotSTARstats(df=pd.DataFrame(), dpi=150):
     hplotSTARstats_mapping(df=df, dpi=dpi)
     hplotSTARstats_mistmatches(df=df, dpi=dpi)
     hplotSTARstats_chimeric(df=df, dpi=dpi)
+
+def classes(df,fraction=True,dpi=300, save=None,d_color=None):
+    if fraction==True:
+        df = df.groupby('type').agg("sum").div(df.sum()).multiply(100)
+        df = df.drop(columns='type')
+    elif fraction==False:
+        df = df.groupby('type').agg("sum")
+              
+    labels = df.columns.tolist()
+    x = np.arange(len(labels))
+    width = 0.3
+    
+    fig, ax1 = plt.subplots(figsize=(len(labels) / 4, 3), dpi=dpi)
+    plt.title('Classes of mapped reads')
+    
+    if d_color is None:
+        d_color = {'intergenic_region':"orange",
+             'ncRNA'              :"yellow",
+             'protein_coding'     :"blue",
+             'pseudogene'         :"grey",
+             'rRNA'               :"green",
+             'snRNA'              :"black",
+             'snoRNA'             :"pink",
+             'tRNA'               :"darkred"}
+        
+    s0 = pd.Series(index=df.columns, data=0)
+
+    for i,row in df.iterrows():
+        ax1.bar(x, row, width, bottom=s0, label=i, color=d_color[i])
+        s0 = s0+row
+
+    plt.ylabel('Cumulative mapping [%]')
+    plt.xticks(x, labels, rotation=90)
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+    # Save the figure if a file path is provided
+    if save is not None:
+        plt.savefig(save, dpi=300, bbox_inches='tight')
+        
+    plt.show()
