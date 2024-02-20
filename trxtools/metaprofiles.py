@@ -66,7 +66,7 @@ def readBED(bed_path):
 def get_bw_data(bed_row, bw, flank_5=0, flank_3=0, align_3end=False):
     # Retrieve BigWig scores for positions in a given region, optionally including flanks of given length.
     if bed_row[5] == '+':
-        outseries = pd.Series(bw.values(bed_row[0], bed_row[1]-flank_5, bed_row[2]+flank_3))
+        outseries = pd.Series(bw.values(bed_row[0], int(bed_row[1]-flank_5), int(bed_row[2]+flank_3)))
     if bed_row[5] == '-':
         # flip orientation on minus strand
         # keep the index so pandas doesn't flip it again
