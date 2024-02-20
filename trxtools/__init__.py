@@ -4,6 +4,7 @@ import trxtools.methods
 import trxtools.nascent
 import trxtools.secondary
 import trxtools.plotting
+import trxtools.metaprofiles
 import trxtools.SAMgeneral
 import trxtools.SAMtranscripts
 import trxtools.SAMgenome
