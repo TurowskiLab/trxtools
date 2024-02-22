@@ -217,6 +217,28 @@ def ntotal(df=pd.DataFrame, drop=True):
         df['nucleotide'] = s2_nt
         return df
 
+def binCollect3(s1=pd.Series(), lengths=[500,72,500], bins=[50, 10, 50]):
+    '''
+    Collects and sums data from a series into bins of specified lengths.
+
+    :param s1: Series containing the input data
+    :param lengths: List of lengths for each bin
+    :param bins: List of number of bins for each length
+    :return: Series with the summed data from the bins
+    '''
+    def binSum(data, bins):
+        splited = np.array_split(np.array(data), bins)  # splitting into even chunks
+        return list(pd.DataFrame(splited).sum(1))  # returns sum
+    
+    output = list()
+    start_pos = 0
+    for l,b in zip(lengths,bins):
+        x = s1[start_pos:start_pos+l]
+        output += binSum(x,b)
+        start_pos += l
+    
+    return pd.Series(output)
+
 ################################################
 #############        major trxtools
 

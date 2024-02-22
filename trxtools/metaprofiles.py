@@ -1,6 +1,8 @@
 import pandas as pd
+import numpy as np
 import pyBigWig
 import warnings
+import trxtools as tt
 
 ### ALIAS FUNCTIONS
 ### these will be removed in a later release!
@@ -259,6 +261,61 @@ def regionScore(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0
     outdict = {key:value.set_index('region').agg(func=agg_type, axis=1) for key, value in outdict.items()}
     out_df = pd.DataFrame(outdict)
     return out_df
+
+### level 1
+def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(), flank_5=None, flank_3=None):
+    """ Bin multiple matrices of tRNA profiles into a single dataframe
+      
+    :param mm: dictionary of matrices of gene profiles 
+    :type mm: dict
+    :param bins: list of three integers, defaults to [50, 10, 50]
+    :type bins: list, optional
+    :param bed_df: dataframe in BED format containing genomic coordinates of target regions, defaults to pd.DataFrame()
+    :type bed_df: pandas.DataFrame, optional
+    :param flank_5: length of 5'flank to extend BED regions by, defaults to None
+    :type flank_5: int, optional
+    :type bed_df: pandas.DataFrame, optional
+    :param flank_3: length of 3'flank to extend BED regions by, defaults to None
+    :type flank_3: int, optional
+    :type bed_df: pandas.DataFrame, optional
+    :raises ValueError: if bins is not a list of three integers
+    :raises ValueError: if input_value is not an integer or a DataFrame
+    :return: dictionary of binned matrices of tRNA profiles
+    :rtype: dict
+    """
+
+    if len(bins) != 3:
+        raise ValueError(f"{bins} takes three numbers")
+        
+    def process_input(input_value):
+        if isinstance(input_value, pd.DataFrame):
+            return tt.methods.bed2len(input_value)
+        elif isinstance(input_value, int):
+            return pd.Series(index=bed_df.iloc[:, 3].rename('region'), data=input_value) #uses region as index
+        else:
+            raise ValueError(f"{input_value} should be either an integer or a DataFrame")
+
+    # Concatenate all the results into length_df
+    length_df = pd.concat([process_input(flank_5),
+                           tt.methods.bed2len(bed_df),
+                           process_input(flank_3)], axis=1)
+
+    results_mm = {} 
+    # Iterate over the datasets (keys) of the mm dictionary
+    for bw_key, value in mm.items():
+        results_df = pd.DataFrame(columns=bed_df.iloc[:, 3].rename('region'))
+
+        # bin individual profiles of tRNAs
+        for region,row in value.set_index('region').iterrows():
+            results_df[region] = tt.profiles.binCollect3(s1=row,
+                                         lengths=length_df.loc[region].tolist(),
+                                         bins=bins)
+        
+        results_df.index = np.arange(-bins[0],bins[1]+bins[2])
+        results_mm[bw_key] = results_df
+    
+    return results_mm
+
 
 # def regionScore2(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True):
 #     """

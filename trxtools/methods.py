@@ -12,20 +12,11 @@ import trxtools as tt
 ################################################
 #############        bash
 
-def list_paths_in_current_dir(suffix=str(), stdin=False):
-    '''
-    :param suffix: str() lists paths in current directory ending with an indicated suffix only
-    :param stdin: boolean() if True read from standard input instead current directory
-    :return: list() of paths
-    '''
-    #choosing between curr dir and std input
-    if stdin == False:
-        where = os.listdir('.')
-    elif stdin == True:
-        where = sys.stdin
-
-    paths = [f for f in where if os.path.isfile(f) and f.endswith(suffix)]
-    return paths
+def listPaths(folder=".", suffix=str(), nameElem=None):
+    if nameElem:
+        return [folder + file for file in os.listdir(folder) if file.endswith(suffix) and nameElem in file]
+    else:
+        return [folder + file for file in os.listdir(folder) if file.endswith(suffix)]
 
 def bashCommand(bashCommand=str()):
     '''Run command in bash using subprocess.call()'''
@@ -190,34 +181,6 @@ def nested_region_cleanup(df, start_col='start', end_col='end'):
     out_df = out_df.drop(drop_series)
     return out_df
         
-    #v1
-    # for index, row in df.iterrows():
-    #     if i == 0:
-    #         last_start = row[start_col]
-    #         last_end = row[end_col]
-    #         i += 1
-    #         continue
-    #     else:
-    #         if ((row[start_col] > last_start) & (row['end'] < last_end)):
-    #             drop_list.append(index)
-    #         last_start = row[start_col]
-    #         last_end = row[end_col]
-    #         i += 1
-
-    #v2
-    # for index, row in df.iterrows():
-    #     if i == 0:
-    #         last_row = row
-    #         i += 1
-    #         continue
-    #     elif is_inside(row[start_col], row[end_col], last_row[start_col], last_row[end_col]):
-    #         drop_list.append(index)
-    #     last_row = row
-    #     i += 1
-    # print(drop_list)
-    # return df.drop(drop_list)
-
-
 
 def DNA_stretch_positions(df, char, min_len, max_len, name_col='name', seq_col='sequence'):
     """Finds all character stretches of given length in a string (i.e. DNA sequence) and reports their positions. Wrapper for DNA_string_positions()
@@ -265,7 +228,7 @@ def find_pol3_terminators(df, min_T, max_T, name_col='name', seq_col='sequence')
     out_df = DNA_stretch_positions(df, char='T', min_len=min_T, max_len=max_T, name_col=name_col, seq_col=seq_col)
     return out_df
 ################################################
-#############        importing data
+#############        importing data and handling files
 
 def read_list(filepath=''):
     '''Read list from file. Each row becomes item in the list.
@@ -475,6 +438,18 @@ def read_DEseq(p):
 
 def enriched(df, padj=0.05, fc=2):
     return df[(df['padj'] < padj) & (df['log2FoldChange'] > fc)]
+
+def bed2len(bed=pd.DataFrame()):
+    """
+    Convert a bed DataFrame to a length DataFrame.
+
+    :param bed: pandas DataFrame containing bed data.
+    :return: pandas DataFrame with length data.
+    """
+    bed = bed.T[:4].T
+    bed.columns = ['chr','start','stop','region']
+    bed = bed.set_index('region')
+    return bed['stop']-bed['start']
 
 ################################################
 #############        handling multiple experiments
