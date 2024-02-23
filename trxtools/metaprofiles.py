@@ -14,7 +14,7 @@ def read_bed(bed_path):
         )
     return readBED(bed_path)
 
-def matrix_from_bigwig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
+def matrix_from_bigwig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, align_3end=False):
     warnings.warn(
         'matrix_from_bigwig() will be renamed to matrixFromBigWig() in a future release. Update your code to silence this warning.',
         FutureWarning
@@ -26,7 +26,6 @@ def matrix_from_bigwig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseu
         flank_3=flank_3,
         fill_na=fill_na,
         pseudocounts=pseudocounts,
-        normalize_libsize=normalize_libsize,
         align_3end=align_3end
         )
 def get_multiple_matrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
@@ -89,7 +88,7 @@ def bed_split_strands(bed_df):
     bed_minus = bed_df[bed_df[5] == "-"]
     return bed_plus, bed_minus
 
-def matrixFromBigWig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
+def matrixFromBigWig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, align_3end=False):
     """
     Get matrix with BigWig scores for all regions in a bed df from a single BigWig file.
     Matrix rows correspond to regions in BED.
@@ -108,8 +107,6 @@ def matrixFromBigWig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudo
     :type fill_na: bool, optional
     :param pseudocounts: pseudocounts to add to retrieved scores, defaults to None
     :type pseudocounts: float, optional
-    :param normalize_libsize: Whether to normalize output to library size, this is usually the right thing to do, defaults to True
-    :type normalize_libsize: bool, optional
     :param align_3end: If true, position 0 in the resulting matrix will be set at the target region's 3'end instead of 5'end, defaults to False
     :type align_3end: bool, optional
     :return: DataFrame with the result score matrix
@@ -125,9 +122,6 @@ def matrixFromBigWig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudo
         out_df = out_df.fillna(0)
     if isinstance(pseudocounts, float):
         out_df = out_df+pseudocounts
-    if normalize_libsize:
-        libsize = bw.header()['sumData']
-        out_df = out_df/libsize
     bw.close()
     out_df = out_df.reset_index()
     return out_df
@@ -187,13 +181,22 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
     :return:  A dictionary containing score matrices for individual BigWig files. Dictionary keys are BigWig file names.
     :rtype: dict
     """    
+    #TODO move libsize normalization here from matrixFromBigwig
+    #add headers of fwd and rev bigwigs and divide each joined matrix by that afterwards
     bed_plus, bed_minus = bed_split_strands(bed_df)
     plus_dict = {}
-    for bw in bw_paths_plus:
-        plus_dict[bw] = matrixFromBigWig(bw_path=bw, bed_df=bed_plus, flank_5=flank_5, flank_3=flank_3, fill_na=fill_na, pseudocounts=pseudocounts, normalize_libsize=normalize_libsize, align_3end=align_3end)
     minus_dict = {}
-    for bw in bw_paths_minus:
-        minus_dict[bw] = matrixFromBigWig(bw_path=bw, bed_df=bed_minus, flank_5=flank_5, flank_3=flank_3, fill_na=fill_na, pseudocounts=pseudocounts, normalize_libsize=normalize_libsize, align_3end=align_3end)
+    for bw_plus, bw_minus in zip(bw_paths_plus, bw_paths_minus):
+        plus_dict[bw_plus] = matrixFromBigWig(bw_path=bw_plus, bed_df=bed_plus, flank_5=flank_5, flank_3=flank_3, fill_na=fill_na, pseudocounts=pseudocounts, align_3end=align_3end)
+        minus_dict[bw_minus] = matrixFromBigWig(bw_path=bw_minus, bed_df=bed_minus, flank_5=flank_5, flank_3=flank_3, fill_na=fill_na, pseudocounts=pseudocounts, align_3end=align_3end)
+        if normalize_libsize:
+            with pyBigWig.open(bw_plus) as bwp:
+                libsize_plus = int(bwp.header()['sumData'])
+            with pyBigWig.open(bw_minus) as bwm:
+                libsize_minus = int(bwm.header()['sumData'])
+            libsize = libsize_plus+libsize_minus
+            plus_dict[bw_plus] = plus_dict[bw_plus].set_index('region').div(libsize).reset_index()
+            minus_dict[bw_minus] = minus_dict[bw_minus].set_index('region').div(libsize).reset_index()
     return join_strand_matrices(plus_dict, minus_dict)
 
 def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False):
