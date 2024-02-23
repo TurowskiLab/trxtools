@@ -137,12 +137,9 @@ def join_strand_matrices(plus_dict, minus_dict):
     
     out_dict={}
     for key in list(plus_dict.keys()):
-        print(key) #REMOVE
-        print(type(key)) #REMOVE
         key_min = key.replace("plus", "minus")
         key_min = key_min.replace("fwd", "rev")
         if key_min not in minus_dict.keys():
-            print("key:" + key) #REMOVE
             raise Exception("Keys in dictionaries do not match: " + str(key_min))
         else:
             # This raises this FutureWarning:
@@ -181,8 +178,6 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
     :return:  A dictionary containing score matrices for individual BigWig files. Dictionary keys are BigWig file names.
     :rtype: dict
     """    
-    #TODO move libsize normalization here from matrixFromBigwig
-    #add headers of fwd and rev bigwigs and divide each joined matrix by that afterwards
     bed_plus, bed_minus = bed_split_strands(bed_df)
     plus_dict = {}
     minus_dict = {}
