@@ -3,6 +3,7 @@ import numpy as np
 import pyBigWig
 import warnings
 import trxtools as tt
+from pybedtools import BedTool
 
 ### ALIAS FUNCTIONS
 ### these will be removed in a later release!
@@ -150,6 +151,63 @@ def join_strand_matrices(plus_dict, minus_dict):
             out_dict[key] = pd.concat([plus_dict[key], minus_dict[key_min]], ignore_index=True)
     return out_dict
 
+def peak2matrice(bed_df=pd.DataFrame, peak_file_path='', 
+                 g='references/GRCh38.primary_assembly.genome.cleaned.len', 
+                 flank_5=0, flank_3=0, fillna=True):
+    """ Get score matrices for positions in given regions (with optional flanks) from a single nroadPeak or narrowPeak file. 
+    Matrix rows correspond to regions in BED. Columns correpond to nucleotide positions in regions + flanks. Flanks are strand-aware.
+    :param bed_df: DataFrame with BED data (can use read_bed())
+    :type bed_df: pandas.DataFrame
+    :param peak_file_path: Path to peak file (broadPeak or narrowPeak format)
+    :type peak_file_path: str
+    :param g: Path to genome file (chromosome lengths), defaults to 'references/GRCh38.primary_assembly.genome.cleaned.len'
+    :type g: str
+    :param flank_5: length of 5'flank to extend BED regions by, strand-aware, defaults to 0
+    :type flank_5: int, optional
+    :param flank_3: length of 3'flank to extend BED regions by, strand-aware, defaults to 0
+    :type flank_3: int, optional
+    :param fill_na: If true replace NaN values with 0 (pybigwig returns positions with 0 coverage as NaN), defaults to True
+    :type fill_na: bool, optional
+    :return: DataFrame with the result score matrix
+    :rtype: pandas.DataFrame
+    """
+    
+    peak_columns = ['chrom', 'start', 'end', 'name', 'score', 'strand', 'signalValue', 'pvalue', 'qValue','peak'] #broadPeak do not have 'peak' column
+    peak_df = pd.read_csv(peak_file_path, sep='\t', header=None, names=peak_columns)
+    a = BedTool.from_dataframe(peak_df)
+    
+    bed_df.index=bed_df.iloc[:, 3].rename('region')
+    
+    output_df = pd.DataFrame()
+    for i,row in bed_df.iterrows():
+        b = BedTool.from_dataframe(pd.DataFrame(row[:7]).T)
+        b_extended = b.slop(s=True, l=flank_5, r=flank_3, g=g)
+        
+        peaks = a.intersect(b_extended).to_dataframe(names=peak_columns)
+        
+        start,end,strand = b_extended.to_dataframe()[['start','end','strand']].loc[0].tolist()
+#         print(end-start)
+        profile = pd.Series(index=np.arange(-flank_5,end-start-flank_5),data=0,name=i)
+
+        ###code here how to convert selected beds into Series with the data
+       
+        for p,row in peaks.iterrows():
+            p_start, p_end, p_strand = row['start'], row['end'], row['strand']
+            # for "+" strand
+            if strand == "+" and (p_strand == "." or p_strand == "+"):
+                profile[p_start-start:p_end-start] = row['signalValue']
+            
+            # for "-" strand
+            elif strand == "-" and (p_strand == "." or p_strand == "-"):
+                profile[end-p_start:end-p_end] = row['signalValue'] ### !!! ### to be tested
+            
+        output_df = pd.concat([output_df, profile], axis=1)
+        if fillna==True:
+            output_df = output_df.fillna(0.0)
+    output_df = output_df.T
+    output_df.index.name = "region"
+    return output_df.reset_index()
+
 ### level 0
 def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
     """
@@ -193,6 +251,32 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
             plus_dict[bw_plus] = plus_dict[bw_plus].set_index('region').div(libsize).reset_index()
             minus_dict[bw_minus] = minus_dict[bw_minus].set_index('region').div(libsize).reset_index()
     return join_strand_matrices(plus_dict, minus_dict)
+
+def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
+                 g='references/GRCh38.primary_assembly.genome.cleaned.len', 
+                 flank_5=0, flank_3=0):
+    """ Get score matrices for positions in given regions (with optional flanks) from multiple peak files.
+    Matrix rows correspond to regions in BED. Columns correpond to nucleotide positions in regions + flanks.
+    :param peak_paths: list of paths to peak files (broadPeak or narrowPeak format)
+    :type peak_paths: list
+    :param bed_df: dataframe in BED format containing genomic coordinates of target regions
+    :type bed_df: pandas.DataFrame
+    :param g: Path to genome file (chromosome lengths), defaults to 'references/GRCh38.primary_assembly.genome.cleaned.len'
+    :type g: str
+    :param flank_5: length of 5'flank to extend BED regions by, defaults to 0
+    :type flank_5: int, optional
+    :param flank_3: length of 3'flank to extend BED regions by, defaults to 0
+    :type flank_3: int, optional
+    :return: dictionary of score matrices for each peak file
+    :rtype: dict
+    """
+    out_dict = {}
+    for path in peak_paths:
+        name = path.split("/")[-1].replace('_peaks.narrowPeak','').replace('_peaks.broadPeak','')
+        out_dict[name] = peak2matrice(bed_df=bed_df, peak_file_path=path, 
+                 g=g, flank_5=flank_5, flank_3=flank_3)
+    
+    return out_dict
 
 def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False):
     '''
@@ -310,7 +394,7 @@ def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(), flank_5
                                          bins=bins)
         
         results_df.index = np.arange(-bins[0],bins[1]+bins[2])
-        results_mm[bw_key] = results_df
+        results_mm[bw_key] = results_df.T.reset_index()
     
     return results_mm
 
