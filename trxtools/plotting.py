@@ -446,6 +446,39 @@ def cumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
 
 ### metaprofile for multiple genes
 def generateSubplots(dataframes, figsize=(5, 3), dpi=300, save=None):
+    """
+    Generate subplots for multiple dataframes.
+
+    :param dataframes: A list of dataframes to plot [[['title',df,cmap],['title',df,cmap]]]. The cmap is optional.
+    :type dataframes: list
+    :param figsize: The size of the figure. Defaults to (5, 3).
+    :type figsize: tuple, optional
+    :param dpi: The resolution of the figure in dots per inch. Defaults to 300.
+    :type dpi: int, optional
+    :param save: The file path to save the figure. If not provided, the figure will be displayed.
+    :type save: str, optional
+    :return: None
+    :rtype: None
+    
+    Usage:
+        Call this function to generate subplots for multiple dataframes.
+        
+        Example:
+        ```
+        df1 = pd.DataFrame({'x': [1, 2, 3], 'y': [4, 5, 6]})
+        df2 = pd.DataFrame({'x': [7, 8, 9], 'y': [10, 11, 12]})
+        generateSubplots([
+            #row 1[
+            ['title', df1, cmap], 
+            ['title', df2, cmap]
+            ]
+            , figsize=(10, 6), dpi=150, save='plot.png')
+        ```
+
+    Returns:
+        None
+    """
+
     num_rows = len(dataframes)
     num_cols = max(len(df) for df in dataframes)
         
@@ -465,7 +498,6 @@ def generateSubplots(dataframes, figsize=(5, 3), dpi=300, save=None):
             df = p[1]
             if p[2]: cmap = p[2]
 
-#             cs = cmap(np.linspace(0, 1, len(df.columns)))
             cs = [cmap(i) for i in range(0,len(df.columns))]
             for c, col in enumerate(df.columns):
                 ax.plot(df[col], color=cs[c])
@@ -480,6 +512,10 @@ def generateSubplots(dataframes, figsize=(5, 3), dpi=300, save=None):
     else:
         plt.show()
 
+def metaprofileAndHeatmap(data_meta, data_heat, title="", figsize=(5, 3), dpi=300, save=None):
+    return None
+
+#single profile
 def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,name='median',
                      figsize=(7,3),ylim=(None,0.01), dpi=150, color='green',
                      h_lines=[], lc="red",offset=0,fname=None):
