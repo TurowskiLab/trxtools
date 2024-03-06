@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import trxtools.profiles as profiles
+import trxtools.metaprofiles as meta
 from adjustText import adjust_text
 import seaborn as sns
 import matplotlib
@@ -491,9 +492,7 @@ def generateSubplots(dataframes, figsize=(5, 3), dpi=300, save=None):
             if num_rows == 1 or num_cols==1:
                 ax = axs[j]
             else:
-                try:
-                    ax = axs[i, j]
-                except: pass
+                ax = axs[i, j]
             title = p[0]
             df = p[1]
             if p[2]: cmap = p[2]
@@ -512,8 +511,64 @@ def generateSubplots(dataframes, figsize=(5, 3), dpi=300, save=None):
     else:
         plt.show()
 
-def metaprofileAndHeatmap(data_meta, data_heat, title="", figsize=(5, 3), dpi=300, save=None):
-    return None
+def metaprofileAndHeatmap(data_metaplot, data_heatmap, subsets={"title":None}, 
+                          agg_type='mean', normalize_internal=True,
+                          figsize=(5, 3), dpi=300, save=None):
+    num_cols = len(subsets)
+    heatmap_size = max(len(df) for df in data_heatmap)
+
+    fig, axs = plt.subplots(2, num_cols, figsize=(figsize[0]*num_cols, figsize[1]*heatmap_size/8))
+
+    cmap = plt.cm.tab20c
+
+    for s, title in enumerate(subsets.keys()):
+        # prepare data
+        df_metaplot = meta.metaprofile(data_metaplot, agg_type=agg_type,
+                                        normalize_internal=normalize_internal,subset=subsets[title])
+        df_heatmap = meta.metaprofile(data_heatmap, agg_type=agg_type,
+                                        normalize_internal=normalize_internal,subset=subsets[title])
+               
+        if num_cols==1:
+            ax1 = axs[0]
+            ax2 = axs[1]
+        else:
+            ax1 = axs[0,s]
+            ax2 = axs[1,s]
+
+        # Plot using df_metaplot
+        ax1.plot(df_metaplot)
+        
+        cs = [cmap(i) for i in range(0,len(df_metaplot.columns))]
+        for c, col in enumerate(df_metaplot.columns):
+            ax1.plot(df_metaplot[col], color=cs[c])
+        
+        ax1.set_xlabel('position')
+        ax1.set_ylabel('fraction of reads')
+        ax1.set_title(title)
+        
+#         
+            
+            
+        # Create heatmap using df_heatmap
+        heatmap = ax2.imshow(df_heatmap.values.T, cmap='binary', aspect='auto')
+        ax2.set_xlabel('position')
+        ax2.set_xticks(np.arange(0, len(list(df_heatmap.index.values)), 10), minor=False)
+        ax2.set_xticklabels(list(df_heatmap.index.values)[::10], minor=False)
+        if s==0:
+            ax2.set_yticks(np.arange(len(list(df_heatmap.columns.values))), minor=False)
+            ax2.set_yticklabels(list(df_heatmap.columns.values), minor=False)
+        
+    ax1.legend(df_metaplot.columns, loc="center")
+    fig.colorbar(heatmap, ax=ax2)
+
+
+
+    plt.tight_layout()
+
+    if save:
+        plt.savefig(save, dpi=dpi)
+    else:
+        plt.show()
 
 #single profile
 def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,name='median',
