@@ -187,7 +187,7 @@ def peak2matrice(bed_df=pd.DataFrame, peak_file_path='',
         
         start,end,strand = b_extended.to_dataframe()[['start','end','strand']].loc[0].tolist()
 #         print(end-start)
-        profile = pd.Series(index=np.arange(-flank_5,end-start-flank_5),data=0,name=i)
+        profile = pd.Series(index=np.arange(-flank_5,end-start-flank_5),data=0,name=i, dtype=float)
 
         ###code here how to convert selected beds into Series with the data
        
@@ -278,7 +278,7 @@ def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
     
     return out_dict
 
-def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False):
+def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False, subset=None):
     '''
     Calculate metaprofiles from score matrices by aggregating each position in all regions. These can then be plotted with your favorite lib.
 
@@ -294,9 +294,17 @@ def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False):
     '''    
     if agg_type not in ['mean', 'median', 'sum']:
         raise Exception("Wrong agg_type; available values: 'mean', 'median', 'sum'")
+    
+    if isinstance(subset, pd.DataFrame):
+        matrix_dict = {key: value[value['region'].isin(subset.index)] for key, value in matrix_dict.items()}
+    elif isinstance(subset, list):
+        matrix_dict = {key: value[value['region'].isin(subset)] for key, value in matrix_dict.items()}
+
+
     if normalize_internal:
         dropped = {key: value.drop('region', axis=1).div(value.sum(axis=1,numeric_only=True),axis=0) for key, value in matrix_dict.items()}
         return pd.DataFrame({key: value.agg(agg_type,numeric_only=True) for key, value in dropped.items()})
+    
     else:
         return pd.DataFrame({key: value.agg(agg_type, numeric_only=True) for key, value in matrix_dict.items()})
     

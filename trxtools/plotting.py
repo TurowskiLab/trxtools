@@ -444,7 +444,42 @@ def cumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
     else:
         plt.show()
 
-### profiles
+### metaprofile for multiple genes
+def generateSubplots(dataframes, figsize=(5, 3), dpi=300, save=None):
+    num_rows = len(dataframes)
+    num_cols = max(len(df) for df in dataframes)
+        
+    fig, axs = plt.subplots(num_rows, num_cols, figsize=(figsize[0]*num_cols, figsize[1]*num_rows))
+
+    cmap = plt.cm.tab20
+
+    for i, df_list in enumerate(dataframes):
+        for j, p in enumerate(df_list):
+            if num_rows == 1 or num_cols==1:
+                ax = axs[j]
+            else:
+                try:
+                    ax = axs[i, j]
+                except: pass
+            title = p[0]
+            df = p[1]
+            if p[2]: cmap = p[2]
+
+#             cs = cmap(np.linspace(0, 1, len(df.columns)))
+            cs = [cmap(i) for i in range(0,len(df.columns))]
+            for c, col in enumerate(df.columns):
+                ax.plot(df[col], color=cs[c])
+            ax.set_title(title)
+            ax.set_xlabel('position')
+    ax.legend(df.columns, loc="upper right")
+
+    plt.tight_layout()
+
+    if save:
+        plt.savefig(save, dpi=dpi)
+    else:
+        plt.show()
+
 def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,name='median',
                      figsize=(7,3),ylim=(None,0.01), dpi=150, color='green',
                      h_lines=[], lc="red",offset=0,fname=None):

@@ -514,18 +514,28 @@ def expNameParser(name, additional_tags=list(), order='b_d_e_p'):
 
     return '_'.join(return_list).strip('_')
 
-def cleanNames(df=pd.DataFrame(), additional_tags=[]):
-    '''Cleans some problems with names if exist
+def cleanNames(data, strings=[]):
+    """
+    Cleans the names in the given data by removing specified strings.
 
-    :param df: DataFrame() where names of columns are name of experiments
-    :param additional_tags: list()
-    :return: DataFrame() with new names
-    '''
-
-    for tag in additional_tags: df.columns = [f.replace(tag, tag+'HTP') for f in list(df.columns.values)]
-    df.columns = [f.replace('HTPHTP', 'HTP').replace('HTPHTP', 'HTP') for f in list(df.columns.values)]
-    return df
-
+    :param data: The data to be cleaned. It can be either a dictionary or a pandas DataFrame.
+    :type data: dict or pandas.DataFrame
+    :param strings: A list of strings to be removed from the names. Defaults to an empty list.
+    :type strings: list, optional
+    :return: The cleaned data with names modified according to the specified strings.
+    :rtype: dict or pandas.DataFrame
+    """
+    if isinstance(data, dict):
+        for string in strings:
+            data = {key.replace(string, ''): value for key, value in data.items()}
+        return data
+    elif isinstance(data, pd.DataFrame):
+        for string in strings:
+            data = data.rename(columns=lambda x: x.replace(string, ''))
+        return data
+    else:
+        return data
+     
 def indexOrder(df=pd.DataFrame(), additional_tags=list(), output='root', order='b_d_e_p'):
     '''Apply expNameParser to whole DataFrame
 
