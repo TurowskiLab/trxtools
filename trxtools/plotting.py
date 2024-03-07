@@ -512,58 +512,121 @@ def generateSubplots(dataframes, figsize=(5, 3), dpi=300, save=None):
         plt.show()
 
 def metaprofileAndHeatmap(data_metaplot, data_heatmap, subsets={"title":None}, 
-                          agg_type='mean', normalize_internal=True,
-                          figsize=(5, 3), dpi=300, save=None):
+                          agg_type='mean', normalize_internal=True, differential_heatmap=True,
+                          figsize=(5, 3), dpi=300, save=None, bins=[50,10,50]):
     num_cols = len(subsets)
     heatmap_size = max(len(df) for df in data_heatmap)
 
-    fig, axs = plt.subplots(2, num_cols, figsize=(figsize[0]*num_cols, figsize[1]*heatmap_size/8))
-
+    if differential_heatmap==False:
+        fig, axs = plt.subplots(3, num_cols, figsize=(figsize[0]*num_cols, figsize[1]*heatmap_size/8),
+                                gridspec_kw={'height_ratios': [1,0.2,heatmap_size/8]}, sharex=True)
+    elif differential_heatmap==True:
+        fig, axs = plt.subplots(4, num_cols, figsize=(figsize[0]*num_cols, figsize[1]*heatmap_size/4),
+                                gridspec_kw={'height_ratios': [1,0.2,heatmap_size/8,heatmap_size/8]}, sharex=True)
+        
+    fig.subplots_adjust(hspace=0, wspace=0)
+    
     cmap = plt.cm.tab20c
-
+    
+    heatmap_max = 0.05
+    heatmap_reference = None
+    
     for s, title in enumerate(subsets.keys()):
         # prepare data
         df_metaplot = meta.metaprofile(data_metaplot, agg_type=agg_type,
-                                        normalize_internal=normalize_internal,subset=subsets[title])
+                                        normalize_internal=normalize_internal,
+                                        subset=subsets[title]).fillna(0.0)
         df_heatmap = meta.metaprofile(data_heatmap, agg_type=agg_type,
-                                        normalize_internal=normalize_internal,subset=subsets[title])
-               
+                                        normalize_internal=normalize_internal,
+                                        subset=subsets[title]).fillna(0.0)
+        
+        if s==0:
+            heatmap_max = df_heatmap.max().max()
+        
+        #preparing length of datasets
+        if subsets[title] is not None:
+            meta_len = max([len(df) for df in meta.selectSubsetMM(data_metaplot,subset=subsets[title]).values()])
+            heat_len = max([len(df) for df in meta.selectSubsetMM(data_heatmap,subset=subsets[title]).values()])
+        else:
+            meta_len = max([len(df) for df in data_metaplot.values()])
+            heat_len = max([len(df) for df in data_heatmap.values()])
+        
+        if meta_len != heat_len:
+            print("Lengths of metaplot and heatmap datasets are different. n is valid for heatmap.")
+        
+        #preparing indexes
+        if not df_metaplot.index.all()==df_heatmap.index.all():
+            print("Indexes for metaplot and heatmap are different. Plottin df_heatmap index.")
+        index = list(df_heatmap.index.values)
+        df_metaplot = df_metaplot.reset_index().drop(columns='index')
+        df_heatmap = df_heatmap.reset_index().drop(columns='index')
+        
+        if s==0:
+            heatmap_reference = df_heatmap
+
+        #axs for plotting
         if num_cols==1:
             ax1 = axs[0]
-            ax2 = axs[1]
+            ax_gene = axs[1]
+            ax2 = axs[2]
         else:
             ax1 = axs[0,s]
-            ax2 = axs[1,s]
-
-        # Plot using df_metaplot
-        ax1.plot(df_metaplot)
+            ax_gene = axs[1,s]
+            ax2 = axs[2,s]
+            ax3 = axs[3,s]
         
+        # Plot using df_metaplot       
         cs = [cmap(i) for i in range(0,len(df_metaplot.columns))]
         for c, col in enumerate(df_metaplot.columns):
             ax1.plot(df_metaplot[col], color=cs[c])
+               
+        ax1.set_title(title+" (n="+str(heat_len)+")")
         
-        ax1.set_xlabel('position')
-        ax1.set_ylabel('fraction of reads')
-        ax1.set_title(title)
+        # plot gene scheme
+        s1_gene = pd.DataFrame(index=df_metaplot.index, data={'gene':0})
+        s1_gene[bins[0]:bins[0]+bins[1]] = 1
+        h_gene = ax_gene.imshow(s1_gene.values.T, cmap='Blues', aspect='auto', vmin=0, vmax=1)
         
-#         
-            
-            
         # Create heatmap using df_heatmap
-        heatmap = ax2.imshow(df_heatmap.values.T, cmap='binary', aspect='auto')
+        df_heatmap_norm = df_heatmap.div(heatmap_max)
+        heatmap = ax2.imshow(df_heatmap_norm.values.T, cmap='binary', aspect='auto', vmin=0, vmax=1)
         ax2.set_xlabel('position')
-        ax2.set_xticks(np.arange(0, len(list(df_heatmap.index.values)), 10), minor=False)
-        ax2.set_xticklabels(list(df_heatmap.index.values)[::10], minor=False)
+        ax2.set_xticks(np.arange(0, len(index), 10), minor=False)
+        ax2.set_xticklabels(index[::10], minor=False)
         if s==0:
-            ax2.set_yticks(np.arange(len(list(df_heatmap.columns.values))), minor=False)
-            ax2.set_yticklabels(list(df_heatmap.columns.values), minor=False)
+            ax2.set_yticks(np.arange(len(list(df_heatmap_norm.columns.values))), minor=False)
+            ax2.set_yticklabels(list(df_heatmap_norm.columns.values), minor=False)
+            ax1.set_ylabel('fraction of reads')
+            ax_gene.set_yticks([0], minor=False)
+            ax_gene.set_yticklabels(["gene position"], minor=False)
         
-    ax1.legend(df_metaplot.columns, loc="center")
-    fig.colorbar(heatmap, ax=ax2)
-
-
-
-    plt.tight_layout()
+        else:
+            ax1.set_yticks([], minor=False)
+            ax_gene.set_yticks([], minor=False)
+            ax2.set_yticks([], minor=False)
+            
+        
+        if differential_heatmap==True:
+            if s==0:
+                ax3.axis('off')
+            else:
+                # Create differential heatmap
+                df_heatmap_reference_norm = heatmap_reference.div(heatmap_max)
+                df_heatmap_diff = df_heatmap_norm.add(0.1).div(df_heatmap_reference_norm.add(0.1)).applymap(np.log2)                
+                heatmap2 = ax3.imshow(df_heatmap_diff.values.T, cmap='seismic', aspect='auto', vmin=-4, vmax=4)
+                ax3.set_yticks(np.arange(len(list(df_heatmap_norm.columns.values))), minor=False)
+                ax3.set_yticklabels(list(df_heatmap_norm.columns.values), minor=False)
+    
+    #legends
+    ax1.legend(df_metaplot.columns, loc='center left', bbox_to_anchor=(1, 0.5))
+    ## custom ax for colorbar
+    # greyscale
+    fig.subplots_adjust(right=0.8)
+    cbar_ax2 = fig.add_axes([0.85, 0.4, 0.02, 0.2])
+    fig.colorbar(heatmap, cax=cbar_ax2)
+    # seismic
+    cbar_ax3 = fig.add_axes([0.85, 0.15, 0.02, 0.2])
+    fig.colorbar(heatmap2, cax=cbar_ax3)
 
     if save:
         plt.savefig(save, dpi=dpi)

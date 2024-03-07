@@ -280,7 +280,7 @@ def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
 
 def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False, subset=None):
     '''
-    Calculate metaprofiles from score matrices by aggregating each position in all regions. These can then be plotted with your favorite lib.
+    Calculate metaprofiles from score matrices by aggregating each position in all regions.
 
     :param matrix_dict: Dict containing score matrices returned by get_multiple_matrices()
     :type matrix_dict: dict
@@ -406,6 +406,12 @@ def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(), flank_5
     
     return results_mm
 
+## helper functions
+def selectSubsetMM(matrix_dict, subset=None):
+    if isinstance(subset, pd.DataFrame):
+        return {key: value[value['region'].isin(subset.index)] for key, value in matrix_dict.items()}
+    elif isinstance(subset, list):
+        return {key: value[value['region'].isin(subset)] for key, value in matrix_dict.items()}
 
 # def regionScore2(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True):
 #     """
