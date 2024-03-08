@@ -30,8 +30,8 @@ setuptools.setup(
         'scripts/csv2pickle.py',
         'scripts/genome2WindowsGTF.py'],
     install_requires=[
-        'scikit-learn','pandas', 'numpy', 
-        'pyBigWig', 'adjustText', 'scipy',
+        'scikit-learn','pandas', 'numpy', 'pybedtools',
+        'pyBigWig', 'adjustText', 'scipy', 'matplotlib_venn',
         'seaborn', 'matplotlib', 'requests'],
     python_requires='>=3.6'
 )
