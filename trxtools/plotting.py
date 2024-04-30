@@ -614,8 +614,11 @@ def metaprofileAndHeatmap(data_metaplot, data_heatmap, subsets={"title":None},
                 df_heatmap_reference_norm = heatmap_reference.div(heatmap_max)
                 df_heatmap_diff = df_heatmap_norm.add(0.1).div(df_heatmap_reference_norm.add(0.1)).applymap(np.log2)                
                 heatmap2 = ax3.imshow(df_heatmap_diff.values.T, cmap='seismic', aspect='auto', vmin=-4, vmax=4)
-                ax3.set_yticks(np.arange(len(list(df_heatmap_norm.columns.values))), minor=False)
-                ax3.set_yticklabels(list(df_heatmap_norm.columns.values), minor=False)
+                if s==1:
+                    ax3.set_yticks(np.arange(len(list(df_heatmap_norm.columns.values))), minor=False)
+                    ax3.set_yticklabels(list(df_heatmap_norm.columns.values), minor=False)
+                else:
+                    ax3.set_yticks([], minor=False)
     
     #legends
     ax1.legend(df_metaplot.columns, loc='center left', bbox_to_anchor=(1, 0.5))

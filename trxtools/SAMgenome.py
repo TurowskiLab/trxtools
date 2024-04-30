@@ -1,5 +1,5 @@
 from trxtools.SAMgeneral import *
-from trxtools.SAMtranscripts import transcript2profile
+from trxtools.SAMtranscripts import transcript2profile, transcript2profileDeletions
 from trxtools.methods import timestamp
 import time, shutil
 import pyBigWig
@@ -122,6 +122,66 @@ def reads2genome(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="read"
             length = df_details.loc[n]['length']
             l = list(zip(df['position'].astype(int), df['CIGAR']))
             s1_profile = transcript2profile(l, length=length)
+            to_save = pd.DataFrame(s1_profile.rename(n))
+            fileName = dirPath+"/temp_"+n_name+"_rev.pcl.gz"
+            to_save.to_pickle(path=fileName,compression='gzip')
+            
+            temp_paths[n_name+"_rev"] = fileName
+            log_file.write(timestamp()+"\t"+n_name+ " - REV profile generated successfully" + '\n')
+        except:
+            
+            temp_paths[n_name+"_rev"] = None
+            log_file.write(timestamp()+"\t"+n_name+" - REV profile FAILED" + '\n')
+    
+    log_file.close()
+    return temp_paths
+
+def reads2genomeDeletions(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="del", expand=0, logName=str()):
+    '''Function used by sam2genome. Works for both strands.
+
+    :param name: name of experiment
+    :type name: str
+    :param dirPath:
+    :type dirPath: str
+    :param df_details: lengths of chromosomes
+    :type df_details: DataFrame
+    :return: output_df_fwd, output_df_rev, log
+    :rtype: DataFrame, DataFrame, list
+    '''
+
+    cols = ['score', 'name', 'position', 'CIGAR', 'sequence', 'details']
+    df_input_fwd = pd.read_csv(dirPath + "/" + name + "_fwd.tab", sep="\t", names=cols)
+    df_input_rev = pd.read_csv(dirPath + "/" + name + "_rev.tab", sep="\t", names=cols)
+
+    #open log file
+    log_file = open(logName, "a")
+    log_file.write("Processing SAM to profiles: -u reads" + '\n')
+    temp_paths = {} #stores paths for each temp file
+
+    # strand "+" 
+    for n, df in df_input_fwd.groupby('name'):
+        n_name = n+"_"+use+str(expand)
+        try:
+            length = df_details.loc[n]['length']
+            l = list(zip(df['position'].astype(int), df['CIGAR']))
+            s1_profile = transcript2profileDeletions(l,expand=expand, length=length)
+            to_save = pd.DataFrame(s1_profile.rename(n))
+            fileName = dirPath+"/temp_"+n_name+"_fwd.pcl.gz"
+            to_save.to_pickle(path=fileName,compression='gzip')
+            
+            temp_paths[n_name+"_fwd"] = fileName
+            log_file.write(timestamp()+"\t"+n_name + " - FWD profile generated successfully" + '\n')
+        except:
+            temp_paths[n_name+"_fwd"] = None
+            log_file.write(timestamp()+"\t"+n_name + " - FWD profile FAILED" + '\n')
+            
+    # strand "-"    
+    for n, df in df_input_rev.groupby('name'):
+        n_name = n+"_"+use+str(expand)
+        try:
+            length = df_details.loc[n]['length']
+            l = list(zip(df['position'].astype(int), df['CIGAR']))
+            s1_profile = transcript2profileDeletions(l,expand=expand, length=length)
             to_save = pd.DataFrame(s1_profile.rename(n))
             fileName = dirPath+"/temp_"+n_name+"_rev.pcl.gz"
             to_save.to_pickle(path=fileName,compression='gzip')
@@ -303,7 +363,7 @@ def parseHeader(filename,name,dirPath):
 #              final functions (level 0)           #
 ####################################################
 
-def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=True,ends="polyA"):
+def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",expand=0,noncoded=True,noncoded_suffix="polyA"):
     '''Function handling SAM files and generating profiles. Executed using wrapping script SAM2profilesGenomic.py.
 
     :param filename: 
@@ -319,6 +379,11 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
     :param noncoded_raw: Save all non-coded ends, defaults to False
     :type noncoded_raw: bool, optional
     '''
+    # checking use
+    if use not in ["read","3end","5end",'del']: exit("Wrong -u parameter selected")
+    if use=="3end" and noncoded==True: 
+        if noncoded_suffix not in ["polyA"]: exit("Wrong -s parameter selected")
+    
     # making working directory
     name = filename.replace(".sam", "")
     if toClear:
@@ -380,11 +445,12 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
         temp_paths = reads2genome(name=name, dirPath=dirPath,df_details=df_details, logName=logName)
     elif use=="3end":
         temp_paths = reads2genome3end(name=name, dirPath=dirPath, df_details=df_details,
-                                        noncoded=noncoded,ends=ends,logName=logName,minLen=3)
+                                        noncoded=noncoded,ends=noncoded_suffix,logName=logName,minLen=3)
     elif use=="5end":
         temp_paths = reads2genome5end(name=name, dirPath=dirPath,df_details=df_details, logName=logName)
-    else:
-        exit("Wrong -u parameter selected")
+    elif use=="del":
+        temp_paths = reads2genomeDeletions(name=name, dirPath=dirPath, df_details=df_details, expand=expand, logName=logName)
+    
     
     df_details.to_pickle("details.pcl")
 
@@ -393,6 +459,9 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
     log_file.write(timestamp()+"\t"+"Saving output"+"\n")
 
     chroms = list(df_details['length'].sort_values(ascending=True).to_dict().items()) #sorted for chrom length
+
+    if use=="del":
+        use = "del"+str(expand)
 
     ### fwd strand ###
     log_file.write(timestamp()+"\t"+"Saving FWD strand"+"\n")
@@ -415,17 +484,17 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",noncoded=Tru
 
         ### fwd strand ###
         log_file.write(timestamp()+"\t"+"Saving FWD strand (noncoded)"+"\n")
-        suffix = "_"+use+"_"+ends+"_fwd"
+        suffix = "_"+use+"_"+noncoded_suffix+"_fwd"
         paths = selectSortPaths(paths=temp_paths,chroms=chroms,suffix=suffix)
-        bw_name = path + name + "_PROFILE_"+use+"_"+ends+"_fwd.bw"
+        bw_name = path + name + "_PROFILE_"+use+"_"+noncoded_suffix+"_fwd.bw"
         l = saveBigWig(paths=paths,suffix=suffix,bw_name=bw_name,chroms=chroms)
         log_file.write(timestamp()+"\t"+l+"\n")
 
         ### rev strand ###
         log_file.write(timestamp()+"\t"+"Saving REV strand (noncoded)"+"\n")
-        suffix = "_"+use+"_"+ends+"_rev"
+        suffix = "_"+use+"_"+noncoded_suffix+"_rev"
         paths = selectSortPaths(paths=temp_paths,chroms=chroms,suffix=suffix)
-        bw_name = path + name + "_PROFILE_"+use+"_"+ends+"_rev.bw"
+        bw_name = path + name + "_PROFILE_"+use+"_"+noncoded_suffix+"_rev.bw"
         l = saveBigWig(paths=paths,suffix=suffix,bw_name=bw_name,chroms=chroms)
         log_file.write(timestamp()+"\t"+l+"\n")
 

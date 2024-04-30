@@ -82,7 +82,7 @@ def get_bw_data(bed_row, bw, flank_5=0, flank_3=0, align_3end=False):
         outseries.index = outseries.index - flank_5
     return outseries
 
-### level -1    
+### level -1
 def bed_split_strands(bed_df):
     # Split dataframe (from read_bw) by strand
     bed_plus = bed_df[bed_df[5] == "+"]
@@ -112,7 +112,8 @@ def matrixFromBigWig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudo
     :type align_3end: bool, optional
     :return: DataFrame with the result score matrix
     :rtype: pandas.DataFrame
-    """    
+    """
+
     bw = pyBigWig.open(bw_path)
     out_df = bed_df.apply(get_bw_data, bw=bw, flank_5=flank_5, flank_3=flank_3, align_3end=align_3end, axis=1)
     # if out_df.columns[0] != 0:
@@ -209,7 +210,9 @@ def peak2matrice(bed_df=pd.DataFrame, peak_file_path='',
     return output_df.reset_index()
 
 ### level 0
-def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
+def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, 
+                        fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
+    
     """
     Get score matrices for positions in given regions (with optional flanks) from multiple BigWig files.
     Matrix rows correspond to regions in BED.
@@ -235,21 +238,27 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
     :type align_3end: bool, optional
     :return:  A dictionary containing score matrices for individual BigWig files. Dictionary keys are BigWig file names.
     :rtype: dict
-    """    
+    """
+
     bed_plus, bed_minus = bed_split_strands(bed_df)
     plus_dict = {}
     minus_dict = {}
     for bw_plus, bw_minus in zip(bw_paths_plus, bw_paths_minus):
-        plus_dict[bw_plus] = matrixFromBigWig(bw_path=bw_plus, bed_df=bed_plus, flank_5=flank_5, flank_3=flank_3, fill_na=fill_na, pseudocounts=pseudocounts, align_3end=align_3end)
-        minus_dict[bw_minus] = matrixFromBigWig(bw_path=bw_minus, bed_df=bed_minus, flank_5=flank_5, flank_3=flank_3, fill_na=fill_na, pseudocounts=pseudocounts, align_3end=align_3end)
-        if normalize_libsize:
-            with pyBigWig.open(bw_plus) as bwp:
-                libsize_plus = int(bwp.header()['sumData'])
-            with pyBigWig.open(bw_minus) as bwm:
-                libsize_minus = int(bwm.header()['sumData'])
-            libsize = libsize_plus+libsize_minus
-            plus_dict[bw_plus] = plus_dict[bw_plus].set_index('region').div(libsize).reset_index()
-            minus_dict[bw_minus] = minus_dict[bw_minus].set_index('region').div(libsize).reset_index()
+        try:
+            plus_dict[bw_plus] = matrixFromBigWig(bw_path=bw_plus, bed_df=bed_plus, flank_5=flank_5, flank_3=flank_3, fill_na=fill_na, pseudocounts=pseudocounts, align_3end=align_3end)
+            minus_dict[bw_minus] = matrixFromBigWig(bw_path=bw_minus, bed_df=bed_minus, flank_5=flank_5, flank_3=flank_3, fill_na=fill_na, pseudocounts=pseudocounts, align_3end=align_3end)
+            if normalize_libsize:
+                with pyBigWig.open(bw_plus) as bwp:
+                    libsize_plus = int(bwp.header()['sumData'])
+                with pyBigWig.open(bw_minus) as bwm:
+                    libsize_minus = int(bwm.header()['sumData'])
+                libsize = libsize_plus+libsize_minus
+                plus_dict[bw_plus] = plus_dict[bw_plus].set_index('region').div(libsize).reset_index()
+                minus_dict[bw_minus] = minus_dict[bw_minus].set_index('region').div(libsize).reset_index()
+        except:
+            e = str(bw_plus)+ " " + str(bw_minus)
+            print(f"Error: {e}")
+            # continue
     return join_strand_matrices(plus_dict, minus_dict)
 
 def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
@@ -291,10 +300,11 @@ def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False, subset=N
     :raises Exception: _description_
     :return: dataframe containing metaprofile values for each position in each of the input matrices (i.e. bigwig files)
     :rtype: pandas.DataFrame
-    '''    
+    '''
+
     if agg_type not in ['mean', 'median', 'sum']:
         raise Exception("Wrong agg_type; available values: 'mean', 'median', 'sum'")
-    
+
     if isinstance(subset, pd.DataFrame):
         matrix_dict = {key: value[value['region'].isin(subset.index)] for key, value in matrix_dict.items()}
     elif isinstance(subset, list):
@@ -304,10 +314,10 @@ def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False, subset=N
     if normalize_internal:
         dropped = {key: value.drop('region', axis=1).div(value.sum(axis=1,numeric_only=True),axis=0) for key, value in matrix_dict.items()}
         return pd.DataFrame({key: value.agg(agg_type,numeric_only=True) for key, value in dropped.items()})
-    
+
     else:
         return pd.DataFrame({key: value.agg(agg_type, numeric_only=True) for key, value in matrix_dict.items()})
-    
+
 def regionScore(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True):
     """
     Calculate coverage or statistic for multiple regions in multiple BigWig files.
