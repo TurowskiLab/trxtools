@@ -445,6 +445,81 @@ def cumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
     else:
         plt.show()
 
+def cumulativeDifference(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150, fill_between=True,
+                        title="", start=None, stop=None, window=50, figsize=(4,3),equal_weight=False,
+                        color1='green', lc='red',fname=None,use="mean",ylim=None):
+    '''Plot single gene differences for peaks metaplot.
+
+    :param ref: str with path to csv file or DataFrame
+    :param df2: DataFrame
+    :param local_pos: list of features (peaks/troughs)
+    :param dpi: int, default 150
+    :param title: str
+    :param start: int
+    :param stop: int
+    :param window: int, default 50
+    :param figsize: tuple, default (4,3)
+    :param color1: str, default "green"
+    :param color2: str, default "magenta"
+    :param lc: str, default "red"
+    :return:
+    '''
+    if isinstance(ref, str):
+        reference = pd.read_csv(ref, index_col=0)
+    elif isinstance(ref, pd.DataFrame):
+        reference = ref
+
+    # extracting data for metaplot
+    df_diff = pd.DataFrame()
+
+    # filter local max accorgind to start and stop
+    if start: local_pos = [i for i in local_pos if i > start]
+    if stop: local_pos = [i for i in local_pos if i < stop]
+
+    for i, loc in enumerate(local_pos):
+        s2_dataset1 = reference['median'][loc - window:loc + window]
+        s3_dataset2 = df2['median'][loc - window:loc + window]
+        if equal_weight == True: #to be tested
+            s2_pseudocounts = s2_dataset1.min() / 100
+            s2_dataset1 = s2_dataset1.add(s2_pseudocounts) / s2_dataset1.add(s2_pseudocounts).sum()
+            s3_pseudocounts = s3_dataset2.min() / 100
+            s3_dataset2 = s3_dataset2.add(s3_pseudocounts) / s3_dataset2.add(s3_pseudocounts).sum()
+        df_diff[i] = s3_dataset2.reset_index()['median'] - s2_dataset1.reset_index()['median']
+        
+    if use=='mean':
+        s_data1 = df_diff.mean(axis=1)
+    elif use=='median':
+        s_data1 = df_diff.median(axis=1)
+    elif use=='sum':
+        s_data1 = df_diff.sum(axis=1)
+
+    # plotting reference dataset
+    fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
+    plt.title(title)
+    ax1.set_xlabel('position')
+    ax1.set_ylabel(f'cumulative difference ({use})')
+    if ylim:
+        ax1.set_ylim(ylim)
+
+    if fill_between==True:
+        s_zeros = pd.Series([0]*len(s_data1))
+        s_positive = s_zeros+s_data1[s_data1>0]
+        s_negative = s_zeros+s_data1[s_data1<0]
+
+        ax1.fill_between(np.arange(-window, window), s_zeros, s_positive, color='red', alpha=0.2)
+        ax1.fill_between(np.arange(-window, window), s_zeros, s_negative, color='blue', alpha=0.2)
+
+    ax1.plot(np.arange(-window, window), s_data1, color=color1)
+
+    ax1.axvline(0, color=lc, alpha=0.5)
+    ax1.axhline(0, color='black', alpha=0.5)
+    # ax1.legend(loc=2)
+
+    if fname:
+        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+    else:
+        plt.show()
+
 ### metaprofile for multiple genes
 def generateSubplots(dataframes, figsize=(5, 3), dpi=300, save=None):
     """
@@ -683,7 +758,7 @@ def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,name='med
         plt.show()
 
 
-def plotAndFolding(df=pd.DataFrame(),dG=pd.Series(), title="", start=None, stop=None,
+def plotAndFolding(df=pd.DataFrame(),dG=pd.Series(), title="", start=None, stop=None,legend=True,
                      figsize=(7,3),ylim=(None,0.01), dpi=150, color='green', name='median',
                      h_lines=[], lc="red",offset=0,fname=None):
     '''Plots figure similar to box plot: median, 2 and 3 quartiles and min-max range
@@ -722,7 +797,8 @@ def plotAndFolding(df=pd.DataFrame(),dG=pd.Series(), title="", start=None, stop=
     if not start: start=min(s2.index-offset)
     if not stop: stop=max(s2.index-offset)
     for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
-    ax1.legend(loc=2)
+    if legend==True:
+        ax1.legend(loc=2)
         
     #plotting delta G
     ax2 = ax1.twinx()
@@ -733,7 +809,9 @@ def plotAndFolding(df=pd.DataFrame(),dG=pd.Series(), title="", start=None, stop=
     for tl in ax2.get_yticklabels():
         tl.set_color('orange')
     ax2.grid()
-    ax2.legend(loc=1)
+
+    if legend==True:
+        ax2.legend(loc=1)
     
     if fname:
         plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
@@ -741,7 +819,7 @@ def plotAndFolding(df=pd.DataFrame(),dG=pd.Series(), title="", start=None, stop=
         plt.show()
 
 
-def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',
+def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',legend=True,
                     ref_label="", label="", title="", start=None, stop=None, figsize=(7,3),
                     ylim=(None,0.01), h_lines=[], lc="red", dpi=150,offset=300,fname=None):
     '''Figure to compare to plots similar to box plot: median, 2 and 3 quartiles and min-max range
@@ -799,7 +877,8 @@ def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',
         ax1.fill_between(s2.index-offset, s2['q1'], s2['q3'], color=color1, alpha=0.2, label='range (q2-q3)')
 
     for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
-    ax1.legend()
+    if legend==True:
+        ax1.legend()
 
     if fname:
         plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
@@ -807,7 +886,7 @@ def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',
         plt.show()
 
 def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label1="reference", label2="", 
-              title="", start=None, stop=None, plot_medians=True, plot_ranges=True,
+              title="", start=None, stop=None, plot_medians=True, plot_ranges=True,legend=True,
               dpi=150, figsize=(7, 3), ylim=(None,0.01), h_lines=list(),lc="red", offset=0,fname=None):
     '''Plot given dataset and reference, differences are marked
 
@@ -841,6 +920,8 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label1="reference", labe
     dataset, s2 = dataset[start:stop], reference[start:stop]  # prepating datasets
     # plotting
     fig, ax1 = plt.subplots(figsize=figsize,dpi=dpi)
+    for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
+
     ax1.fill_between(differences_df.index-offset, differences_df['ear_min'], differences_df['ear_max'], color='red',
                      where=(differences_df['ear_max'] > 0), label='increased occupancy (' + ranges_dict[ranges] + ')')
     ax1.fill_between(differences_df.index-offset, differences_df['rae_min'], differences_df['rae_max'], color='blue',
@@ -859,9 +940,10 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label1="reference", labe
     ax1.set_ylim(ylim)
     ax1.set_xlabel('position')
     ax1.set_ylabel('fraction of reads', color='black')
-    for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
+    
     ax1.set_title(title)
-    plt.legend()
+    if legend==True:
+        plt.legend()
     plt.title(title)
 
     if fname:
