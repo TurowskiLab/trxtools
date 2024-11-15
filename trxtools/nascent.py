@@ -12,13 +12,15 @@ def extendingWindow(sequence="", name="name", strand="plus", temp=30, m=7):
 
     :param sequence: str
     :param name: str, default "name"
-    :param strand: str {"plus","minus","both"}, default "plus" (not tested for others)
+    :param strand: str {"plus","minus"}, default "plus" (not tested for others)
     :param temp: int, default 30
     :param m: int, default 7 - RNAfold does not return any values for length shorter than 7 even at 4 deg C
     :return: DataFrame of sequences with names according to nascent.slidingWindow convention
     '''
     seqList = []
     nameList = []
+    if strand == "minus":
+        sequence = tt.methods.reverse_complement(sequence)
 
     for i in range(m, len(sequence)):
         seqList.append(sequence[0:i])
