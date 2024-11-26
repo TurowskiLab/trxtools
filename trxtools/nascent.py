@@ -7,7 +7,7 @@ import os, shutil, random
 ################################################
 #############    preparing sequence
 
-def extendingWindow(sequence="", name="name", strand="plus", temp=30, m=7):
+def extendingWindow(sequence="", name="name", strand="plus", temp=30, m=7, toAdd=0):
     '''Returns DataFrame of sequences of all possible lengths between minimum (m) and length of input sequence -1
 
     :param sequence: str
@@ -21,10 +21,14 @@ def extendingWindow(sequence="", name="name", strand="plus", temp=30, m=7):
     nameList = []
     if strand == "minus":
         sequence = tt.methods.reverse_complement(sequence)
+        for i in range(m, len(sequence)):
+            seqList.append(sequence[0:i])
+            nameList.append(name + "_" + strand + "_pos" + str(toAdd-i+1) + "_temp" + str(temp) + "_win" + str(i))
 
-    for i in range(m, len(sequence)):
-        seqList.append(sequence[0:i])
-        nameList.append(name + "_" + strand + "_pos" + str(i) + "_temp" + str(temp) + "_win" + str(i))
+    else:
+        for i in range(m, len(sequence)):
+            seqList.append(sequence[0:i])
+            nameList.append(name + "_" + strand + "_pos" + str(toAdd+i) + "_temp" + str(temp) + "_win" + str(i))
 
     return pd.DataFrame(pd.Series(data=seqList, index=nameList, name='sequence'))
 
@@ -51,7 +55,8 @@ def slidingWindow(sequence="", name="name", strand="plus", temp=30, window=100):
 
     # minus strand
     if strand == "both" or strand == 'minus':
-        sequence_revcomp = tt.methods.reverse_complement_RNA(sequence.replace("T", "U"))
+        # sequence_revcomp = tt.methods.reverse_complement_RNA(sequence.replace("T", "U"))
+        sequence_revcomp = tt.methods.reverse_complement_DNA(sequence)
         for i in range(window, len(sequence_revcomp) + 1):
             string_rc = sequence_revcomp[i - window:i]  # correction to get exactly the same position for both strands
             list_temp.append(string_rc)
@@ -70,12 +75,16 @@ def prepareNascent(sequence="", name="name", strand="plus", temp=30, window=100)
 
     :param sequence: str
     :param name: str, default "name"
-    :param strand: str {plus,minus,both}, default "plus" (not tested for others)
+    :param strand: str {plus,minus}, default "plus" (not tested for "minus")
     :param temp: int, default 30
     :param window: int, default 100
     :return: Dataframe with sequences
     '''
-    extended = extendingWindow(sequence=sequence[:window], name=name,
+    if strand == "minus":
+        extended = extendingWindow(sequence=sequence[-window:], name=name,
+                                         strand=strand, temp=temp, toAdd=len(sequence))
+    else:
+        extended = extendingWindow(sequence=sequence[:window], name=name,
                                          strand=strand, temp=temp)
     slided = slidingWindow(sequence=sequence, name=name,
                                          strand=strand, temp=temp, window=window)

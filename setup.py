@@ -28,7 +28,8 @@ setuptools.setup(
         'scripts/SAM2profilesGenomic.py',
         'scripts/mergeSalmon.py',
         'scripts/csv2pickle.py',
-        'scripts/genome2WindowsGTF.py'],
+        'scripts/genome2WindowsGTF.py',
+        'scripts/fasta2slidingWindows.py'],
     install_requires=[
         'scikit-learn','pandas', 'numpy', 'pybedtools',
         'pyBigWig', 'adjustText', 'scipy', 'matplotlib_venn',

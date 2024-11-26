@@ -34,32 +34,32 @@ def fasta_to_dataframe(fasta_file, compression=False):
     df = pd.DataFrame(data, columns=["id", "sequence"])
     return df
 
-def reverse_complement(seq):
-    complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
-    bases = [complement.get(base, base) for base in seq]
-    return ''.join(bases[::-1])
+# def reverse_complement(seq):
+#     complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
+#     bases = [complement.get(base, base) for base in seq]
+#     return ''.join(bases[::-1])
 
-def sliding_sequence(sequence=str(), name='str', window=int()):
-    df_temp = pd.DataFrame()
-    index_temp = list()
-    list_temp = list()
+# def sliding_sequence(sequence=str(), name='str', window=int()):
+#     df_temp = pd.DataFrame()
+#     index_temp = list()
+#     list_temp = list()
 
-    #sliding window for the sequence
-    for i in range(window,len(sequence)+1):
-        string = sequence[i-window:i]
-        list_temp.append(string)
-        index_temp.append(name+'_nascent_len'+str(window)+'_pos'+str(i))
+#     #sliding window for the sequence
+#     for i in range(window,len(sequence)+1):
+#         string = sequence[i-window:i]
+#         list_temp.append(string)
+#         index_temp.append(name+'_nascent_len'+str(window)+'_pos'+str(i))
 
-    #sliding window for reverse complement of the sequence
-    sequence_revcomp = reverse_complement(sequence)
-    for i in range(window,len(sequence_revcomp)+1):
-        string_rc = sequence_revcomp[i-window+1:i+1] #correction to get exactly the same position for both strands
-        list_temp.append(string_rc)
-        index_temp.append(name+'_nascentRC_len'+str(window)+'_pos'+str(len(sequence_revcomp)-i))
+#     #sliding window for reverse complement of the sequence
+#     sequence_revcomp = reverse_complement(sequence)
+#     for i in range(window,len(sequence_revcomp)+1):
+#         string_rc = sequence_revcomp[i-window+1:i+1] #correction to get exactly the same position for both strands
+#         list_temp.append(string_rc)
+#         index_temp.append(name+'_nascentRC_len'+str(window)+'_pos'+str(len(sequence_revcomp)-i))
     
-    df_temp['string'] = pd.Series(list_temp, index=index_temp, dtype='str')
+#     df_temp['string'] = pd.Series(list_temp, index=index_temp, dtype='str')
     
-    return df_temp
+#     return df_temp
 
 def saveOutput(df, out_path, subname, tab_output=False):
     file_out_path = out_path + "/" + subname
