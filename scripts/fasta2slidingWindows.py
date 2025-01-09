@@ -8,6 +8,7 @@ import trxtools as tt
 ### ARGPARSE ###
 
 usage = "Convert FASTA file to sliding windows as sequence and its reverse complement (RC). Output is saved in a folder which name starts with 'window', with the window size. Each chromosome is saved in a separate file. If tab_output is selected, the output is saved as tab-separated file, otherwise as fasta files."
+usage += "Example: python fasta2slidingWindows.py -f genome.fasta -w 65 -t 37 -s both --tab"
 
 parser = argparse.ArgumentParser(usage=usage, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 params = parser.add_argument_group('Parameters')

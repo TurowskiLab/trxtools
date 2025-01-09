@@ -8,7 +8,10 @@ import re
 
 ### ARGPARSE ###
 
-usage = "Convert FASTA file to sliding windows as sequence and its reverse complement (RC). Output is saved in a folder which name starts with 'window', with the window size. Each chromosome is saved in a separate file. If tab_output is selected, the output is saved as tab-separated file, otherwise as fasta files."
+usage = "Convert FASTA file to sliding windows as sequence and its reverse complement (RC). \n"
+usage += "Output is saved in a folder which name starts with 'window', with the window size. Each chromosome is saved in a separate file. If tab_output is selected, the output is saved as tab-separated file, otherwise as fasta files."
+usage += "The output is saved in the same folder as the input file."
+usage += "Example usage: python genomeNascentFolding.py -f genome.fasta -w 65 -t 37 -s both"
 
 parser = argparse.ArgumentParser(usage=usage, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 params = parser.add_argument_group('Parameters')

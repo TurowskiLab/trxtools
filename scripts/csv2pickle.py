@@ -3,7 +3,7 @@
 import os, argparse
 import pandas as pd
 
-usage = "Read CSV file and save as a pickle"
+usage = "Read CSV file and save as a pickle. Usage: python csv2pickle.py -f <filename.csv> --gzip"
 
 parser = argparse.ArgumentParser(usage=usage, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 files = parser.add_argument_group('Options for input files')

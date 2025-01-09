@@ -5,6 +5,8 @@ import os, argparse
 import pandas as pd
 
 usage = "Generates profiles from SAM files for a list of given transcripts."
+usage += "For instrictions and additional options use SAM2profilesTranscripts.py --help \n"
+usage += "Example usage: SAM2profilesTranscripts.py -f file.sam -l list_of_genes.txt -d transcriptome_details.tab"
 
 parser = argparse.ArgumentParser(usage=usage, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 files = parser.add_argument_group('Options for input files')

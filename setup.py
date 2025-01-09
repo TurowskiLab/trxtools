@@ -6,9 +6,9 @@ import setuptools
 
 setuptools.setup(
     name='trxtools',
-    version='0.2.2',
+    version='0.2.3',
     author="Tomasz W. Turowski, Jan Mikołajczyk",
-    author_email="twturowski@gmail.com",
+    author_email="tomasz.turowski@ibb.waw.pl",
     description='Python tools facilitating bioinformatic analysis of nascent transcripts and transcriptomic data.',
     long_description=open('README.md').read(),
     license='LICENSE.txt',
@@ -24,12 +24,15 @@ setuptools.setup(
         'Topic :: Scientific/Engineering :: Bio-Informatics',
         'Topic :: Scientific/Engineering :: Visualization',
         'Topic :: Software Development :: Libraries :: Python Modules'],
-    scripts=['scripts/SAM2profiles.py',
-        'scripts/SAM2profilesGenomic.py',
-        'scripts/mergeSalmon.py',
+    scripts=[
         'scripts/csv2pickle.py',
+        'scripts/fasta2slidingWindows.py',
         'scripts/genome2WindowsGTF.py',
-        'scripts/fasta2slidingWindows.py'],
+        'scripts/genomeNascentFolding.py',
+        'scripts/mergeSalmon.py',
+        'scripts/SAM2profilesGenomic.py',
+        'scripts/SAM2profilesTranscripts.py',
+        ],
     install_requires=[
         'scikit-learn','pandas', 'numpy', 'pybedtools',
         'pyBigWig', 'adjustText', 'scipy', 'matplotlib_venn',

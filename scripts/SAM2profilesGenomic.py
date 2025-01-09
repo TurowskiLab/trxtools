@@ -3,7 +3,9 @@ from trxtools.SAMgenome import sam2genome
 import os, argparse
 import trxtools as tt
 
-usage = "Generates genomic profiles from SAM files."
+usage = "Generates genomic profiles from SAM files. To  \n" 
+usage += "For instrictions and additional options use SAM2profilesGenomic.py --help \n" 
+usage += "Example usage: SAM2profilesGenomic.py -f file.sam -u 3end -n -s polyA"
 
 parser = argparse.ArgumentParser(usage=usage, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 files = parser.add_argument_group('Options for input files')

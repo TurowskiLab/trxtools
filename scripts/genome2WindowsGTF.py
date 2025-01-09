@@ -4,7 +4,8 @@ import os, argparse
 from platform import win32_edition
 import pandas as pd
 
-usage = "Generate GTF for given genome with fixed-size windows"
+usage = "Generate GTF for given genome with fixed-size windows (default 100bp). \n"
+usage += "Example usage: python genome2WindowsGTF.py -f genome.len -w 1000"
 
 parser = argparse.ArgumentParser(usage=usage, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 files = parser.add_argument_group('Options for input files')

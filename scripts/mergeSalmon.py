@@ -4,7 +4,11 @@ import trxtools as tt
 import os, argparse
 import pandas as pd
 
-usage = "merges Salmon quantification files to one tab file"
+usage = "Script merges multiple Salmon quantification files to one tab file \n"
+usage += "The script takes the name of the Salmon output directory and the column to be used (TPM or NumReads) \n"
+usage += "The script can also filter the files to be loaded, clear some strings from the experiment name, and add some strings to the experiment name \n"
+usage += "The script saves the output in the current directory with the name 'merged.tab'"
+usage += "Example: python mergeSalmon.py -i 'Salmon_output' -u TPM -f 'sample' -a 'RNAseq'"
 
 parser = argparse.ArgumentParser(usage=usage, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 files = parser.add_argument_group('Options for input files')
