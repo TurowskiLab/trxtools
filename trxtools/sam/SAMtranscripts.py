@@ -1,4 +1,4 @@
-from trxtools.SAMgeneral import *
+from trxtools.sam.SAMgeneral import *
 
 ####################################################
 #   intermediate functions level -2 (from final)   #

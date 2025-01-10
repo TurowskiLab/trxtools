@@ -6,9 +6,9 @@
 trxtools
 ========
 
-trxtools was initiated as a storage for functions and scripts using in Turowski Lab to conduct various bioinformatics.
-There is no intention to create a comprehensive package that can be operated by non-experienced user, but some scripts are easy to run for everyone. 
-Importantly the package provides useful functions for skilled individuals.
+version 0.3.0
+
+trxtools is set of bioinformatic tools and methods to facilitate analysis of transcriptional data. 
 
 Major focus is put on postprocessing of high-troughput sequencing data originating from the followin methods:
 
@@ -24,6 +24,13 @@ Some functions in the package use a specific file naming system:
 
 i.e. ``C123_JK050420_POLR2A-FLAG_wt_arsenite30min`` will be used for an experiment ``C123`` conducted by a person ``JK`` on ``020420``. This is puldown with ``POLR2A-FLAG`` in ``wt`` cells after ``arsenite30min``
 
+Reporting bugs
+--------------
+If you encounter a bug, please report it on the `GitHub issue tracker <https://github.com/TurowskiLab/trxtools/issues>`_.
+
+Contents
+--------
+
 .. toctree::
    :maxdepth: 4
 
@@ -36,10 +43,13 @@ i.e. ``C123_JK050420_POLR2A-FLAG_wt_arsenite30min`` will be used for an experime
    trxtools
 
 
+.. toctree::
+   :maxdepth: 4
+   
+   release
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`

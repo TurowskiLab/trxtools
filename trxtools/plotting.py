@@ -15,15 +15,17 @@ import os, math
 #### general functions ####
 
 def select_colors(n=int(), name_cmap='Spectral'):
-    '''_summary_
+    '''Select a list of colors from a colormap.
 
-    :param n: _description_, defaults to int()
-    :type n: _type_, optional
-    :param name_cmap: _description_, defaults to 'Spectral'
+    :param n: Number of colors to select, defaults to int()
+    :type n: int, optional
+    :param name_cmap: Name of the colormap to use, defaults to 'Spectral'
     :type name_cmap: str, optional
-    :return: _description_
-    :rtype: _type_
+
+    :return: List of colors
+    :rtype: list
     '''
+
     cmap = matplotlib.cm.get_cmap(name_cmap)
     numbers = np.linspace(0, 1, n).tolist()
     return [cmap(i) for i in numbers]
@@ -38,7 +40,7 @@ def enhancedVolcano(df, x_fc='log2FoldChange', y_pval='padj', pval_cutoff=0.01, 
     '''Generate an enhanced volcano plot based on DataFrame values.
 
     :param df: Input DataFrame containing the data.
-    :type df: DataFrame
+    :type df: pd.DataFrame
     :param x_fc: The column name for the x-axis values (fold change). Defaults to 'log2FoldChange'.
     :type x_fc: str, optional
     :param y_pval: The column name for the y-axis values (adjusted p-value). Defaults to 'padj'.
@@ -66,6 +68,9 @@ def enhancedVolcano(df, x_fc='log2FoldChange', y_pval='padj', pval_cutoff=0.01, 
 
     :return: None
 
+    :example:
+
+    >>> enhancedVolcano(df, x_fc='log2FoldChange', y_pval='padj', pval_cutoff=0.01, fc_cutoff=2, title='Volcano Plot')
     '''
 
     # Filter DataFrame into different subsets based on conditions
@@ -93,7 +98,7 @@ def enhancedVolcano(df, x_fc='log2FoldChange', y_pval='padj', pval_cutoff=0.01, 
     a.axvline(-fc_cutoff, alpha=0.75, c='black', ls="--")
     a.axvline(fc_cutoff, alpha=0.75, c='black', ls="--")
     
-    # Set limist
+    # Set limits
     if xlim:
         a.set(xlim=xlim)
     if ylim:
@@ -136,7 +141,24 @@ def enhancedVolcano(df, x_fc='log2FoldChange', y_pval='padj', pval_cutoff=0.01, 
 
 def vennDiagram(*dataframes, labels=['df1','df2','df3'], colors=('skyblue', 'lightgreen', 'lightpink'),
                       title=None, save=None):
-    '''
+    '''Generate a Venn diagram for 2 or 3 DataFrames.
+
+    :param dataframes: Input DataFrames containing the data.
+    :type dataframes: list of pd.DataFrame
+    :param labels: Labels for the DataFrames. Defaults to ['df1','df2','df3'].
+    :type labels: list of str, optional
+    :param colors: Colors for the Venn diagram. Defaults to ('skyblue', 'lightgreen', 'lightpink').
+    :type colors: tuple of str, optional
+    :param title: The title of the plot. Defaults to None.
+    :type title: str, optional
+    :param save: The file path to save the figure. Defaults to None.
+    :type save: str, optional
+
+    :return: None
+
+    :example:
+
+    >>> vennDiagram(df1, df2, labels=['Group 1', 'Group 2'], title='Venn Diagram')
     '''
     # Prepare the data for the Venn diagram
     sets = [set(df['gene_name']) for df in dataframes]
@@ -178,22 +200,50 @@ def vennDiagram(*dataframes, labels=['df1','df2','df3'], colors=('skyblue', 'lig
 
 #### GO term
 
-def GOterm(df, x='fdr',y='term.label',normalizer='pValue', cutoff=0.05, count=20, figsize=(4, 4), dpi=300, title=None, fname=None):
-    
+def GOterm(df, x='fdr', y='term.label', normalizer='pValue', cutoff=0.05, count=20, figsize=(4, 4), dpi=300, title=None, fname=None):
+    '''Generate a bar plot for GO terms based on significance.
+
+    :param df: Input DataFrame containing GO term data.
+    :type df: pd.DataFrame
+    :param x: The column name for the x-axis values (e.g., FDR). Defaults to 'fdr'.
+    :type x: str, optional
+    :param y: The column name for the y-axis values (e.g., term label). Defaults to 'term.label'.
+    :type y: str, optional
+    :param normalizer: The column name used for normalization (e.g., p-value). Defaults to 'pValue'.
+    :type normalizer: str, optional
+    :param cutoff: The cutoff value for significance. Defaults to 0.05.
+    :type cutoff: float, optional
+    :param count: The number of top terms to display. Defaults to 20.
+    :type count: int, optional
+    :param figsize: The figure size. Defaults to (4, 4).
+    :type figsize: tuple, optional
+    :param dpi: The resolution of the saved figure. Defaults to 300.
+    :type dpi: int, optional
+    :param title: The title of the plot. Defaults to None.
+    :type title: str, optional
+    :param fname: The file path to save the figure. Defaults to None.
+    :type fname: str, optional
+
+    :return: None
+
+    :example:
+
+    >>> GOterm(df, x='fdr', y='term.label', normalizer='pValue', cutoff=0.05, count=20, title='GO Term Plot')
+    '''
     # Select data
-    df = df[(df[normalizer] < cutoff ) & (df[x] < cutoff )]
+    df = df[(df[normalizer] < cutoff) & (df[x] < cutoff)]
     
-    if count == None:
-        df = df.sort_values(normalizer,ascending=True)
+    if count is None:
+        df = df.sort_values(normalizer, ascending=True)
     else:
-        df = df.sort_values(normalizer,ascending=True)[:count]
+        df = df.sort_values(normalizer, ascending=True)[:count]
     
     if len(df) == 0:
         print("No significant GO terms found.")
         return True
 
-    hight = 1.1 + (len(df)/6.9) # 6.9 is a magic number to adjust the height of the plot
-    figsize = (figsize[0], hight)
+    height = 1.1 + (len(df) / 6.9)  # 6.9 is a magic number to adjust the height of the plot
+    figsize = (figsize[0], height)
 
     y_pos = np.arange(len(df))
     # Create a new figure
@@ -205,160 +255,202 @@ def GOterm(df, x='fdr',y='term.label',normalizer='pValue', cutoff=0.05, count=20
     colors = my_cmap(data_color)
     
     # Plot barplot
-    ax.barh(y_pos, df[x], align='center', color = colors)
+    ax.barh(y_pos, df[x], align='center', color=colors)
     ax.set_yticks(y_pos, labels=df[y])
     ax.invert_yaxis()  # labels read top-to-bottom
     ax.set_xlabel('FDR')
     ax.set_title(title)
     
     # color map
-    sm = plt.cm.ScalarMappable(cmap=my_cmap, norm=plt.Normalize(0,cutoff))
+    sm = plt.cm.ScalarMappable(cmap=my_cmap, norm=plt.Normalize(0, cutoff))
     sm.set_array([])
     cbar = plt.colorbar(sm)
-    cbar.set_label(normalizer, rotation=270,labelpad=25)
+    cbar.set_label(normalizer, rotation=270, labelpad=25)
     
     # output
     if fname:
-        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+        plt.savefig(fname=fname, dpi=dpi, format='png', bbox_inches='tight')
     else:
         plt.show()
 
 #### PCA
-def PCA(data=pd.DataFrame(), names=[], title="", PClimit=1,figsize=(7,7), PCval=[]):
-    '''Plot PCA plot
+def PCA(data=pd.DataFrame(), names=[], title="", PClimit=1, figsize=(7, 7), PCval=[]):
+    '''Plot PCA plot.
 
-    :param data: DataFrame
-    :param names: list of names to annotate
-    :param title: str
-    :param PClimit: int number of PC to plot, default 1
-    :param figsize: tuple, default (7,7)
-    :return:
+    :param data: DataFrame containing PCA results.
+    :type data: pd.DataFrame
+    :param names: List of names to annotate.
+    :type names: list, optional
+    :param title: Title of the plot.
+    :type title: str, optional
+    :param PClimit: Number of principal components to plot. Defaults to 1.
+    :type PClimit: int, optional
+    :param figsize: Size of the figure. Defaults to (7, 7).
+    :type figsize: tuple, optional
+    :param PCval: List of explained variance for each principal component. Defaults to an empty list.
+    :type PCval: list, optional
 
-    >>> plotPCA(methods.runPCA(example_df)[0])
+    :return: None
+
+    :example:
+
+    >>> PCA(data, names=['Sample1', 'Sample2'], title='PCA Plot', PClimit=2)
     '''
     nPCA = len([col for col in data.columns if 'PC' in col])
-    axes = [ i +1 for i in range(nPCA)[:-1]]
+    axes = [i + 1 for i in range(nPCA)[:-1]]
     if not PCval:
-        PCval = [""]*(PClimit+1)
+        PCval = [""] * (PClimit + 1)
 
     for nPC in axes:
         fig = plt.figure(figsize=figsize)
-        #         ax = fig.add_subplot(nPCA-1,1,nPC)
-        ax = fig.add_subplot(1 ,1 ,1)
+        ax = fig.add_subplot(1, 1, 1)
 
         texts = []
 
         if 'group' in data.columns.tolist():
             for group, df_temp in data.groupby('group'):
-                a = df_temp['PC' +str(nPC)].tolist()
-                b = df_temp['PC' +str(nPC+1)].tolist()
-                ax.scatter(x=a ,y=b ,label=group, cmap="paired")
+                a = df_temp['PC' + str(nPC)].tolist()
+                b = df_temp['PC' + str(nPC + 1)].tolist()
+                ax.scatter(x=a, y=b, label=group, cmap="paired")
                 for x, y, s in zip(a, b, df_temp.index.tolist()):
                     if s in names:
                         texts.append(plt.text(x, y, s))
 
         else:
-            a = data['PC' +str(nPC)].tolist()
-            b = data['PC' +str(nPC+1)].tolist()
-            ax.scatter(x=a ,y=b ,color='lightgray')
+            a = data['PC' + str(nPC)].tolist()
+            b = data['PC' + str(nPC + 1)].tolist()
+            ax.scatter(x=a, y=b, color='lightgray')
             for x, y, s in zip(a, b, data.index.tolist()):
                 if s in names:
                     texts.append(plt.text(x, y, s))
 
         ax.legend()
-        ax.grid(True,ls="dotted")
-        plt.xlabel('PC ' +str(nPC)+" ("+str(PCval[nPC-1])+"%)")
-        plt.ylabel('PC ' +str(nPC +1)+" ("+str(PCval[nPC])+"%)")
+        ax.grid(True, ls="dotted")
+        plt.xlabel('PC ' + str(nPC) + " (" + str(PCval[nPC - 1]) + "%)")
+        plt.ylabel('PC ' + str(nPC + 1) + " (" + str(PCval[nPC]) + "%)")
         plt.title(title)
-        adjust_text(texts, only_move={'points':'y', 'texts':'y'}, arrowprops=dict(arrowstyle="->", color='black', lw=0.5))
+        adjust_text(texts, only_move={'points': 'y', 'texts': 'y'}, arrowprops=dict(arrowstyle="->", color='black', lw=0.5))
         plt.show()
 
-        if nPC==PClimit: break
+        if nPC == PClimit:
+            break
 
 def clusterClusterMap(df):
-    '''
-    Clustermap for clusters
-    :param df: DataFrame
-    :return:
+    '''Generate a clustermap for clusters.
+
+    :param df: DataFrame containing cluster data.
+    :type df: pd.DataFrame
+    
+    :return: None
+    
+    :example:
+    
+    >>> clusterClusterMap(df)
+
     '''
     df_mean = pd.DataFrame()
 
-    n = df['cluster'].max()+1
+    n = df['cluster'].max() + 1
 
     for c in range(0, n):
         a = df[df['cluster'] == c]
-        #         print("Cluster "+str(c)+"\t"+str(len(a)))
         df_mean['cluster ' + str(c) + " (" + str(len(a)) + ")"] = a.mean()
 
     df_mean = df_mean.T.drop('cluster', axis=1)
 
-    sns.clustermap(df_mean, center=0, cmap="vlag",
-                   linewidths=.75, figsize=(7, 7))
+    sns.clustermap(df_mean, center=0, cmap="vlag", linewidths=.75, figsize=(7, 7))
     plt.show()
 
 ## boxplots
 
-def boxplot1(data,labels=None,title="",figsize=(7, 6),dpi=150,log=False,lim=None,
-            name_cmap='Spectral',vert=1,color=None,grid=False,fname=None):
+def boxplot1(data, labels=None, title="", figsize=(7, 6), dpi=150, log=False, lim=None,
+             name_cmap='Spectral', vert=1, color=None, grid=False, fname=None):
+    '''Generate a box plot.
 
-    fig = plt.figure(figsize=figsize,dpi=dpi)
+    :param data: Data to plot.
+    :type data: list or pd.DataFrame or pd.Series
+    :param labels: Labels for the data. Defaults to None.
+    :type labels: list, optional
+    :param title: Title of the plot. Defaults to an empty string.
+    :type title: str, optional
+    :param figsize: Size of the figure. Defaults to (7, 6).
+    :type figsize: tuple, optional
+    :param dpi: Resolution of the figure. Defaults to 150.
+    :type dpi: int, optional
+    :param log: Whether to use a logarithmic scale. Defaults to False.
+    :type log: bool, optional
+    :param lim: Limits for the y-axis. Defaults to None.
+    :type lim: tuple, optional
+    :param name_cmap: Name of the colormap to use. Defaults to 'Spectral'.
+    :type name_cmap: str, optional
+    :param vert: Whether to plot the boxes vertically. Defaults to 1.
+    :type vert: int, optional
+    :param color: Color of the boxes. Defaults to None.
+    :type color: str, optional
+    :param grid: Whether to display a grid. Defaults to False.
+    :type grid: bool, optional
+    :param fname: File path to save the figure. Defaults to None.
+    :type fname: str, optional
+
+    :return: None
+
+    :example:
+
+    >>> boxplot1(data, labels=['A', 'B', 'C'], title='Box Plot', log=True)
+    '''
+    fig = plt.figure(figsize=figsize, dpi=dpi)
     ax = fig.add_subplot()
 
     # Creating axes instance
-    bp = ax.boxplot(data, patch_artist = True,
-                    notch ='True', vert = vert)
+    bp = ax.boxplot(data, patch_artist=True, notch='True', vert=vert)
 
-    ### colors ###
+    # Colors
     if color:
-        colors = [color]*len(data)
+        colors = [color] * len(data)
     else:
-        colors = select_colors(n=len(data),name_cmap=name_cmap)
+        colors = select_colors(n=len(data), name_cmap=name_cmap)
 
     for patch, color in zip(bp['boxes'], colors):
         patch.set_facecolor(color)
 
-    # whiskers
+    # Whiskers
     for whisker in bp['whiskers']:
-        whisker.set(color ='black', linewidth = 1.5,
-                    linestyle =":")
-    # caps
+        whisker.set(color='black', linewidth=1.5, linestyle=":")
+    # Caps
     for cap in bp['caps']:
-        cap.set(color ='black', linewidth = 2)
-    # median
+        cap.set(color='black', linewidth=2)
+    # Median
     for median in bp['medians']:
-        median.set(color ='black', linewidth = 3)
+        median.set(color='black', linewidth=3)
     
-    # style of fliers
+    # Style of fliers
     for flier in bp['fliers']:
-        flier.set(marker ='.',
-                color ='grey',
-                alpha = 0.5)
+        flier.set(marker='.', color='grey', alpha=0.5)
 
-    # x-axis labels
-    if labels: pass
-    elif (isinstance(data, pd.DataFrame) or isinstance(data, pd.Series)):
+    # X-axis labels
+    if labels:
+        pass
+    elif isinstance(data, (pd.DataFrame, pd.Series)):
         labels = data.index.tolist()
     else:
-        labels = ["data_"+str(i) for i in range(1,len(data)+1)]
+        labels = ["data_" + str(i) for i in range(1, len(data) + 1)]
     
-    if vert==0:
+    if vert == 0:
         ax.set_yticklabels(labels)
         if lim:
             ax.set_xlim(lim)
-        if log==True:
+        if log:
             ax.set_xscale('log')
-        if grid==True:
-            ax.xaxis.grid(True, linestyle='-', which='major', color='lightgrey',
-               alpha=0.5)
-    elif vert==1:
+        if grid:
+            ax.xaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)
+    elif vert == 1:
         ax.set_xticklabels(labels)
         if lim:
             ax.set_ylim(lim)
-        if log==True:
+        if log:
             ax.set_yscale('log')
-        if grid==True:
-            ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',
-               alpha=0.5)
+        if grid:
+            ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)
 
     # Removing top axes and right axes ticks
     ax.get_xaxis().tick_bottom()
@@ -367,7 +459,7 @@ def boxplot1(data,labels=None,title="",figsize=(7, 6),dpi=150,log=False,lim=None
     plt.title(title)
     
     if fname:
-        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+        plt.savefig(fname=fname, dpi=dpi, format='png', bbox_inches='tight')
     else:
         plt.show()
 
@@ -375,21 +467,46 @@ def boxplot1(data,labels=None,title="",figsize=(7, 6),dpi=150,log=False,lim=None
 def cumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
                         title="", start=None, stop=None, window=50, figsize=(4,3),equal_weight=False,
                         color1='green', color2="magenta", lc='red',fname=None,use="mean",ylim=None):
-    '''Plot single gene peaks metaplot.
+    '''Plot cumulative peaks metaplot for a single gene.
 
-    :param ref: str with path to csv file or DataFrame
-    :param df2: DataFrame
-    :param local_pos: list of features (peaks/troughs)
-    :param dpi: int, default 150
-    :param title: str
-    :param start: int
-    :param stop: int
-    :param window: int, default 50
-    :param figsize: tuple, default (4,3)
-    :param color1: str, default "green"
-    :param color2: str, default "magenta"
-    :param lc: str, default "red"
-    :return:
+    :param ref: Path to CSV file or DataFrame containing reference data.
+    :type ref: str or pd.DataFrame
+    :param df2: DataFrame containing the second dataset.
+    :type df2: pd.DataFrame
+    :param local_pos: List of positions of features (peaks/troughs).
+    :type local_pos: list
+    :param dpi: Resolution of the plot in dots per inch. Defaults to 150.
+    :type dpi: int, optional
+    :param title: Title of the plot. Defaults to an empty string.
+    :type title: str, optional
+    :param start: Start position for filtering local positions. Defaults to None.
+    :type start: int, optional
+    :param stop: Stop position for filtering local positions. Defaults to None.
+    :type stop: int, optional
+    :param window: Window size around each feature. Defaults to 50.
+    :type window: int, optional
+    :param figsize: Size of the figure. Defaults to (4, 3).
+    :type figsize: tuple, optional
+    :param equal_weight: Whether to normalize the data to equal weight. Defaults to False.
+    :type equal_weight: bool, optional
+    :param color1: Color for the reference dataset plot. Defaults to 'green'.
+    :type color1: str, optional
+    :param color2: Color for the second dataset plot. Defaults to 'magenta'.
+    :type color2: str, optional
+    :param lc: Color for the vertical line at position 0. Defaults to 'red'.
+    :type lc: str, optional
+    :param fname: File path to save the figure. Defaults to None.
+    :type fname: str, optional
+    :param use: Method to aggregate data ('mean', 'median', 'sum'). Defaults to 'mean'.
+    :type use: str, optional
+    :param ylim: Limits for the y-axis. Defaults to None.
+    :type ylim: tuple, optional
+
+    :return: None
+
+    :example:
+
+    >>> cumulativePeaks('reference.csv', df2, local_pos=[100, 200, 300], title='Cumulative Peaks')
     '''
     if isinstance(ref, str):
         reference = pd.read_csv(ref, index_col=0)
@@ -400,7 +517,7 @@ def cumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
     df_dataset1 = pd.DataFrame()
     df_dataset2 = pd.DataFrame()
 
-    # filter local max accorgind to start and stop
+    # filter local max according to start and stop
     if start: local_pos = [i for i in local_pos if i > start]
     if stop: local_pos = [i for i in local_pos if i < stop]
 
@@ -448,21 +565,46 @@ def cumulativePeaks(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150,
 def cumulativeDifference(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150, fill_between=True,
                         title="", start=None, stop=None, window=50, figsize=(4,3),equal_weight=False,
                         color1='green', lc='red',fname=None,use="mean",ylim=None):
-    '''Plot single gene differences for peaks metaplot.
+    '''Plot cumulative differences for peaks metaplot.
 
-    :param ref: str with path to csv file or DataFrame
-    :param df2: DataFrame
-    :param local_pos: list of features (peaks/troughs)
-    :param dpi: int, default 150
-    :param title: str
-    :param start: int
-    :param stop: int
-    :param window: int, default 50
-    :param figsize: tuple, default (4,3)
-    :param color1: str, default "green"
-    :param color2: str, default "magenta"
-    :param lc: str, default "red"
-    :return:
+    :param ref: Path to CSV file or DataFrame containing reference data.
+    :type ref: str or pd.DataFrame
+    :param df2: DataFrame containing the second dataset.
+    :type df2: pd.DataFrame
+    :param local_pos: List of positions of features (peaks/troughs).
+    :type local_pos: list
+    :param dpi: Resolution of the plot in dots per inch. Defaults to 150.
+    :type dpi: int, optional
+    :param fill_between: Whether to fill the area between the plot and the x-axis. Defaults to True.
+    :type fill_between: bool, optional
+    :param title: Title of the plot. Defaults to an empty string.
+    :type title: str, optional
+    :param start: Start position for filtering local positions. Defaults to None.
+    :type start: int, optional
+    :param stop: Stop position for filtering local positions. Defaults to None.
+    :type stop: int, optional
+    :param window: Window size around each feature. Defaults to 50.
+    :type window: int, optional
+    :param figsize: Size of the figure. Defaults to (4, 3).
+    :type figsize: tuple, optional
+    :param equal_weight: Whether to normalize the data to equal weight. Defaults to False.
+    :type equal_weight: bool, optional
+    :param color1: Color for the difference plot. Defaults to 'green'.
+    :type color1: str, optional
+    :param lc: Color for the vertical line at position 0. Defaults to 'red'.
+    :type lc: str, optional
+    :param fname: File path to save the figure. Defaults to None.
+    :type fname: str, optional
+    :param use: Method to aggregate data ('mean', 'median', 'sum'). Defaults to 'mean'.
+    :type use: str, optional
+    :param ylim: Limits for the y-axis. Defaults to None.
+    :type ylim: tuple, optional
+
+    :return: None
+
+    :example:
+
+    >>> cumulativeDifference('reference.csv', df2, local_pos=[100, 200, 300], title='Cumulative Differences')
     '''
     if isinstance(ref, str):
         reference = pd.read_csv(ref, index_col=0)
@@ -472,7 +614,7 @@ def cumulativeDifference(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150, fil
     # extracting data for metaplot
     df_diff = pd.DataFrame()
 
-    # filter local max accorgind to start and stop
+    # filter local max according to start and stop
     if start: local_pos = [i for i in local_pos if i > start]
     if stop: local_pos = [i for i in local_pos if i < stop]
 
@@ -522,10 +664,9 @@ def cumulativeDifference(ref, df2=pd.DataFrame(), local_pos=list(), dpi=150, fil
 
 ### metaprofile for multiple genes
 def generateSubplots(dataframes, figsize=(5, 3), dpi=300, save=None):
-    """
-    Generate subplots for multiple dataframes.
+    '''Generate subplots for multiple dataframes.
 
-    :param dataframes: A list of dataframes to plot [[['title',df,cmap],['title',df,cmap]]]. The cmap is optional.
+    :param dataframes: A list of dataframes to plot. Each element is a list of lists containing title, dataframe, and optional colormap.
     :type dataframes: list
     :param figsize: The size of the figure. Defaults to (5, 3).
     :type figsize: tuple, optional
@@ -533,28 +674,18 @@ def generateSubplots(dataframes, figsize=(5, 3), dpi=300, save=None):
     :type dpi: int, optional
     :param save: The file path to save the figure. If not provided, the figure will be displayed.
     :type save: str, optional
-    :return: None
-    :rtype: None
     
-    Usage:
-        Call this function to generate subplots for multiple dataframes.
-        
-        Example:
-        ```
-        df1 = pd.DataFrame({'x': [1, 2, 3], 'y': [4, 5, 6]})
-        df2 = pd.DataFrame({'x': [7, 8, 9], 'y': [10, 11, 12]})
-        generateSubplots([
-            #row 1[
-            ['title', df1, cmap], 
-            ['title', df2, cmap]
-            ]
-            , figsize=(10, 6), dpi=150, save='plot.png')
-        ```
+    :return: None
 
-    Returns:
-        None
-    """
+    :example:
 
+    >>> df1 = pd.DataFrame({'x': [1, 2, 3], 'y': [4, 5, 6]})
+    >>> df2 = pd.DataFrame({'x': [7, 8, 9], 'y': [10, 11, 12]})
+    >>> generateSubplots([
+    >>>     [['Title 1', df1, None], 
+    >>>      ['Title 2', df2, None]]
+    >>> ], figsize=(10, 6), dpi=150, save='plot.png')
+    '''
     num_rows = len(dataframes)
     num_cols = max(len(df) for df in dataframes)
         
@@ -564,7 +695,7 @@ def generateSubplots(dataframes, figsize=(5, 3), dpi=300, save=None):
 
     for i, df_list in enumerate(dataframes):
         for j, p in enumerate(df_list):
-            if num_rows == 1 or num_cols==1:
+            if num_rows == 1 or num_cols == 1:
                 ax = axs[j]
             else:
                 ax = axs[i, j]
@@ -572,7 +703,7 @@ def generateSubplots(dataframes, figsize=(5, 3), dpi=300, save=None):
             df = p[1]
             if p[2]: cmap = p[2]
 
-            cs = [cmap(i) for i in range(0,len(df.columns))]
+            cs = [cmap(i) for i in range(0, len(df.columns))]
             for c, col in enumerate(df.columns):
                 ax.plot(df[col], color=cs[c])
             ax.set_title(title)
@@ -586,18 +717,49 @@ def generateSubplots(dataframes, figsize=(5, 3), dpi=300, save=None):
     else:
         plt.show()
 
-def metaprofileAndHeatmap(data_metaplot, data_heatmap, subsets={"title":None}, 
+def metaprofileAndHeatmap(data_metaplot, data_heatmap, subsets={"title": None}, 
                           agg_type='mean', normalize_internal=True, differential_heatmap=True,
-                          figsize=(5, 3), dpi=300, save=None, bins=[50,10,50]):
+                          figsize=(5, 3), dpi=300, save=None, bins=[50, 10, 50]):
+    '''Generate metaprofile and heatmap plots for multiple subsets.
+
+    :param data_metaplot: Data for metaprofile plot.
+    :type data_metaplot: dict
+    :param data_heatmap: Data for heatmap plot.
+    :type data_heatmap: dict
+    :param subsets: Dictionary of subsets with titles as keys and subset data as values. Defaults to {"title": None}.
+    :type subsets: dict, optional
+    :param agg_type: Aggregation type for metaprofile ('mean', 'median', 'sum'). Defaults to 'mean'.
+    :type agg_type: str, optional
+    :param normalize_internal: Whether to normalize data internally. Defaults to True.
+    :type normalize_internal: bool, optional
+    :param differential_heatmap: Whether to plot differential heatmap. Defaults to True.
+    :type differential_heatmap: bool, optional
+    :param figsize: The size of the figure. Defaults to (5, 3).
+    :type figsize: tuple, optional
+    :param dpi: The resolution of the figure in dots per inch. Defaults to 300.
+    :type dpi: int, optional
+    :param save: The file path to save the figure. If not provided, the figure will be displayed.
+    :type save: str, optional
+    :param bins: List of bin sizes for gene scheme. Defaults to [50, 10, 50].
+    :type bins: list, optional
+
+    :return: None
+
+    :example:
+
+    >>> metaprofileAndHeatmap(data_metaplot, data_heatmap, subsets={"Subset 1": subset1, "Subset 2": subset2}, 
+    >>>                       agg_type='mean', normalize_internal=True, differential_heatmap=True,
+    >>>                       figsize=(10, 6), dpi=150, save='plot.png', bins=[50, 10, 50])
+    '''
     num_cols = len(subsets)
     heatmap_size = max(len(df) for df in data_heatmap)
 
-    if differential_heatmap==False:
+    if differential_heatmap == False:
         fig, axs = plt.subplots(3, num_cols, figsize=(figsize[0]*num_cols, figsize[1]*heatmap_size/8),
-                                gridspec_kw={'height_ratios': [1,0.2,heatmap_size/8]}, sharex=True)
-    elif differential_heatmap==True:
+                                gridspec_kw={'height_ratios': [1, 0.2, heatmap_size/8]}, sharex=True)
+    elif differential_heatmap == True:
         fig, axs = plt.subplots(4, num_cols, figsize=(figsize[0]*num_cols, figsize[1]*heatmap_size/4),
-                                gridspec_kw={'height_ratios': [1,0.2,heatmap_size/8,heatmap_size/8]}, sharex=True)
+                                gridspec_kw={'height_ratios': [1, 0.2, heatmap_size/8, heatmap_size/8]}, sharex=True)
         
     fig.subplots_adjust(hspace=0, wspace=0)
     
@@ -615,13 +777,13 @@ def metaprofileAndHeatmap(data_metaplot, data_heatmap, subsets={"title":None},
                                         normalize_internal=normalize_internal,
                                         subset=subsets[title]).fillna(0.0)
         
-        if s==0:
+        if s == 0:
             heatmap_max = df_heatmap.max().max()
         
-        #preparing length of datasets
+        # preparing length of datasets
         if subsets[title] is not None:
-            meta_len = max([len(df) for df in meta.selectSubsetMM(data_metaplot,subset=subsets[title]).values()])
-            heat_len = max([len(df) for df in meta.selectSubsetMM(data_heatmap,subset=subsets[title]).values()])
+            meta_len = max([len(df) for df in meta.selectSubsetMM(data_metaplot, subset=subsets[title]).values()])
+            heat_len = max([len(df) for df in meta.selectSubsetMM(data_heatmap, subset=subsets[title]).values()])
         else:
             meta_len = max([len(df) for df in data_metaplot.values()])
             heat_len = max([len(df) for df in data_heatmap.values()])
@@ -629,36 +791,36 @@ def metaprofileAndHeatmap(data_metaplot, data_heatmap, subsets={"title":None},
         if meta_len != heat_len:
             print("Lengths of metaplot and heatmap datasets are different. n is valid for heatmap.")
         
-        #preparing indexes
-        if not df_metaplot.index.all()==df_heatmap.index.all():
-            print("Indexes for metaplot and heatmap are different. Plottin df_heatmap index.")
+        # preparing indexes
+        if not df_metaplot.index.all() == df_heatmap.index.all():
+            print("Indexes for metaplot and heatmap are different. Plotting df_heatmap index.")
         index = list(df_heatmap.index.values)
         df_metaplot = df_metaplot.reset_index().drop(columns='index')
         df_heatmap = df_heatmap.reset_index().drop(columns='index')
         
-        if s==0:
+        if s == 0:
             heatmap_reference = df_heatmap
 
-        #axs for plotting
-        if num_cols==1:
+        # axs for plotting
+        if num_cols == 1:
             ax1 = axs[0]
             ax_gene = axs[1]
             ax2 = axs[2]
         else:
-            ax1 = axs[0,s]
-            ax_gene = axs[1,s]
-            ax2 = axs[2,s]
-            ax3 = axs[3,s]
+            ax1 = axs[0, s]
+            ax_gene = axs[1, s]
+            ax2 = axs[2, s]
+            ax3 = axs[3, s]
         
         # Plot using df_metaplot       
-        cs = [cmap(i) for i in range(0,len(df_metaplot.columns))]
+        cs = [cmap(i) for i in range(0, len(df_metaplot.columns))]
         for c, col in enumerate(df_metaplot.columns):
             ax1.plot(df_metaplot[col], color=cs[c])
                
-        ax1.set_title(title+" (n="+str(heat_len)+")")
+        ax1.set_title(title + " (n=" + str(heat_len) + ")")
         
         # plot gene scheme
-        s1_gene = pd.DataFrame(index=df_metaplot.index, data={'gene':0})
+        s1_gene = pd.DataFrame(index=df_metaplot.index, data={'gene': 0})
         s1_gene[bins[0]:bins[0]+bins[1]] = 1
         h_gene = ax_gene.imshow(s1_gene.values.T, cmap='Blues', aspect='auto', vmin=0, vmax=1)
         
@@ -668,7 +830,7 @@ def metaprofileAndHeatmap(data_metaplot, data_heatmap, subsets={"title":None},
         ax2.set_xlabel('position')
         ax2.set_xticks(np.arange(0, len(index), 10), minor=False)
         ax2.set_xticklabels(index[::10], minor=False)
-        if s==0:
+        if s == 0:
             ax2.set_yticks(np.arange(len(list(df_heatmap_norm.columns.values))), minor=False)
             ax2.set_yticklabels(list(df_heatmap_norm.columns.values), minor=False)
             ax1.set_ylabel('fraction of reads')
@@ -681,21 +843,21 @@ def metaprofileAndHeatmap(data_metaplot, data_heatmap, subsets={"title":None},
             ax2.set_yticks([], minor=False)
             
         
-        if differential_heatmap==True:
-            if s==0:
+        if differential_heatmap == True:
+            if s == 0:
                 ax3.axis('off')
             else:
                 # Create differential heatmap
                 df_heatmap_reference_norm = heatmap_reference.div(heatmap_max)
                 df_heatmap_diff = df_heatmap_norm.add(0.1).div(df_heatmap_reference_norm.add(0.1)).applymap(np.log2)                
                 heatmap2 = ax3.imshow(df_heatmap_diff.values.T, cmap='seismic', aspect='auto', vmin=-4, vmax=4)
-                if s==1:
+                if s == 1:
                     ax3.set_yticks(np.arange(len(list(df_heatmap_norm.columns.values))), minor=False)
                     ax3.set_yticklabels(list(df_heatmap_norm.columns.values), minor=False)
                 else:
                     ax3.set_yticks([], minor=False)
     
-    #legends
+    # legends
     ax1.legend(df_metaplot.columns, loc='center left', bbox_to_anchor=(1, 0.5))
     ## custom ax for colorbar
     # greyscale
@@ -711,201 +873,290 @@ def metaprofileAndHeatmap(data_metaplot, data_heatmap, subsets={"title":None},
     else:
         plt.show()
 
-#single profile
-def plot_as_box_plot(df=pd.DataFrame(),title="", start=None, stop=None,name='median',
-                     figsize=(7,3),ylim=(None,0.01), dpi=150, color='green',
-                     h_lines=[], lc="red",offset=0,fname=None):
-    '''Plots figure similar to box plot: median, 2 and 3 quartiles and min-max range
+def plot_as_box_plot(df=pd.DataFrame(), title="", start=None, stop=None, name='median',
+                     figsize=(7, 3), ylim=(None, 0.01), dpi=150, color='green',
+                     h_lines=[], lc="red", offset=0, fname=None):
+    '''Plot a figure similar to a box plot: median, 2nd and 3rd quartiles, and min-max range.
 
-    :param df: Dataframe() containing following columns:```['position'] ['mean'] ['median'] ['std']```
-        optionally ```['nucleotide'] ['q1'] ['q3'] ['max'] ['min']```
-    :param title: str
-    :param start: int
-    :param stop: int
-    :param figsize: tuple, default (7,4)
-    :param ylim: tuple OY axes lim. Default (None,0.01)
-    :param dpi: int, default 150
-    :param color: str, default "green"
-    :param h_lines: list of horizontal lines
-    :param lc: str color of horizontal lines, default "red"
-    :param offset: int number to offset position if 5' flank was used, default 0
-    :param filename: default None, string with path to file
-    :return:
+    :param df: DataFrame containing the data with columns: ['position', 'mean', 'median', 'std'] and optionally ['nucleotide', 'q1', 'q3', 'max', 'min'].
+    :type df: pd.DataFrame
+    :param title: Title of the plot.
+    :type title: str, optional
+    :param start: Start position for the plot.
+    :type start: int, optional
+    :param stop: Stop position for the plot.
+    :type stop: int, optional
+    :param name: Name for the median line in the legend. Defaults to 'median'.
+    :type name: str, optional
+    :param figsize: Size of the figure. Defaults to (7, 3).
+    :type figsize: tuple, optional
+    :param ylim: Limits for the y-axis. Defaults to (None, 0.01).
+    :type ylim: tuple, optional
+    :param dpi: Resolution of the figure in dots per inch. Defaults to 150.
+    :type dpi: int, optional
+    :param color: Color for the median line. Defaults to 'green'.
+    :type color: str, optional
+    :param h_lines: List of horizontal lines to add to the plot.
+    :type h_lines: list, optional
+    :param lc: Color for the horizontal lines. Defaults to 'red'.
+    :type lc: str, optional
+    :param offset: Number to offset position if 5' flank was used. Defaults to 0.
+    :type offset: int, optional
+    :param fname: File path to save the figure. If not provided, the figure will be displayed.
+    :type fname: str, optional
+
+    :return: None
+
+    :example:
+    
+    >>> df = pd.DataFrame({'position': range(100), 'median': np.random.rand(100), 'q1': np.random.rand(100), 'q3': np.random.rand(100), 'min': np.random.rand(100), 'max': np.random.rand(100)})
+    >>> plot_as_box_plot(df, title="Box Plot", start=10, stop=90, name='median', figsize=(10, 5), ylim=(0, 1), dpi=200, color='blue', h_lines=[20, 40, 60], lc='black', offset=5, fname='box_plot.png')
     '''
 
     if 'nucleotide' in df.columns.values:
         df = df.drop('nucleotide', 1)
     s2 = df[start:stop]
-    #plotting reference dataset
+    # plotting reference dataset
     fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
     plt.title(title)
     ax1.set_xlabel('position')
     ax1.set_ylabel('fraction of reads')
     ax1.set_ylim(ylim)
-    ax1.plot(s2.index-offset, s2['median'], color=color,label=name)
-    if set(['q1','q3']).issubset(list(s2.columns.values)):
+    ax1.plot(s2.index-offset, s2['median'], color=color, label=name)
+    if set(['q1', 'q3']).issubset(list(s2.columns.values)):
         ax1.fill_between(s2.index-offset, s2['q1'], s2['q3'], label='range (2nd-3rd quartile)', color=color, alpha=0.2)
-    if set(['min','max']).issubset(list(s2.columns.values)):
+    if set(['min', 'max']).issubset(list(s2.columns.values)):
         ax1.fill_between(s2.index-offset, s2['min'], s2['max'], label='range (min-max)', color=color, alpha=0.07)
     
-    if not start: start=min(s2.index-offset)
-    if not stop: stop=max(s2.index-offset)
+    if not start: start = min(s2.index-offset)
+    if not stop: stop = max(s2.index-offset)
     for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
     ax1.legend()
     if fname:
-        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+        plt.savefig(fname=fname, dpi=dpi, format='png', bbox_inches='tight')
     else:
         plt.show()
 
+def plotAndFolding(df=pd.DataFrame(), dG=pd.Series(), title="", start=None, stop=None, legend=True,
+                   figsize=(7, 3), ylim=(None, 0.01), dpi=150, color='green', name='median',
+                   h_lines=[], lc="red", offset=0, fname=None):
+    '''Plot a figure similar to a box plot with additional delta G values.
 
-def plotAndFolding(df=pd.DataFrame(),dG=pd.Series(), title="", start=None, stop=None,legend=True,
-                     figsize=(7,3),ylim=(None,0.01), dpi=150, color='green', name='median',
-                     h_lines=[], lc="red",offset=0,fname=None):
-    '''Plots figure similar to box plot: median, 2 and 3 quartiles and min-max range
+    :param df: DataFrame containing the data with columns: ['position', 'mean', 'median', 'std'] and optionally ['nucleotide', 'q1', 'q3', 'max', 'min'].
+    :type df: pd.DataFrame
+    :param dG: Series containing delta G values.
+    :type dG: pd.Series
+    :param title: Title of the plot.
+    :type title: str, optional
+    :param start: Start position for the plot.
+    :type start: int, optional
+    :param stop: Stop position for the plot.
+    :type stop: int, optional
+    :param legend: Whether to display the legend. Defaults to True.
+    :type legend: bool, optional
+    :param figsize: Size of the figure. Defaults to (7, 3).
+    :type figsize: tuple, optional
+    :param ylim: Limits for the y-axis. Defaults to (None, 0.01).
+    :type ylim: tuple, optional
+    :param dpi: Resolution of the figure in dots per inch. Defaults to 150.
+    :type dpi: int, optional
+    :param color: Color for the median line. Defaults to 'green'.
+    :type color: str, optional
+    :param name: Name for the median line in the legend. Defaults to 'median'.
+    :type name: str, optional
+    :param h_lines: List of horizontal lines to add to the plot.
+    :type h_lines: list, optional
+    :param lc: Color for the horizontal lines. Defaults to 'red'.
+    :type lc: str, optional
+    :param offset: Number to offset position if 5' flank was used. Defaults to 0.
+    :type offset: int, optional
+    :param fname: File path to save the figure. If not provided, the figure will be displayed.
+    :type fname: str, optional
 
-    :param df: Dataframe() containing following columns:```['position'] ['mean'] ['median'] ['std']```
-        optionally ```['nucleotide'] ['q1'] ['q3'] ['max'] ['min']```
-    :param title: str
-    :param start: int
-    :param stop: int
-    :param figsize: tuple, default (7,4)
-    :param ylim: tuple OY axes lim. Default (None,0.01)
-    :param dpi: int, default 150
-    :param color: str, default "green"
-    :param h_lines: list of horizontal lines
-    :param lc: str color of horizontal lines, default "red"
-    :param offset: int number to offset position if 5' flank was used, default 0
-    :return:
+    :return: None
+
+    :example:
+
+    >>> plotAndFolding(df, dG, title="Plot with Delta G", start=10, stop=90, color='blue', name='median', h_lines=[20, 40, 60], lc='black', offset=5, fname='plot.png')
     '''
-
     if 'nucleotide' in df.columns.values:
         df = df.drop('nucleotide', 1)
     s2 = df[start:stop]
     dG = dG[start:stop]
-    #plotting reference dataset
+    # plotting reference dataset
     fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
     plt.title(title)
     ax1.set_xlabel('position')
     ax1.set_ylabel('fraction of reads')
     ax1.set_ylim(ylim)
-    ax1.plot(s2.index-offset, s2['median'], color=color,label=name)
-    if set(['q1','q3']).issubset(list(s2.columns.values)):
-        ax1.fill_between(s2.index-offset, s2['q1'], s2['q3'], label='range (2nd-3rd quartile)', color=color, alpha=0.2)
-    if set(['min','max']).issubset(list(s2.columns.values)):
-        ax1.fill_between(s2.index-offset, s2['min'], s2['max'], label='range (min-max)', color=color, alpha=0.07)
-    
-    if not start: start=min(s2.index-offset)
-    if not stop: stop=max(s2.index-offset)
-    for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
-    if legend==True:
+    ax1.plot(s2.index - offset, s2['median'], color=color, label=name)
+    if set(['q1', 'q3']).issubset(list(s2.columns.values)):
+        ax1.fill_between(s2.index - offset, s2['q1'], s2['q3'], label='range (2nd-3rd quartile)', color=color, alpha=0.2)
+    if set(['min', 'max']).issubset(list(s2.columns.values)):
+        ax1.fill_between(s2.index - offset, s2['min'], s2['max'], label='range (min-max)', color=color, alpha=0.07)
+
+    if not start: start = min(s2.index - offset)
+    if not stop: stop = max(s2.index - offset)
+    for i in [i for i in h_lines if i in range(start - offset, stop - offset)]: ax1.axvline(i, color=lc)
+    if legend:
         ax1.legend(loc=2)
-        
-    #plotting delta G
+
+    # plotting delta G
     ax2 = ax1.twinx()
-    ax2.plot(dG.index-offset, dG, color="orange", label="dG_@30")
-    ax2.set_ylabel(r'delta'+' G', color='orange')
-#     ax2.set_yticks(np.arange(0,1,0.1))
-    ax2.set_ylim(-50,20)
+    ax2.plot(dG.index - offset, dG, color="orange", label="dG_@30")
+    ax2.set_ylabel(r'delta' + ' G', color='orange')
+    ax2.set_ylim(-50, 20)
     for tl in ax2.get_yticklabels():
         tl.set_color('orange')
     ax2.grid()
 
-    if legend==True:
+    if legend:
         ax2.legend(loc=1)
-    
+
     if fname:
-        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+        plt.savefig(fname=fname, dpi=dpi, format='png', bbox_inches='tight')
     else:
         plt.show()
 
 
-def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black',legend=True,
-                    ref_label="", label="", title="", start=None, stop=None, figsize=(7,3),
-                    ylim=(None,0.01), h_lines=[], lc="red", dpi=150,offset=300,fname=None):
-    '''Figure to compare to plots similar to box plot: median, 2 and 3 quartiles and min-max range
+def plot_to_compare(ref, df=pd.DataFrame(), color1='green', color2='black', legend=True,
+                    ref_label="", label="", title="", start=None, stop=None, figsize=(7, 3),
+                    ylim=(None, 0.01), h_lines=[], lc="red", dpi=150, offset=300, fname=None):
+    '''Plot a figure to compare two datasets similar to a box plot.
 
-    :param ref: str with path to csv file or DataFrame
-    :param df: DataFrame
-    :param color1: str, default "green"
-    :param color2: str, default "black"
-    :param ref_label: str
-    :param label: str
-    :param title: str
-    :param start: int
-    :param stop: int
-    :param figsize: tuple, default (7,4)
-    :param ylim: tuple OY axes lim. Default (None,0.01)
-    :param h_lines: list of horizontal lines
-    :param lc: str color of horizontal lines, default "red"
-    :param dpi: int, default 150
-    :param offset: int number to offset position if 5' flank was used, default 0
-    :return:
+    :param ref: Path to CSV file or DataFrame containing reference data.
+    :type ref: str or pd.DataFrame
+    :param df: DataFrame containing the data to compare.
+    :type df: pd.DataFrame
+    :param color1: Color for the reference dataset plot. Defaults to 'green'.
+    :type color1: str, optional
+    :param color2: Color for the comparison dataset plot. Defaults to 'black'.
+    :type color2: str, optional
+    :param ref_label: Label for the reference dataset in the legend.
+    :type ref_label: str, optional
+    :param label: Label for the comparison dataset in the legend.
+    :type label: str, optional
+    :param title: Title of the plot.
+    :type title: str, optional
+    :param start: Start position for the plot.
+    :type start: int, optional
+    :param stop: Stop position for the plot.
+    :type stop: int, optional
+    :param legend: Whether to display the legend. Defaults to True.
+    :type legend: bool, optional
+    :param figsize: Size of the figure. Defaults to (7, 3).
+    :type figsize: tuple, optional
+    :param ylim: Limits for the y-axis. Defaults to (None, 0.01).
+    :type ylim: tuple, optional
+    :param h_lines: List of horizontal lines to add to the plot.
+    :type h_lines: list, optional
+    :param lc: Color for the horizontal lines. Defaults to 'red'.
+    :type lc: str, optional
+    :param dpi: Resolution of the figure in dots per inch. Defaults to 150.
+    :type dpi: int, optional
+    :param offset: Number to offset position if 5' flank was used. Defaults to 300.
+    :type offset: int, optional
+    :param fname: File path to save the figure. If not provided, the figure will be displayed.
+    :type fname: str, optional
+
+    :return: None
+
+    :example:
+
+    >>> plot_to_compare('reference.csv', df, color1='blue', color2='red', ref_label='Reference', label='Comparison', title='Comparison Plot', start=10, stop=90, h_lines=[20, 40, 60], lc='black', offset=5, fname='comparison_plot.png')
     '''
-
-    #handling reference plot
+    # handling reference plot
     if isinstance(ref, str):
         reference = pd.read_csv(ref, index_col=0)
     elif isinstance(ref, pd.DataFrame):
         reference = ref
 
-    dataset, s2 = df[start:stop], reference[start:stop] # prepating datasets
-    #plotting
+    dataset, s2 = df[start:stop], reference[start:stop]  # preparing datasets
+    # plotting
     fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
     plt.title(title)
     plt.axhline(0, color='red')
 
-    ## plot to compare
-    if len(dataset.columns) == 4: #if only two experiments
-        ax1.plot(dataset.index-offset, dataset['mean'], color2, label=label)
-        ax1.fill_between(dataset.index-offset, dataset['min'], dataset['max'], color=color2, alpha=0.3, label='range (min-max)')
-    else: #if more than two experiments
-        ax1.plot(dataset.index-offset, dataset['median'], color2, label=label)
-        ax1.fill_between(dataset.index-offset, dataset['q1'], dataset['q3'], color=color2, alpha=0.2, label='range (q2-q3)')
+    # plot to compare
+    if len(dataset.columns) == 4:  # if only two experiments
+        ax1.plot(dataset.index - offset, dataset['mean'], color2, label=label)
+        ax1.fill_between(dataset.index - offset, dataset['min'], dataset['max'], color=color2, alpha=0.3, label='range (min-max)')
+    else:  # if more than two experiments
+        ax1.plot(dataset.index - offset, dataset['median'], color2, label=label)
+        ax1.fill_between(dataset.index - offset, dataset['q1'], dataset['q3'], color=color2, alpha=0.2, label='range (q2-q3)')
     ax1.set_xlabel('position')
     ax1.set_ylim(ylim)
-    # Make the y-axis label and tick labels match the line color.
     ax1.set_ylabel('fraction of reads', color='black')
     for tl in ax1.get_yticklabels():
         tl.set_color('black')
 
-    ## reference plot
+    # reference plot
     if len(s2.columns) == 4:  # if only two experiments
         ax1.plot(s2.index - offset, s2['mean'], color1, label=ref_label)
         ax1.fill_between(s2.index - offset, s2['min'], s2['max'], color=color1, alpha=0.07, label='range (min-max)')
     else:
-        ax1.plot(s2.index-offset, s2['median'], color1, label=ref_label)
-        ax1.fill_between(s2.index-offset, s2['q1'], s2['q3'], color=color1, alpha=0.2, label='range (q2-q3)')
+        ax1.plot(s2.index - offset, s2['median'], color1, label=ref_label)
+        ax1.fill_between(s2.index - offset, s2['q1'], s2['q3'], color=color1, alpha=0.2, label='range (q2-q3)')
 
-    for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
-    if legend==True:
+    for i in [i for i in h_lines if i in range(start - offset, stop - offset)]: ax1.axvline(i, color=lc)
+    if legend:
         ax1.legend()
 
     if fname:
-        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+        plt.savefig(fname=fname, dpi=dpi, format='png', bbox_inches='tight')
     else:
         plt.show()
 
+
 def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label1="reference", label2="", 
-              title="", start=None, stop=None, plot_medians=True, plot_ranges=True,legend=True,
-              dpi=150, figsize=(7, 3), ylim=(None,0.01), h_lines=list(),lc="red", offset=0,fname=None):
-    '''Plot given dataset and reference, differences are marked
+              title="", start=None, stop=None, plot_medians=True, plot_ranges=True, legend=True,
+              dpi=150, figsize=(7, 3), ylim=(None, 0.01), h_lines=list(), lc="red", offset=0, fname=None):
+    '''Plot given dataset and reference, highlighting differences.
 
-    :param ref: str with path to csv file or DataFrame
-    :param dataset: DataFrame containing following columns:```['position'] ['mean'] ['median'] ['std']```
-        optionally ```['nucleotide'] ['q1'] ['q3'] ['max'] ['min']```
-    :param ranges: str "mm" : min-max or "qq" : q1-q3
-    :param label: str
-    :param start: int
-    :param stop: int
-    :param plot_medians: boolean if True plot medians, default True
-    :param plot_ranges: boolean if True plot ranges, default True
-    :param figsize: tuple, default (7,3)
-    :param ylim: tuple OY axes lim, default (None,0.01)
-    :param h_lines: list of horizontal lines
-    :return:
+    :param ref: Path to CSV file or DataFrame containing reference data.
+    :type ref: str or pd.DataFrame
+    :param dataset: DataFrame containing the data to compare with columns: ['position', 'mean', 'median', 'std'] and optionally ['nucleotide', 'q1', 'q3', 'max', 'min'].
+    :type dataset: pd.DataFrame
+    :param ranges: Type of range to highlight ('mm' for min-max or 'qq' for q1-q3). Defaults to 'mm'.
+    :type ranges: str, optional
+    :param label1: Label for the reference dataset in the legend. Defaults to "reference".
+    :type label1: str, optional
+    :param label2: Label for the comparison dataset in the legend.
+    :type label2: str, optional
+    :param title: Title of the plot.
+    :type title: str, optional
+    :param start: Start position for the plot.
+    :type start: int, optional
+    :param stop: Stop position for the plot.
+    :type stop: int, optional
+    :param plot_medians: Whether to plot medians. Defaults to True.
+    :type plot_medians: bool, optional
+    :param plot_ranges: Whether to plot ranges. Defaults to True.
+    :type plot_ranges: bool, optional
+    :param legend: Whether to display the legend. Defaults to True.
+    :type legend: bool, optional
+    :param dpi: Resolution of the figure in dots per inch. Defaults to 150.
+    :type dpi: int, optional
+    :param figsize: Size of the figure. Defaults to (7, 3).
+    :type figsize: tuple, optional
+    :param ylim: Limits for the y-axis. Defaults to (None, 0.01).
+    :type ylim: tuple, optional
+    :param h_lines: List of horizontal lines to add to the plot.
+    :type h_lines: list, optional
+    :param lc: Color for the horizontal lines. Defaults to 'red'.
+    :type lc: str, optional
+    :param offset: Number to offset position if 5' flank was used. Defaults to 0.
+    :type offset: int, optional
+    :param fname: File path to save the figure. If not provided, the figure will be displayed.
+    :type fname: str, optional
+
+    :return: None
+
+    :example:
+
+    >>> plot_diff('reference.csv', dataset, ranges='qq', label1='Reference', label2='Comparison', title='Difference Plot', start=10, stop=90, plot_medians=True, plot_ranges=True, h_lines=[20, 40, 60], lc='black', offset=5, fname='difference_plot.png')
     '''
-
-    #handling reference plot
+    # handling reference plot
     if isinstance(ref, str):
         reference = pd.read_csv(ref, index_col=0)
     elif isinstance(ref, pd.DataFrame):
@@ -913,57 +1164,68 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label1="reference", labe
 
     ranges_dict = {'mm': 'min-max', 'qq': 'q1-q3'}
 
-    if isinstance(reference, str):
-        reference = pd.read_csv(reference, index_col=0)
-
     differences_df = profiles.compareMoretoRef(dataset=dataset, ranges=ranges, ref=reference)[start:stop]
-    dataset, s2 = dataset[start:stop], reference[start:stop]  # prepating datasets
+    dataset, s2 = dataset[start:stop], reference[start:stop]  # preparing datasets
     # plotting
-    fig, ax1 = plt.subplots(figsize=figsize,dpi=dpi)
-    for i in [i for i in h_lines if i in range(start-offset, stop-offset)]: ax1.axvline(i, color=lc)
+    fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
+    for i in [i for i in h_lines if i in range(start - offset, stop - offset)]: ax1.axvline(i, color=lc)
 
-    ax1.fill_between(differences_df.index-offset, differences_df['ear_min'], differences_df['ear_max'], color='red',
+    ax1.fill_between(differences_df.index - offset, differences_df['ear_min'], differences_df['ear_max'], color='red',
                      where=(differences_df['ear_max'] > 0), label='increased occupancy (' + ranges_dict[ranges] + ')')
-    ax1.fill_between(differences_df.index-offset, differences_df['rae_min'], differences_df['rae_max'], color='blue',
+    ax1.fill_between(differences_df.index - offset, differences_df['rae_min'], differences_df['rae_max'], color='blue',
                      where=(differences_df['rae_max'] > 0), label='decreased occupancy (' + ranges_dict[ranges] + ')')
-    if plot_medians == True:
-        ax1.plot(dataset.index-offset, dataset['median'], 'black', label=label2)
-        ax1.plot(s2.index-offset, s2['median'], 'green', label=label1)
-    if plot_ranges == True:
+    if plot_medians:
+        ax1.plot(dataset.index - offset, dataset['median'], 'black', label=label2)
+        ax1.plot(s2.index - offset, s2['median'], 'green', label=label1)
+    if plot_ranges:
         if len(dataset.columns) == 4:  # if only two experiments
-            ax1.fill_between(dataset.index-offset, dataset['min'], dataset['max'], color='black', alpha=0.3, label='min-max')
+            ax1.fill_between(dataset.index - offset, dataset['min'], dataset['max'], color='black', alpha=0.3, label='min-max')
         else:  # if more than two experiments
-            ax1.fill_between(dataset.index-offset, dataset['q1'], dataset['q3'], color='black', alpha=0.2, label='q1-q3')
-            ax1.fill_between(dataset.index-offset, dataset['min'], dataset['max'], color='black', alpha=0.07, label='min=max')
-        ax1.fill_between(s2.index-offset, s2['q1'], s2['q3'], color='green', alpha=0.2, label='q1-q3')
-        ax1.fill_between(s2.index-offset, s2['min'], s2['max'], color='green', alpha=0.07, label='min=max')
+            ax1.fill_between(dataset.index - offset, dataset['q1'], dataset['q3'], color='black', alpha=0.2, label='q1-q3')
+            ax1.fill_between(dataset.index - offset, dataset['min'], dataset['max'], color='black', alpha=0.07, label='min-max')
+        ax1.fill_between(s2.index - offset, s2['q1'], s2['q3'], color='green', alpha=0.2, label='q1-q3')
+        ax1.fill_between(s2.index - offset, s2['min'], s2['max'], color='green', alpha=0.07, label='min-max')
     ax1.set_ylim(ylim)
     ax1.set_xlabel('position')
     ax1.set_ylabel('fraction of reads', color='black')
-    
+
     ax1.set_title(title)
-    if legend==True:
+    if legend:
         plt.legend()
     plt.title(title)
 
     if fname:
-        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+        plt.savefig(fname=fname, dpi=dpi, format='png', bbox_inches='tight')
     else:
         plt.show()
 
+
 def plot_heatmap(df=pd.DataFrame(), title='Heatmap of differences between dataset and reference plot for RDN37-1',
-                 vmin=None, vmax=None, figsize=(20,10),dpi=300,fname=None):
-    '''Plot heat map of differences, from dataframe generated by compare1toRef(dataset, heatmap=True) function
+                 vmin=None, vmax=None, figsize=(20, 10), dpi=300, fname=None):
+    '''Plot heatmap of differences between dataset and reference.
 
-    :param df: DataFrame
-    :param title: str
-    :param vmin:
-    :param vmax:
-    :param figsize: tuple, default (20,10)
-    :return:
+    :param df: DataFrame containing the differences.
+    :type df: pd.DataFrame
+    :param title: Title of the plot. Defaults to 'Heatmap of differences between dataset and reference plot for RDN37-1'.
+    :type title: str, optional
+    :param vmin: Minimum value for the colormap. Defaults to None.
+    :type vmin: float, optional
+    :param vmax: Maximum value for the colormap. Defaults to None.
+    :type vmax: float, optional
+    :param figsize: Size of the figure. Defaults to (20, 10).
+    :type figsize: tuple, optional
+    :param dpi: Resolution of the figure in dots per inch. Defaults to 300.
+    :type dpi: int, optional
+    :param fname: File path to save the figure. If not provided, the figure will be displayed.
+    :type fname: str, optional
+
+    :return: None
+
+    :example:
+
+    >>> plot_heatmap(df, title='Difference Heatmap', vmin=-1, vmax=1, figsize=(15, 8), dpi=200, fname='heatmap.png')
     '''
-
-    fig, ax = plt.subplots(figsize=figsize,dpi=dpi)
+    fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
     if not vmin:
         vmin = -np.absolute(df.max().median())
     if not vmax:
@@ -975,7 +1237,7 @@ def plot_heatmap(df=pd.DataFrame(), title='Heatmap of differences between datase
     ax.set_title(title)
 
     if fname:
-        plt.savefig(fname=fname,dpi=dpi,format='png',bbox_inches='tight')
+        plt.savefig(fname=fname, dpi=dpi, format='png', bbox_inches='tight')
     else:
         plt.show()
 
@@ -983,11 +1245,18 @@ def plot_heatmap(df=pd.DataFrame(), title='Heatmap of differences between datase
 #############       STAR mapping statistics
 
 def plotSTARstats_reads(df=pd.DataFrame(), dpi=150):
-    '''
+    '''Plot the number of reads after pre-processing.
 
-    :param df: DataFrame
-    :param dpi: int, default=150
-    :return:
+    :param df: DataFrame containing STAR statistics.
+    :type df: pd.DataFrame
+    :param dpi: Resolution of the plot in dots per inch. Defaults to 150.
+    :type dpi: int, optional
+
+    :return: None
+
+    :example:
+
+    >>> plotSTARstats_reads(df)
     '''
     df = df.T
     reads = df['                          Number of input reads |'].astype(int)
@@ -1006,17 +1275,23 @@ def plotSTARstats_reads(df=pd.DataFrame(), dpi=150):
 
 
 def plotSTARstats_readLen(df=pd.DataFrame(), dpi=150):
-    '''
+    '''Plot the average input read length.
 
-    :param df: DataFrame
-    :param dpi: int, default=150
-    :return:
+    :param df: DataFrame containing STAR statistics.
+    :type df: pd.DataFrame
+    :param dpi: Resolution of the plot in dots per inch. Defaults to 150.
+    :type dpi: int, optional
+
+    :return: None
+
+    :example:
+
+    >>> plotSTARstats_readLen(df)
     '''
     df = df.T
     labels = df.index.tolist()
     x = np.arange(len(labels))
     width = 0.3
-    # length of reads
     readsLen = df['                      Average input read length |'].astype(int)
 
     fig, ax1 = plt.subplots(figsize=(len(labels) / 4, 3), dpi=dpi)
@@ -1030,17 +1305,23 @@ def plotSTARstats_readLen(df=pd.DataFrame(), dpi=150):
 
 
 def plotSTARstats_mapping(df=pd.DataFrame(), dpi=150):
-    '''
+    '''Plot STAR mapping statistics.
 
-    :param df: DataFrame
-    :param dpi: int, default=150
-    :return:
+    :param df: DataFrame containing STAR statistics.
+    :type df: pd.DataFrame
+    :param dpi: Resolution of the plot in dots per inch. Defaults to 150.
+    :type dpi: int, optional
+
+    :return: None
+
+    :example:
+
+    >>> plotSTARstats_mapping(df)
     '''
     df = df.T
     labels = df.index.tolist()
     x = np.arange(len(labels))
     width = 0.3
-    # reads mapping
     mapped_uniq = df['                        Uniquely mapped reads % |'].str.strip("%").astype(float)
     mapped_multi = df['             % of reads mapped to multiple loci |'].str.strip("%").astype(float)
     mapped_tooMany = df['             % of reads mapped to too many loci |'].str.strip("%").astype(float)
@@ -1072,17 +1353,23 @@ def plotSTARstats_mapping(df=pd.DataFrame(), dpi=150):
 
 
 def plotSTARstats_mistmatches(df=pd.DataFrame(), dpi=150):
-    '''
+    '''Plot mapping errors including mismatches, deletions, and insertions.
 
-    :param df: DataFrame
-    :param dpi: int, default=150
-    :return:
+    :param df: DataFrame containing STAR statistics.
+    :type df: pd.DataFrame
+    :param dpi: Resolution of the plot in dots per inch. Defaults to 150.
+    :type dpi: int, optional
+
+    :return: None
+
+    :example:
+
+    >>> plotSTARstats_mistmatches(df)
     '''
     df = df.T
     labels = df.index.tolist()
     x = np.arange(len(labels))
     width = 0.3
-    # mistmatches and deletions
     mismatches = df['                      Mismatch rate per base, % |'].str.strip("%").astype(float)
     deletions = df['                         Deletion rate per base |'].str.strip("%").astype(float)
     insertions = df['                        Insertion rate per base |'].str.strip("%").astype(float)
@@ -1100,18 +1387,24 @@ def plotSTARstats_mistmatches(df=pd.DataFrame(), dpi=150):
 
 
 def plotSTARstats_chimeric(df=pd.DataFrame(), dpi=150):
-    '''
+    '''Plot chimeric reads and splices.
 
-    :param df: DataFrame
-    :param dpi: int, default=150
-    :return:
+    :param df: DataFrame containing STAR statistics.
+    :type df: pd.DataFrame
+    :param dpi: Resolution of the plot in dots per inch. Defaults to 150.
+    :type dpi: int, optional
+
+    :return: None
+
+    :example:
+
+    >>> plotSTARstats_chimeric(df)
     '''
     df = df.T
     labels = df.index.tolist()
     x = np.arange(len(labels))
     width = 0.3
     reads = df['                          Number of input reads |'].astype(int)
-    # Splices and chimeric reads
     splices = df['                       Number of splices: Total |'].astype(int) / reads
     chmieric = df['                            % of chimeric reads |'].str.strip("%").astype(float)
 
@@ -1128,11 +1421,18 @@ def plotSTARstats_chimeric(df=pd.DataFrame(), dpi=150):
 
 
 def plotSTARstats(df=pd.DataFrame(), dpi=150):
-    '''
+    '''Plot all STAR statistics including reads, read length, mapping, mismatches, and chimeric reads.
 
-    :param df: DataFrame
-    :param dpi: int, default=150
-    :return:
+    :param df: DataFrame containing STAR statistics.
+    :type df: pd.DataFrame
+    :param dpi: Resolution of the plot in dots per inch. Defaults to 150.
+    :type dpi: int, optional
+
+    :return: None
+
+    :example:
+
+    >>> plotSTARstats(df)
     '''
     plotSTARstats_reads(df=df, dpi=dpi)
     plotSTARstats_readLen(df=df, dpi=dpi)
@@ -1142,11 +1442,18 @@ def plotSTARstats(df=pd.DataFrame(), dpi=150):
 
 
 def hplotSTARstats_reads(df=pd.DataFrame(), dpi=150):
-    '''
+    '''Plot the number of reads after pre-processing as a horizontal bar plot.
 
-    :param df: DataFrame
-    :param dpi: int, default=150
-    :return:
+    :param df: DataFrame containing STAR statistics.
+    :type df: pd.DataFrame
+    :param dpi: Resolution of the plot in dots per inch. Defaults to 150.
+    :type dpi: int, optional
+
+    :return: None
+
+    :example:
+
+    >>> hplotSTARstats_reads(df)
     '''
     df = df.T
     reads = df['                          Number of input reads |'].astype(int)
@@ -1166,17 +1473,23 @@ def hplotSTARstats_reads(df=pd.DataFrame(), dpi=150):
 
 
 def hplotSTARstats_readLen(df=pd.DataFrame(), dpi=150):
-    '''
+    '''Plot the average input read length as a horizontal bar plot.
 
-    :param df: DataFrame
-    :param dpi: int, default=150
-    :return:
+    :param df: DataFrame containing STAR statistics.
+    :type df: pd.DataFrame
+    :param dpi: Resolution of the plot in dots per inch. Defaults to 150.
+    :type dpi: int, optional
+
+    :return: None
+
+    :example:
+
+    >>> hplotSTARstats_readLen(df)
     '''
     df = df.T
     labels = df.index.tolist()
     x = np.arange(len(labels))
     width = 0.3
-    # length of reads
     readsLen = df['                      Average input read length |'].astype(int)
 
     fig, ax1 = plt.subplots(figsize=(5, len(labels) / 4), dpi=dpi)
@@ -1189,157 +1502,203 @@ def hplotSTARstats_readLen(df=pd.DataFrame(), dpi=150):
     plt.yticks(x, labels, rotation=0)
     plt.show()
 
+    def hplotSTARstats_mapping(df=pd.DataFrame(), dpi=150):
+        '''Plot STAR mapping statistics as a horizontal bar plot.
 
-def hplotSTARstats_mapping(df=pd.DataFrame(), dpi=150):
-    '''
+        :param df: DataFrame containing STAR statistics.
+        :type df: pd.DataFrame
+        :param dpi: Resolution of the plot in dots per inch. Defaults to 150.
+        :type dpi: int, optional
 
-    :param df: DataFrame
-    :param dpi: int, default=150
-    :return:
-    '''
-    df = df.T
-    labels = df.index.tolist()
-    x = np.arange(len(labels))
-    width = 0.3
-    # reads mapping
-    mapped_uniq = df['                        Uniquely mapped reads % |'].str.strip("%").astype(float)
-    mapped_multi = df['             % of reads mapped to multiple loci |'].str.strip("%").astype(float)
-    mapped_tooMany = df['             % of reads mapped to too many loci |'].str.strip("%").astype(float)
-    unmapped_mismatches = df['       % of reads unmapped: too many mismatches |'].str.strip("%").astype(float)
-    unmapped_tooShort = df['                 % of reads unmapped: too short |'].str.strip("%").astype(float)
-    unmapped_other = df['                     % of reads unmapped: other |'].str.strip("%").astype(float)
+        :return: None
 
-    fig, ax1 = plt.subplots(figsize=(5, len(labels) / 4), dpi=dpi)
-    plt.title('STAR mapping statistics')
+        :example:
 
-    p1 = ax1.barh(x, mapped_uniq, width, color='green')
-    p2 = ax1.barh(x, mapped_multi, width, left=mapped_uniq, color='limegreen')
-    p3 = ax1.barh(x, mapped_tooMany, width, left=mapped_uniq + mapped_multi, color='yellow')
-    p4 = ax1.barh(x, unmapped_mismatches, width, left=mapped_uniq + mapped_multi + mapped_tooMany, color='grey')
-    p5 = ax1.barh(x, unmapped_tooShort, width, left=mapped_uniq + mapped_multi + mapped_tooMany + unmapped_mismatches,
-                  color='orange')
-    p6 = ax1.barh(x, unmapped_other, width,
-                  left=mapped_uniq + mapped_multi + mapped_tooMany + unmapped_mismatches + unmapped_tooShort,
-                  color='red')
+        >>> hplotSTARstats_mapping(df)
+        '''
+        df = df.T
+        labels = df.index.tolist()
+        x = np.arange(len(labels))
+        width = 0.3
+        # reads mapping
+        mapped_uniq = df['                        Uniquely mapped reads % |'].str.strip("%").astype(float)
+        mapped_multi = df['             % of reads mapped to multiple loci |'].str.strip("%").astype(float)
+        mapped_tooMany = df['             % of reads mapped to too many loci |'].str.strip("%").astype(float)
+        unmapped_mismatches = df['       % of reads unmapped: too many mismatches |'].str.strip("%").astype(float)
+        unmapped_tooShort = df['                 % of reads unmapped: too short |'].str.strip("%").astype(float)
+        unmapped_other = df['                     % of reads unmapped: other |'].str.strip("%").astype(float)
 
-    plt.xlabel('Cumulative mapping [%]')
-    ax1.invert_yaxis()
-    plt.yticks(x, labels, rotation=0)
-    plt.xticks(np.arange(0, 101, 10))
-    plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), (
-    'uniquely mapped', 'multimappers', 'too many mapped', 'unmapped (mistmateches)', 'unmapped (too short)',
-    'unmapped (other)'))
+        fig, ax1 = plt.subplots(figsize=(5, len(labels) / 4), dpi=dpi)
+        plt.title('STAR mapping statistics')
 
-    plt.show()
+        p1 = ax1.barh(x, mapped_uniq, width, color='green')
+        p2 = ax1.barh(x, mapped_multi, width, left=mapped_uniq, color='limegreen')
+        p3 = ax1.barh(x, mapped_tooMany, width, left=mapped_uniq + mapped_multi, color='yellow')
+        p4 = ax1.barh(x, unmapped_mismatches, width, left=mapped_uniq + mapped_multi + mapped_tooMany, color='grey')
+        p5 = ax1.barh(x, unmapped_tooShort, width, left=mapped_uniq + mapped_multi + mapped_tooMany + unmapped_mismatches,
+                      color='orange')
+        p6 = ax1.barh(x, unmapped_other, width,
+                      left=mapped_uniq + mapped_multi + mapped_tooMany + unmapped_mismatches + unmapped_tooShort,
+                      color='red')
 
+        plt.xlabel('Cumulative mapping [%]')
+        ax1.invert_yaxis()
+        plt.yticks(x, labels, rotation=0)
+        plt.xticks(np.arange(0, 101, 10))
+        plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), (
+        'uniquely mapped', 'multimappers', 'too many mapped', 'unmapped (mistmateches)', 'unmapped (too short)',
+        'unmapped (other)'))
 
-def hplotSTARstats_mistmatches(df=pd.DataFrame(), dpi=150):
-    '''
-
-    :param df: DataFrame
-    :param dpi: int, default=150
-    :return:
-    '''
-    df = df.T
-    labels = df.index.tolist()
-    x = np.arange(len(labels))
-    width = 0.3
-    # mistmatches and deletions
-    mismatches = df['                      Mismatch rate per base, % |'].str.strip("%").astype(float)
-    deletions = df['                         Deletion rate per base |'].str.strip("%").astype(float)
-    insertions = df['                        Insertion rate per base |'].str.strip("%").astype(float)
-
-    fig, ax1 = plt.subplots(figsize=(5, len(labels) / 4), dpi=dpi)
-    plt.title('Mapping errors')
-    ax1.barh(x - width, mismatches, width, label='mismatches')
-    ax1.barh(x, deletions, width, label='deletions')
-    ax1.barh(x + width, insertions, width, label='insertions')
-    ax1.grid(axis='x', c='black', ls="dotted")
-    ax1.legend()
-    plt.yticks(x, labels, rotation=0)
-    plt.xlabel('Errors rate per base [%]')
-    ax1.invert_yaxis()
-    plt.show()
+        plt.show()
 
 
-def hplotSTARstats_chimeric(df=pd.DataFrame(), dpi=150):
-    '''
+    def hplotSTARstats_mistmatches(df=pd.DataFrame(), dpi=150):
+        '''Plot mapping errors including mismatches, deletions, and insertions as a horizontal bar plot.
 
-    :param df: DataFrame
-    :param dpi: int, default=150
-    :return:
-    '''
-    df = df.T
-    labels = df.index.tolist()
-    x = np.arange(len(labels))
-    width = 0.3
-    reads = df['                          Number of input reads |'].astype(int)
-    # Splices and chimeric reads
-    splices = df['                       Number of splices: Total |'].astype(int) / reads
-    chmieric = df['                            % of chimeric reads |'].str.strip("%").astype(float)
+        :param df: DataFrame containing STAR statistics.
+        :type df: pd.DataFrame
+        :param dpi: Resolution of the plot in dots per inch. Defaults to 150.
+        :type dpi: int, optional
 
-    fig, ax1 = plt.subplots(figsize=(5, len(labels) / 4), dpi=dpi)
-    plt.title('Chimeric reads')
+        :return: None
 
-    ax1.barh(x - width / 2, splices, width, label='splices')
-    ax1.barh(x + width / 2, chmieric, width, label='chmieric')
-    ax1.grid(axis='x', c='black', ls="dotted")
-    ax1.legend()
-    plt.yticks(x, labels, rotation=0)
-    plt.xlabel('% of reads')
-    ax1.invert_yaxis()
-    plt.show()
+        :example:
+
+        >>> hplotSTARstats_mistmatches(df)
+        '''
+        df = df.T
+        labels = df.index.tolist()
+        x = np.arange(len(labels))
+        width = 0.3
+        # mistmatches and deletions
+        mismatches = df['                      Mismatch rate per base, % |'].str.strip("%").astype(float)
+        deletions = df['                         Deletion rate per base |'].str.strip("%").astype(float)
+        insertions = df['                        Insertion rate per base |'].str.strip("%").astype(float)
+
+        fig, ax1 = plt.subplots(figsize=(5, len(labels) / 4), dpi=dpi)
+        plt.title('Mapping errors')
+        ax1.barh(x - width, mismatches, width, label='mismatches')
+        ax1.barh(x, deletions, width, label='deletions')
+        ax1.barh(x + width, insertions, width, label='insertions')
+        ax1.grid(axis='x', c='black', ls="dotted")
+        ax1.legend()
+        plt.yticks(x, labels, rotation=0)
+        plt.xlabel('Errors rate per base [%]')
+        ax1.invert_yaxis()
+        plt.show()
 
 
-def hplotSTARstats(df=pd.DataFrame(), dpi=150):
-    '''
+    def hplotSTARstats_chimeric(df=pd.DataFrame(), dpi=150):
+        '''Plot chimeric reads and splices as a horizontal bar plot.
 
-    :param df: DataFrame
-    :param dpi: int, default=150
-    :return:
-    '''
-    hplotSTARstats_reads(df=df, dpi=dpi)
-    hplotSTARstats_readLen(df=df, dpi=dpi)
-    hplotSTARstats_mapping(df=df, dpi=dpi)
-    hplotSTARstats_mistmatches(df=df, dpi=dpi)
-    hplotSTARstats_chimeric(df=df, dpi=dpi)
+        :param df: DataFrame containing STAR statistics.
+        :type df: pd.DataFrame
+        :param dpi: Resolution of the plot in dots per inch. Defaults to 150.
+        :type dpi: int, optional
 
-def classes(df,fraction=True,dpi=300, save=None,d_color=None):
-    if fraction==True:
-        df = df.groupby('type').agg("sum").div(df.sum()).multiply(100)
-        df = df.drop(columns='type')
-    elif fraction==False:
-        df = df.groupby('type').agg("sum")
-              
-    labels = df.columns.tolist()
-    x = np.arange(len(labels))
-    width = 0.3
-    
-    fig, ax1 = plt.subplots(figsize=(len(labels) / 4, 3), dpi=dpi)
-    plt.title('Classes of mapped reads')
-    
-    if d_color is None:
-        d_color = {'intergenic_region':"orange",
-             'ncRNA'              :"yellow",
-             'protein_coding'     :"blue",
-             'pseudogene'         :"grey",
-             'rRNA'               :"green",
-             'snRNA'              :"black",
-             'snoRNA'             :"pink",
-             'tRNA'               :"darkred"}
+        :return: None
+
+        :example:
+
+        >>> hplotSTARstats_chimeric(df)
+        '''
+        df = df.T
+        labels = df.index.tolist()
+        x = np.arange(len(labels))
+        width = 0.3
+        reads = df['                          Number of input reads |'].astype(int)
+        # Splices and chimeric reads
+        splices = df['                       Number of splices: Total |'].astype(int) / reads
+        chmieric = df['                            % of chimeric reads |'].str.strip("%").astype(float)
+
+        fig, ax1 = plt.subplots(figsize=(5, len(labels) / 4), dpi=dpi)
+        plt.title('Chimeric reads')
+
+        ax1.barh(x - width / 2, splices, width, label='splices')
+        ax1.barh(x + width / 2, chmieric, width, label='chmieric')
+        ax1.grid(axis='x', c='black', ls="dotted")
+        ax1.legend()
+        plt.yticks(x, labels, rotation=0)
+        plt.xlabel('% of reads')
+        ax1.invert_yaxis()
+        plt.show()
+
+
+    def hplotSTARstats(df=pd.DataFrame(), dpi=150):
+        '''Plot all STAR statistics as horizontal bar plots including reads, read length, mapping, mismatches, and chimeric reads.
+
+        :param df: DataFrame containing STAR statistics.
+        :type df: pd.DataFrame
+        :param dpi: Resolution of the plot in dots per inch. Defaults to 150.
+        :type dpi: int, optional
+
+        :return: None
+
+        :example:
+
+        >>> hplotSTARstats(df)
+        '''
+        hplotSTARstats_reads(df=df, dpi=dpi)
+        hplotSTARstats_readLen(df=df, dpi=dpi)
+        hplotSTARstats_mapping(df=df, dpi=dpi)
+        hplotSTARstats_mistmatches(df=df, dpi=dpi)
+        hplotSTARstats_chimeric(df=df, dpi=dpi)
+
+    def classes(df, fraction=True, dpi=300, save=None, d_color=None):
+        '''Plot classes of mapped reads as a bar plot.
+
+        :param df: DataFrame containing read classes.
+        :type df: pd.DataFrame
+        :param fraction: Whether to plot as fractions (percentages). Defaults to True.
+        :type fraction: bool, optional
+        :param dpi: Resolution of the plot in dots per inch. Defaults to 300.
+        :type dpi: int, optional
+        :param save: File path to save the figure. If not provided, the figure will be displayed.
+        :type save: str, optional
+        :param d_color: Dictionary of colors for each class. Defaults to None.
+        :type d_color: dict, optional
+
+        :return: None
+
+        :example:
+
+        >>> classes(df, fraction=True, dpi=300, save='classes.png', d_color={'intergenic_region':"orange", 'ncRNA':"yellow", 'protein_coding':"blue"})
+        '''
+        if fraction:
+            df = df.groupby('type').agg("sum").div(df.sum()).multiply(100)
+            df = df.drop(columns='type')
+        else:
+            df = df.groupby('type').agg("sum")
+                  
+        labels = df.columns.tolist()
+        x = np.arange(len(labels))
+        width = 0.3
         
-    s0 = pd.Series(index=df.columns, data=0)
-
-    for i,row in df.iterrows():
-        ax1.bar(x, row, width, bottom=s0, label=i, color=d_color[i])
-        s0 = s0+row
-
-    plt.ylabel('Cumulative mapping [%]')
-    plt.xticks(x, labels, rotation=90)
-    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-
-    # Save the figure if a file path is provided
-    if save is not None:
-        plt.savefig(save, dpi=300, bbox_inches='tight')
+        fig, ax1 = plt.subplots(figsize=(len(labels) / 4, 3), dpi=dpi)
+        plt.title('Classes of mapped reads')
         
-    plt.show()
+        if d_color is None:
+            d_color = {'intergenic_region':"orange",
+                 'ncRNA'              :"yellow",
+                 'protein_coding'     :"blue",
+                 'pseudogene'         :"grey",
+                 'rRNA'               :"green",
+                 'snRNA'              :"black",
+                 'snoRNA'             :"pink",
+                 'tRNA'               :"darkred"}
+            
+        s0 = pd.Series(index=df.columns, data=0)
+
+        for i, row in df.iterrows():
+            ax1.bar(x, row, width, bottom=s0, label=i, color=d_color[i])
+            s0 = s0 + row
+
+        plt.ylabel('Cumulative mapping [%]')
+        plt.xticks(x, labels, rotation=90)
+        plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+        # Save the figure if a file path is provided
+        if save is not None:
+            plt.savefig(save, dpi=300, bbox_inches='tight')
+            
+        plt.show()

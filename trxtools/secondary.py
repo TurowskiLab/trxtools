@@ -9,11 +9,20 @@ import pandas as pd
 ### all tools written using genomic positions cointer from 1 (not from 0 as python default)
 
 def checkVienna(sequence="", vienna=""):
-    '''Validates integrity of vienna file
+    '''Validates the integrity of a Vienna file by checking the sequence and structure lengths and the balance of parentheses.
 
-    :param sequence: str
-    :param vienna: str
-    :return: True if pass
+    :param sequence: RNA sequence
+    :type sequence: str
+    :param vienna: Vienna format secondary structure
+    :type vienna: str
+
+    :return: True if the Vienna file is valid, False otherwise
+    :rtype: bool
+
+    :example:
+
+    >>> checkVienna("GCAU", "((..))")
+    False
     '''
     if len(sequence) != len(vienna): return False
 
@@ -27,47 +36,75 @@ def checkVienna(sequence="", vienna=""):
 
 
 def Lstem(vienna=""):
-    '''Returns list of positions where "(" is found using coordinates {1,inf}
+    '''Returns a list of positions where "(" is found using coordinates {1,inf}.
 
-    :param vienna: str
-    :return: list
+    :param vienna: Vienna format secondary structure
+    :type vienna: str
+    :return: List of positions with "("
+    :rtype: list
+
+    Example:
+    >>> Lstem("((..))")
+    [1, 2]
     '''
     return [i.start() + 1 for i in re.finditer("\(", vienna)]
 
 
 def Rstem(vienna=""):
-    '''Returns list of positions where ")" is found using coordinates {1,inf}
+    '''Returns a list of positions where ")" is found using coordinates {1,inf}.
 
-    :param vienna: str
-    :return: list
+    :param vienna: Vienna format secondary structure
+    :type vienna: str
+    :return: List of positions with ")"
+    :rtype: list
+
+    Example:
+    >>> Rstem("((..))")
+    [5, 6]
     '''
     return [i.start() + 1 for i in re.finditer("\)", vienna)]
 
 
 def loops(vienna=""):
-    '''
-    Returns first positions outside the loop i.e. ".((....))." returns [(3,8)]
+    '''Returns the first positions outside the loop, e.g., ".((....))." returns [(3,8)].
 
-    :param vienna: vienna
-    :return: list of tuples
+    :param vienna: Vienna format secondary structure
+    :type vienna: str
+    :return: List of tuples with loop positions
+    :rtype: list
+
+    Example:
+    >>> loops(".((....)).")
+    [(3, 8)]
     '''
-    # TO DO: check does loop is correct
-    loops = [l.span() for l in re.finditer(r"\((\.+)\)", vienna)]  # list of loops (position of limiting base pairing)
-    # genomic coordinates {1,inf}
+    loops = [l.span() for l in re.finditer(r"\((\.+)\)", vienna)]
     return [(l + 1, k) for (l, k) in loops]
 
 
-def test(vienna="",sequence="", loops=None, stems=None, multistems=None, linkers=None):
-    '''Prints vienna with given features
+def test(vienna="", sequence="", loops=None, stems=None, multistems=None, linkers=None):
+    '''Prints the Vienna structure with given features marked.
 
-    :param vienna: str
-    :param loops: list of tuples (option)
-    :param stems: list of tuples (option)
-    :param multistems: list (option)
-    :param linkers: list (option)
+    :param vienna: Vienna format secondary structure
+    :type vienna: str
+    :param sequence: RNA sequence (optional)
+    :type sequence: str
+    :param loops: List of tuples with loop positions (optional)
+    :type loops: list
+    :param stems: List of tuples with stem positions (optional)
+    :type stems: list
+    :param multistems: List of multistem positions (optional)
+    :type multistems: list
+    :param linkers: List of linker positions (optional)
+    :type linkers: list
     :return: None
+
+    Example:
+    >>> test("((..))", "GCAU", loops=[(3, 4)])
+    1         
+    ((..))
+    GCAU
+    __O_O
     '''
-    # genomic coordinates {1,inf}
     scale = [" "] * len(vienna)
     scale[0] = "1"
     for i in range(1, len(vienna) - 2):
@@ -102,49 +139,54 @@ def test(vienna="",sequence="", loops=None, stems=None, multistems=None, linkers
 
 
 def loopStems(vienna="", sequence="", loopsList=None, testPrint=False):
-    '''Returns postions of stem of single hairpins and multiloop stems. Use coordinates {1:inf}.
-    Warninig: tested with single multiloop stems only
+    '''Returns positions of stems of single hairpins and multiloop stems using coordinates {1:inf}.
 
-    :param vienna: str
-    :param loopsList: list (option)
-    :param testPrint: boolean to default=False
-    :return: list, list (stems: list of tuples; multistems: list)
+    :param vienna: Vienna format secondary structure
+    :type vienna: str
+    :param sequence: RNA sequence (optional)
+    :type sequence: str
+    :param loopsList: List of loop positions (optional)
+    :type loopsList: list
+    :param testPrint: Boolean to print test output, default=False
+    :type testPrint: bool
+
+    :return: List of stem positions and list of multistem positions
+    :rtype: tuple
+
+    :example:
+
+    >>> loopStems("((..))", "GCAU")
+    ([(1, 6)], [])
     '''
-    # genomic coordinates {1,inf}
     if not loopsList:
         loopsList = loops(vienna)
 
-    stems = []  # output
+    stems = []
     multistems = []
 
-    stemL = Lstem(vienna)  # all left halves of stems
-    stemR = Rstem(vienna)  # all right halves of stems
+    stemL = Lstem(vienna)
+    stemR = Rstem(vienna)
 
     for loop in loopsList:
-        start, stop = loop[0], loop[1] - 1  # loop
+        start, stop = loop[0], loop[1] - 1
 
-        stemLpotential = [i for i in stemL if i <= start]  # stem elements upstream the loop
-        stemLalt = [i for i in stemR if i <= start]  # alternative stems upstream the loop
-        stemRpotential = [i for i in stemR if i >= stop]  # stem elements downstream the loop
-        stemRalt = [i for i in stemL if i >= stop]  # alternative stems downstream the loop
+        stemLpotential = [i for i in stemL if i <= start]
+        stemLalt = [i for i in stemR if i <= start]
+        stemRpotential = [i for i in stemR if i >= stop]
+        stemRalt = [i for i in stemL if i >= stop]
 
-        # last stem element upstream
         if not stemLalt:
             start = min(stemL)
         else:
             stemLpotential = [i for i in stemLpotential if i >= max(stemLalt)]
             start = min(stemLpotential)
 
-        # last stem element downstream
         if not stemRalt:
             stop = max(stemR)
         else:
             stemRpotential = [i for i in stemRpotential if i <= min(stemRalt)]
             stop = max(stemRpotential)
 
-        # detect and exclude potential multiloop stems
-
-        ##WARNING works only with single multiloop structures (optional TODO)
         stemUp = vienna[start - 1:loop[0]]
         stemDown = vienna[loop[1] - 1:stop]
         if stemUp.count("(") != stemDown.count(")"):
@@ -171,26 +213,36 @@ def loopStems(vienna="", sequence="", loopsList=None, testPrint=False):
 
         stems.append((start, stop))
 
-    # print to check
-    if testPrint == True:
+    if testPrint:
         test(vienna, sequence, loopsList, stems, multistems)
 
     return stems, multistems
 
 
 def vienna2format(vienna="", sequence="", loopsList=None, stemsList=None, multistemsList=None, testPrint=False):
-    #TODO find name to this "format"
-    '''Converts vienna format to letters: O - loop, S - stem, M - multiloop stem and L - linker
+    '''Converts Vienna format to a custom format with letters: O - loop, S - stem, M - multiloop stem, and L - linker.
 
-    :param vienna: str
-    :param loopsList: list (optional)
-    :param stemsList: list (optional)
-    :param multistemsList: list (optional)
-    :param testPrint: defauls=False
-    :return: str in "format"
+    :param vienna: Vienna format secondary structure
+    :type vienna: str
+    :param sequence: RNA sequence (optional)
+    :type sequence: str
+    :param loopsList: List of loop positions (optional)
+    :type loopsList: list
+    :param stemsList: List of stem positions (optional)
+    :type stemsList: list
+    :param multistemsList: List of multistem positions (optional)
+    :type multistemsList: list
+    :param testPrint: Boolean to print test output, default=False
+    :type testPrint: bool
+
+    :return: Custom format string
+    :rtype: str
+
+    :example:
+
+    >>> vienna2format("((..))", "GCAU")
+    'SSLLSS'
     '''
-    # genomic coordinates {1,inf}
-
     if not loopsList:
         loopsList = loops(vienna)
 
@@ -199,17 +251,14 @@ def vienna2format(vienna="", sequence="", loopsList=None, stemsList=None, multis
 
     output = list(vienna)
 
-    # overwrite stems
     for (s_start, s_stop) in stemsList:
         s_len = s_stop - s_start + 1
         output[s_start - 1:s_start + s_len - 1] = ['S'] * s_len
 
-    # overwrite loops
     for (l_start, l_stop) in loopsList:
         l_len = l_stop - l_start - 1
         output[l_start:l_start + l_len] = ['O'] * l_len
 
-    # overwrite multistems
     if multistemsList:
         if len(multistemsList) != 4:
             print("More than one multiloop detected")
@@ -220,7 +269,7 @@ def vienna2format(vienna="", sequence="", loopsList=None, stemsList=None, multis
 
     output = "".join(output)
 
-    if testPrint == True:
+    if testPrint:
         scale = [" "] * len(vienna)
         scale[0] = "1"
         scale2 = [" "] * len(vienna)
@@ -243,11 +292,21 @@ def vienna2format(vienna="", sequence="", loopsList=None, stemsList=None, multis
 
 
 def substructures(vienna="", sequence=""):
-    '''list sub-structures of the given structure
+    '''Lists sub-structures of the given structure.
 
-    :param vienna: str
-    :param sequence: str
-    :return: Series
+    :param vienna: Vienna format secondary structure
+    :type vienna: str
+    :param sequence: RNA sequence
+    :type sequence: str
+
+    :return: Series of sub-structures
+    :rtype: pd.Series
+
+    :example:
+    
+    >>> substructures("((..))", "GCAU")
+    stem_1    GCAU
+    dtype: object
     '''
     if len(vienna) != len(sequence): return None
 

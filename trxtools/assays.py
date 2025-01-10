@@ -1,7 +1,7 @@
 import pandas as pd
 import trxtools.methods as ttm
 
-### ASSAYS (ElongationAssay)
+### Functions used in desing of in vitro assays i.e. elongation, termination, etc. for RNA polymerases
 
 ################################################
 #############        input
@@ -9,9 +9,18 @@ import trxtools.methods as ttm
 def findPrimer(seq=str(), query=str()):
     '''Find query sequence within given sequence
 
-    :param seq: str() containing sequence
-    :param query: str() within searched sequences
-    :return: (start,stop)
+    :param seq: sequence
+    :type seq: str
+    :param query: query within searched sequences
+    :type query: str
+
+    :return: (start,stop) in python indexing
+    :rtype: tuple
+
+    :example:
+
+    >>> findPrimer("ATCGATCG", "ATCG")
+    (0, 4)
     '''
 
     if not query:
@@ -29,10 +38,15 @@ def findPrimer(seq=str(), query=str()):
 def sequenceConstrain(structure=str(), stall="", RNAprimer=""):
     '''Returns sequence constrained with the 5prime RNA primer
 
-    :param structure: str()
-    :param stall: str() single letter
-    :param RNAprimer: str()
-    :return: str() with sequence constrains for folding algorithm
+    :param structure: sequence structure
+    :type structure: str
+    :param stall: single letter representing the stall sequence
+    :type stall: str
+    :param RNAprimer: RNA primer sequence
+    :type RNAprimer: str
+
+    :return: sequence constraints for folding algorithm
+    :rtype: str
     '''
 
     stallComplement = {"A": "B",  # use nucleotides that are not present in stall sequence
@@ -52,10 +66,15 @@ def sequenceConstrain(structure=str(), stall="", RNAprimer=""):
 def structureFile(structure=str(), stall="", RNAprimer=""):
     '''Saves structure file in current directory
 
-    :param structure: str()
-    :param stall: str()
-    :param RNAprimer: str()
+    :param structure: sequence structure
+    :type structure: str
+    :param stall: single letter representing the stall sequence
+    :type stall: str
+    :param RNAprimer: RNA primer sequence
+    :type RNAprimer: str
+
     :return: True
+    :rtype: bool
     '''
 
     f = open("structure.txt", "w+")
@@ -69,10 +88,15 @@ def structureFile(structure=str(), stall="", RNAprimer=""):
 def stalled(seq=str(), stall="AAA", primer=str()):
     '''Finds and returns stalled sequence
 
-    :param seq: str()
-    :param stall: str() default "AAA"
-    :param primer: str()
-    :return: stalled sequence, str
+    :param seq: sequence
+    :type seq: str
+    :param stall: stall sequence, default "AAA"
+    :type stall: str
+    :param primer: primer sequence
+    :type primer: str
+
+    :return: stalled sequence
+    :rtype: str
     '''
 
     (primerStart, primerStop) = findPrimer(seq, primer)
@@ -81,10 +105,15 @@ def stalled(seq=str(), stall="AAA", primer=str()):
 
 
 def extruded(seq=str(), buried=13):
-    '''
-    :param seq: str()
-    :param buried: int() length of sequence buried within RNAP
-    :return: Extruded sequence, str
+    '''Returns the extruded sequence by removing the buried nucleotides from the end
+
+    :param seq: sequence
+    :type seq: str
+    :param buried: length of sequence buried within RNAP
+    :type buried: int
+
+    :return: extruded sequence
+    :rtype: str
     '''
     return seq[:-buried]
 
@@ -93,19 +122,29 @@ def extruded(seq=str(), buried=13):
 #############        ordering
 
 def templateDNA(seq=str(), overhang5end=str()):
-    '''
-    :param seq: str() sequence of RNA
-    :param overhang5end: str() sequence of the 5'end DNA ovethang
-    :return: DNA sequence of template strand, str
+    '''Returns the DNA sequence of the template strand. Takes reverse complement of RNA sequence and the 5'end DNA overhang as input.
+    
+    :param seq: sequence of RNA
+    :type seq: str
+    :param overhang5end: sequence of the 5'end DNA overhang
+    :type overhang5end: str
+
+    :return: DNA sequence of template strand
+    :rtype: str
     '''
     return ttm.reverse_complement_RNA(seq) + overhang5end[::-1]
 
 
 def nonTemplateDNA(seq="", primer=""):
-    '''
-    :param seq: str() sequence
-    :param primer: str() sequence
-    :return: DNA sequence of non-template strand, str
+    '''Returns the DNA sequence of the non-template strand.
+
+    :param seq: sequence
+    :type seq: str
+    :param primer: primer sequence
+    :type primer: str
+
+    :return: DNA sequence of non-template strand
+    :rtype: str
     '''
     seq = seq.upper()
     primer = primer.upper()
@@ -116,11 +155,14 @@ def nonTemplateDNA(seq="", primer=""):
 
 
 def bulkInputIDT(data=pd.DataFrame()):
-    '''Tranforms dataframe with colums "template" and "non-template" and prepares table to be used as bulk input
-    discards oligos longer than 200 nt.
+    '''Transforms dataframe with columns "template" and "non-template" and prepares table to be used as bulk input.
+    Discards oligos longer than 200 nt.
 
-    :param data: DataFrame()
-    :return: DataFrame with sequences to order
+    :param data: Table with columns "template" and "non-template"
+    :type data: DataFrame
+
+    :return: Table with sequences to order
+    :rtype: DataFrame
     '''
 
     # copy data
@@ -153,10 +195,14 @@ def bulkInputIDT(data=pd.DataFrame()):
 def testScaffold(data=pd.DataFrame(), overhang5end="", RNA_primer="", ):
     '''Prints scaffold to test before ordering
 
-    :param data: DataFrame()
-    :param overhang5end: str() overhang to shift sequences
-    :param RNA_primer: str() sequence
-    :return:
+    :param data: DataFrame with columns "template" and "non-template"
+    :type data: DataFrame
+    :param overhang5end: sequence of the 5'end DNA overhang
+    :type overhang5end: str
+    :param RNA_primer: RNA primer sequence
+    :type RNA_primer: str
+
+    :return: None
     '''
     for i, row in data.iterrows():
         template = row['template']
@@ -170,18 +216,29 @@ def testScaffold(data=pd.DataFrame(), overhang5end="", RNA_primer="", ):
 
 def toOrder(data=pd.DataFrame(), buried="GUCUGUUUUGUGG", stallFull="AAA", afterStall="TGATCGGTAC",
             overhang5end="TGA", RNA_primer="AGGCCGAAA", bulkInput=True, test=True, lengthMax=200):
-    '''Transfers folding function to DNA sequences
+    '''Prepares sequences for ordering by applying folding functions to DNA sequences
 
-    :param data: DataFrame()
-    :param buried: str() sequence
-    :param stallFull: str() sequence
-    :param afterStall: str() sequence
-    :param overhang5end: str() sequence
-    :param RNA_primer: str() sequence
-    :param bulkInput: boolean() default True
-    :param test: boolean() default True
-    :param lengthMax: int() default 200
+    :param data: DataFrame with columns "sequence" and "name"
+    :type data: DataFrame
+    :param buried: sequence buried within RNAP, default "GUCUGUUUUGUGG"
+    :type buried: str
+    :param stallFull: stall sequence, default "AAA"
+    :type stallFull: str
+    :param afterStall: sequence after stall, default "TGATCGGTAC"
+    :type afterStall: str
+    :param overhang5end: sequence of the 5'end DNA overhang, default "TGA"
+    :type overhang5end: str
+    :param RNA_primer: RNA primer sequence, default "AGGCCGAAA"
+    :type RNA_primer: str
+    :param bulkInput: whether to prepare bulk input for ordering, default True
+    :type bulkInput: bool
+    :param test: whether to print scaffold for testing before ordering, default True
+    :type test: bool
+    :param lengthMax: maximum length of sequences to order, default 200
+    :type lengthMax: int
+    
     :return: DataFrame of sequences to order
+    :rtype: DataFrame
     '''
 
     buried = buried.replace("T", "U")

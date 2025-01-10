@@ -9,6 +9,15 @@ from pybedtools import BedTool
 ### these will be removed in a later release!
 
 def read_bed(bed_path):
+    """Simple BED file parser
+
+    :param bed_path: Path to BED file
+    :type bed_path: str
+    :return: Contents of BED file in DataFrame form
+    :rtype: pandas.DataFrame
+
+    .. warning:: This function is deprecated and will be removed in future versions.
+    """
     warnings.warn(
         'read_bed() will be renamed to readBED() in a future release. Update your code to silence this warning.',
         FutureWarning
@@ -16,6 +25,32 @@ def read_bed(bed_path):
     return readBED(bed_path)
 
 def matrix_from_bigwig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, align_3end=False):
+    '''WARNINIG: This function is replaced by matrixFromBigWig() \n 
+    Get matrix with BigWig scores for all regions in a bed df from a single BigWig file.
+    Matrix rows correspond to regions in BED.
+    Columns correpond to nucleotide positions in regions + flanks.
+    Flanks are strand-aware.
+
+    :param bw_path: Path to target BigWig file
+    :type bw_path: str
+    :param bed_df: DataFrame with BED data (use read_bed())
+    :type bed_df: pandas.DataFrame
+    :param flank_5: length of 5'flank to extend BED regions by, defaults to 0
+    :type flank_5: int, optional
+    :param flank_3: length of 3'flank to extend BED regions by, defaults to 0
+    :type flank_3: int, optional
+    :param fill_na: If true replace NaN values with 0 (pybigwig returns positions with 0 coverage as NaN), defaults to True
+    :type fill_na: bool, optional
+    :param pseudocounts: pseudocounts to add to retrieved scores, defaults to None
+    :type pseudocounts: float, optional
+    :param align_3end: If true, position 0 in the resulting matrix will be set at the target region's 3'end instead of 5'end, defaults to False
+    :type align_3end: bool, optional
+
+    :return: DataFrame with the result score matrix
+    :rtype: pandas.DataFrame
+
+    .. warning:: This function is deprecated and will be removed in future versions.
+    '''
     warnings.warn(
         'matrix_from_bigwig() will be renamed to matrixFromBigWig() in a future release. Update your code to silence this warning.',
         FutureWarning
@@ -29,7 +64,38 @@ def matrix_from_bigwig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseu
         pseudocounts=pseudocounts,
         align_3end=align_3end
         )
+
 def get_multiple_matrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
+    '''WARNINIG: This function is replaced by getMultipleMatrices() \n
+    Get score matrices for positions in given regions (with optional flanks) from multiple BigWig files.
+    Matrix rows correspond to regions in BED.
+    Columns correpond to nucleotide positions in regions + flanks.
+
+    :param bw_paths_plus: list of paths to BigWig files (+ strand)
+    :type bw_paths_plus: list
+    :param bw_paths_minus: list of paths to BigWig files (- strand)
+    :type bw_paths_minus: list
+    :param bed_df: dataframe in BED format containing genomic coordinates of target regions
+    :type bed_df: pandas.DataFrame
+    :param flank_5: number of nt that input regions will be extended by on 5' side, defaults to 0
+    :type flank_5: int, optional
+    :param flank_3: number of nt that input regions will be extended by on 3' side, defaults to 0
+    :type flank_3: int, optional
+    :param fill_na: _description_, defaults to True
+    :type fill_na: bool, optional
+    :param pseudocounts: pseudocounts to add to datapoints, defaults to None
+    :type pseudocounts: float, optional
+    :param normalize_libsize: normalization to library size (sum of scores in a bigwig file), defaults to True
+    :type normalize_libsize: bool, optional
+    :param align_3end: if True, align profiles at the 3'end of features. Otherwise align at 5'end, defaults to False
+    :type align_3end: bool, optional
+
+    :return:  A dictionary containing score matrices for individual BigWig files. Dictionary keys are BigWig file names.
+    :rtype: dict
+
+    .. warning:: This function is deprecated and will be removed in future versions.
+    '''
+    
     warnings.warn(
         'get_multiple_matrices() will be renamed to getMultipleMatrices() in a future release. Update your code to silence this warning.',
         FutureWarning
@@ -49,14 +115,13 @@ def get_multiple_matrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flan
 
 ### level -3
 def readBED(bed_path):
-    """
-    Simple BED file parser
+    '''Simple BED file parser
 
     :param bed_path: Path to BED file
     :type bed_path: str
     :return: Contents of BED file in DataFrame form
     :rtype: pandas.DataFrame
-    """
+    '''
     bed_df = pd.read_csv(bed_path, sep='\t', header=None)
     if len(bed_df.columns) > 6:
         bed_df.drop([6,7,8,9,10,11], axis=1, inplace=True)
@@ -66,6 +131,22 @@ def readBED(bed_path):
 
 ### level -2
 def get_bw_data(bed_row, bw, flank_5=0, flank_3=0, align_3end=False):
+    '''Retrieve BigWig scores for positions in a given region, optionally including flanks of given length.
+
+    :param bed_row: A row from a BED file, containing chromosome, start, end, and strand information.
+    :type bed_row: list or pandas.Series
+    :param bw: A pyBigWig object to retrieve values from.
+    :type bw: pyBigWig
+    :param flank_5: Length of the 5' flank to include, defaults to 0.
+    :type flank_5: int, optional
+    :param flank_3: Length of the 3' flank to include, defaults to 0.
+    :type flank_3: int, optional
+    :param align_3end: Whether to align the series to the 3' end, defaults to False.
+    :type align_3end: bool, optional
+    :return: A pandas Series containing the BigWig scores for the specified region.
+    :rtype: pandas.Series
+    '''
+
     # Retrieve BigWig scores for positions in a given region, optionally including flanks of given length.
     if bed_row[5] == '+':
         outseries = pd.Series(bw.values(bed_row[0], int(bed_row[1]-flank_5), int(bed_row[2]+flank_3)))
@@ -84,14 +165,22 @@ def get_bw_data(bed_row, bw, flank_5=0, flank_3=0, align_3end=False):
 
 ### level -1
 def bed_split_strands(bed_df):
+    '''Splits a BED dataframe into two separate dataframes based on strand information.
+
+    :param bed_df: A dataframe containing BED format data. The strand information is expected to be in the 6th column (index 5).
+    :type bed_df: pandas.DataFrame
+    :return: A tuple containing two dataframes:
+        - bed_plus (pandas.DataFrame): Dataframe containing entries with the '+' strand.
+        - bed_minus (pandas.DataFrame): Dataframe containing entries with the '-' strand.
+    :rtype: tuple
+    '''
     # Split dataframe (from read_bw) by strand
     bed_plus = bed_df[bed_df[5] == "+"]
     bed_minus = bed_df[bed_df[5] == "-"]
     return bed_plus, bed_minus
 
 def matrixFromBigWig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, align_3end=False):
-    """
-    Get matrix with BigWig scores for all regions in a bed df from a single BigWig file.
+    '''Get matrix with BigWig scores for all regions in a bed df from a single BigWig file.
     Matrix rows correspond to regions in BED.
     Columns correpond to nucleotide positions in regions + flanks.
     Flanks are strand-aware.
@@ -112,7 +201,7 @@ def matrixFromBigWig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudo
     :type align_3end: bool, optional
     :return: DataFrame with the result score matrix
     :rtype: pandas.DataFrame
-    """
+    '''
 
     bw = pyBigWig.open(bw_path)
     out_df = bed_df.apply(get_bw_data, bw=bw, flank_5=flank_5, flank_3=flank_3, align_3end=align_3end, axis=1)
@@ -129,6 +218,16 @@ def matrixFromBigWig(bw_path, bed_df, flank_5=0, flank_3=0, fill_na=True, pseudo
     return out_df
 
 def join_strand_matrices(plus_dict, minus_dict):
+    '''Combine score matrices for regions on + and - strands.
+
+    :param plus_dict: Dictionary containing score matrices for regions on the + strand.
+    :type plus_dict: dict
+    :param minus_dict: Dictionary containing score matrices for regions on the - strand.
+    :type minus_dict: dict
+    :raises Exception: If keys in dictionaries do not match.
+    :return: Dictionary containing combined score matrices for regions on both strands.
+    :rtype: dict
+    '''
     # Combine score matrices for regions on + and - strands.
 
     
@@ -155,8 +254,9 @@ def join_strand_matrices(plus_dict, minus_dict):
 def peak2matrice(bed_df=pd.DataFrame, peak_file_path='', 
                  g='references/GRCh38.primary_assembly.genome.cleaned.len', 
                  flank_5=0, flank_3=0, fillna=True):
-    """ Get score matrices for positions in given regions (with optional flanks) from a single nroadPeak or narrowPeak file. 
+    '''Get score matrices for positions in given regions (with optional flanks) from a single nroadPeak or narrowPeak file. 
     Matrix rows correspond to regions in BED. Columns correpond to nucleotide positions in regions + flanks. Flanks are strand-aware.
+    
     :param bed_df: DataFrame with BED data (can use read_bed())
     :type bed_df: pandas.DataFrame
     :param peak_file_path: Path to peak file (broadPeak or narrowPeak format)
@@ -171,7 +271,7 @@ def peak2matrice(bed_df=pd.DataFrame, peak_file_path='',
     :type fill_na: bool, optional
     :return: DataFrame with the result score matrix
     :rtype: pandas.DataFrame
-    """
+    '''
     
     peak_columns = ['chrom', 'start', 'end', 'name', 'score', 'strand', 'signalValue', 'pvalue', 'qValue','peak'] #broadPeak do not have 'peak' column
     peak_df = pd.read_csv(peak_file_path, sep='\t', header=None, names=peak_columns)
@@ -213,8 +313,7 @@ def peak2matrice(bed_df=pd.DataFrame, peak_file_path='',
 def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, 
                         fill_na=True, pseudocounts=None, normalize_libsize=True, align_3end=False):
     
-    """
-    Get score matrices for positions in given regions (with optional flanks) from multiple BigWig files.
+    '''Get score matrices for positions in given regions (with optional flanks) from multiple BigWig files.
     Matrix rows correspond to regions in BED.
     Columns correpond to nucleotide positions in regions + flanks.
 
@@ -238,7 +337,7 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
     :type align_3end: bool, optional
     :return:  A dictionary containing score matrices for individual BigWig files. Dictionary keys are BigWig file names.
     :rtype: dict
-    """
+    '''
 
     bed_plus, bed_minus = bed_split_strands(bed_df)
     plus_dict = {}
@@ -264,7 +363,7 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
 def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
                  g='references/GRCh38.primary_assembly.genome.cleaned.len', 
                  flank_5=0, flank_3=0):
-    """ Get score matrices for positions in given regions (with optional flanks) from multiple peak files.
+    '''Get score matrices for positions in given regions (with optional flanks) from multiple peak files.
     Matrix rows correspond to regions in BED. Columns correpond to nucleotide positions in regions + flanks.
     :param peak_paths: list of paths to peak files (broadPeak or narrowPeak format)
     :type peak_paths: list
@@ -278,7 +377,8 @@ def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
     :type flank_3: int, optional
     :return: dictionary of score matrices for each peak file
     :rtype: dict
-    """
+    '''
+
     out_dict = {}
     for path in peak_paths:
         name = path.split("/")[-1].replace('_peaks.narrowPeak','').replace('_peaks.broadPeak','')
@@ -288,8 +388,7 @@ def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
     return out_dict
 
 def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False, subset=None):
-    '''
-    Calculate metaprofiles from score matrices by aggregating each position in all regions.
+    '''Calculate metaprofiles from score matrices by aggregating each position in all regions.
 
     :param matrix_dict: Dict containing score matrices returned by get_multiple_matrices()
     :type matrix_dict: dict
@@ -319,8 +418,7 @@ def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False, subset=N
         return pd.DataFrame({key: value.agg(agg_type, numeric_only=True) for key, value in matrix_dict.items()})
 
 def regionScore(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True):
-    """
-    Calculate coverage or statistic for multiple regions in multiple BigWig files.
+    '''Calculate coverage or statistic for multiple regions in multiple BigWig files.
 
     :param bw_paths_plus: list of paths to BigWig files (+ strand)
     :type bw_paths_plus: list
@@ -342,7 +440,8 @@ def regionScore(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0
     :type normalize_libsize: bool, optional
     :return:  DataFrame with calculated scores. Rows are regions/genes, columns are BigWig files.
     :rtype: pandas.DataFrame
-    """    
+    '''
+
     if agg_type not in ['mean', 'median', 'sum']:
         raise Exception("Wrong agg_type; available values: 'mean', 'median', 'sum'")
     # Get score matrices
@@ -364,7 +463,7 @@ def regionScore(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0
 
 ### level 1
 def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(), flank_5=None, flank_3=None):
-    """ Bin multiple matrices of tRNA profiles into a single dataframe
+    '''Bin multiple matrices of tRNA profiles into a single dataframe
       
     :param mm: dictionary of matrices of gene profiles 
     :type mm: dict
@@ -382,7 +481,7 @@ def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(), flank_5
     :raises ValueError: if input_value is not an integer or a DataFrame
     :return: dictionary of binned matrices of tRNA profiles
     :rtype: dict
-    """
+    '''
 
     if len(bins) != 3:
         raise ValueError(f"{bins} takes three numbers")
@@ -418,6 +517,15 @@ def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(), flank_5
 
 ## helper functions
 def selectSubsetMM(matrix_dict, subset=None):
+    '''Select a subset of regions from the matrix dictionary.
+
+    :param matrix_dict: Dictionary containing score matrices.
+    :type matrix_dict: dict
+    :param subset: DataFrame or list containing the subset of regions to select, defaults to None
+    :type subset: Union[pd.DataFrame, list], optional
+    :return: Dictionary containing the selected subset of score matrices.
+    :rtype: dict
+    '''
     if isinstance(subset, pd.DataFrame):
         return {key: value[value['region'].isin(subset.index)] for key, value in matrix_dict.items()}
     elif isinstance(subset, list):

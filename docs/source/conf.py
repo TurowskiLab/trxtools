@@ -10,8 +10,8 @@ sys.path.insert(0,os.path.abspath('..'))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'trxtools'
-copyright = '2022, Tomasz W. Turowski'
-author = 'Tomasz W. Turowski'
+copyright = '2025, Turowski Lab'
+authors = 'Tomasz W. Turowski, Jan Mikołajczyk'
 release = '0.2.1'
 
 # -- General configuration ---------------------------------------------------

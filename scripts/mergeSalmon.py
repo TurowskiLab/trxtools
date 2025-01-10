@@ -1,5 +1,21 @@
 #!/usr/bin/env python
+"""
+mergeSalmon.py
+^^^^^^^^^^^^^^
 
+This script merges multiple Salmon quantification files into a single tab-delimited file. It takes the name of the Salmon output directory and the column to be used (TPM or NumReads). The script can also filter the files to be loaded, clear some strings from the experiment name, and add some strings to the experiment name. The output is saved in the current directory with the name 'merged.tab'.
+
+Usage:
+    python mergeSalmon.py -i 'Salmon_output' -u TPM -f 'sample' -a 'RNAseq'
+
+Options:
+    -i : String of signs to be found in Salmon output directory
+    -o : Name of output file (default: 'merged')
+    -u : Column to be used {TPM, NumReads} (default: 'NumReads')
+    -f : String of signs to be found in Salmon output directory. Optional as additional filter (default: None)
+    -c : String of signs to be found in Salmon output directory, will be cleared (default: None)
+    -a : String of signs to be added to experiment name (default: None)
+"""
 import trxtools as tt
 import os, argparse
 import pandas as pd

@@ -1,5 +1,41 @@
 #!/usr/bin/env python
-from trxtools.SAMgenome import sam2genome
+"""
+SAM2profilesGenomic.py
+^^^^^^^^^^^^^^^^^^^^^^
+
+This script generates genomic profiles from SAM files. It provides various options to customize the generation of profiles based on the input SAM file.
+
+Usage:
+    SAM2profilesGenomic.py -f file.sam -u 3end -n -s polyA
+
+Options:
+    -f FILE, --sam_file FILE
+        SAM file to be processed.
+
+    -u {read,3end,5end,del}, --use {read,3end,5end,del}
+        Generate profiles using reads (read) or the 3' ends (3end), 5' ends (5end), or deletions (del).
+
+    -n, --noncoded
+        Save non-coded ends. Can be used ONLY with: -u 3end.
+
+    -s {polyA}, --noncoded_suffix {polyA}
+        Select non-coded ends. Can be used ONLY with: -u 3end.
+
+    -e EXPAND, --expand EXPAND
+        Will expand position of each deletion by +/- the value. Works ONLY with: -u del.
+
+    -c TOCLEAR, --toClear TOCLEAR
+        String of signs to be cleared from the name of SAM file.
+
+    --chunks CHUNKS
+        Divide list of genes into chunks of given size.
+
+Example:
+    SAM2profilesGenomic.py -f file.sam -u 3end -n -s polyA
+
+"""
+
+from trxtools.sam.SAMgenome import sam2genome
 import os, argparse
 import trxtools as tt
 

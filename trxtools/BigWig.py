@@ -34,12 +34,16 @@ def getSeqData(gene_name, data_path, name, gtf, ranges=0):
     :param gtf: GTF object that provides gene information such as strand, chromosome, and coordinates.
     :type gtf: object
     :param ranges: Number of bases to extend the region on both sides, defaults to 0.
+
     :return: BigWig data for the specified gene or region as a pandas Series.
     :rtype: pandas.Series
+
     :example:
+
     >>> gtf = GTF('/path/to/gtf_file.gtf')
     >>> data = getSeqData('BRCA1', '/path/to/bigwig/', 'sample', gtf, ranges=100)
     >>> print(data)
+    
     '''
     warnings.warn("The getSeqData function is deprecated and will be removed in a future version.", DeprecationWarning)
 
@@ -52,8 +56,8 @@ def getSeqData(gene_name, data_path, name, gtf, ranges=0):
         return pd.Series(bw.values(chromosome,min(coordinates)-ranges,max(coordinates)+ranges)[::-1])
 
 def geneFromBigWig(gene_name, data_path, data_files, gtf, ranges=0,verbose=False):
-    '''
-    Extracts nucleotide sequences and associated data for a given gene from BigWig files.
+    '''Extracts nucleotide sequences and associated data for a given gene from BigWig files.
+    
     :param gene_name: Name of the gene to extract data for.
     :type gene_name: str
     :param data_path: Path to the directory containing BigWig files.
@@ -64,9 +68,12 @@ def geneFromBigWig(gene_name, data_path, data_files, gtf, ranges=0,verbose=False
     :type gtf: GTF
     :param ranges: Range of nucleotides to extract, defaults to 0.
     :param verbose: If True, prints the name of each BigWig file being processed, defaults to False.
+    
     :return: DataFrame containing nucleotide sequences and associated data.
     :rtype: pd.DataFrame
+
     :example:
+    
     >>> gtf = GTF("/path/to/annotations.gtf")
     >>> df = geneFromBigWig("BRCA1", "/path/to/bigwig/", ["file1.bw", "file2.bw"], gtf, ranges=1000, verbose=True)
     >>> print(df.head())
@@ -81,8 +88,7 @@ def geneFromBigWig(gene_name, data_path, data_files, gtf, ranges=0,verbose=False
     return df_t1
 
 def foldingFromBigWig(gene_name, data_path, data_files, gtf, ranges=0,range5end=0,offset=15):
-    '''
-    Extracts folding energy for a given gene from BigWig files, 
+    '''Extracts folding energy for a given gene from BigWig files, 
     and applies a folding offset to the data.
 
     :param gene_name: Name of the gene to extract data for.
@@ -99,9 +105,12 @@ def foldingFromBigWig(gene_name, data_path, data_files, gtf, ranges=0,range5end=
     :type range5end: int, optional
     :param offset: Number of bases to shift the data by, defaults to 15.
     :type offset: int, optional
+    
     :return: DataFrame containing nucleotide sequences and associated data with applied folding offset.
     :rtype: pd.DataFrame
+
     :example:
+
     >>> gtf = GTF("/path/to/annotations.gtf")
     >>> df = foldingFromBigWig("BRCA1", "/path/to/bigwig/", ["file1.bw", "file2.bw"], gtf, ranges=1000, range5end=100, offset=15)
     >>> print(df.head())

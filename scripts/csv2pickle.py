@@ -1,4 +1,21 @@
 #!/usr/bin/env python
+"""
+csv2pickle.py
+^^^^^^^^^^^^^
+This script reads a CSV file and saves it as a pickle file. It supports optional gzip compression.
+
+Usage:
+    python csv2pickle.py -f <filename.csv> --gzip
+
+Arguments:
+    -f FILE, --csv_file FILE
+        Path to the input CSV file.
+    --gzip
+        Enable gzip compression for the output pickle file.
+
+Notes:
+    The script reads the CSV file from the current working directory and saves the pickle file in the same directory.
+"""
 
 import os, argparse
 import pandas as pd

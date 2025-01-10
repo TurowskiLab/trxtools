@@ -1,9 +1,31 @@
 #!/usr/bin/env python
+"""
+fasta2slidingWindows.py
+^^^^^^^^^^^^^^^^^^^^^^^
+This script converts a FASTA file to sliding windows as sequences and their reverse complements (RC). 
+The output is saved in a folder named with the prefix 'window' followed by the window size. Each chromosome 
+is saved in a separate file. If the tab_output option is selected, the output is saved as a tab-separated file; 
+otherwise, it is saved as FASTA files.
+
+Usage:
+    python fasta2slidingWindows.py -f genome.fasta -w 65 -t 37 -s both --tab
+
+    Arguments:
+    -f, --file       : Path to the input FASTA file (required).
+    -g, --gzip       : Enable gzip compression for the input file.
+    -w, --window     : Sliding window size (default: 65).
+    -t, --temp       : Temperature (default: 37).
+    -s, --strand     : Strand to process, options are "plus", "minus", or "both" (default: "both").
+    --tab            : Save output as tab-separated file.
+
+"""
 
 import os, argparse, gzip
 import pandas as pd
 from Bio import SeqIO
 import trxtools as tt
+
+
 
 ### ARGPARSE ###
 

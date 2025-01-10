@@ -1,4 +1,25 @@
 #!/usr/bin/env python
+"""
+genome2WindowsGTF.py
+^^^^^^^^^^^^^^^^^^^^
+
+This script generates a GTF file for a given genome with fixed-size windows (default 100bp).
+
+Usage:
+    python genome2WindowsGTF.py -f genome.len -w 1000
+
+Options:
+    -f FILE      File with genome length
+    -w WINDOW    Window size (default: 100)
+
+Description:
+    The script reads a genome length file and generates a GTF file with fixed-size windows.
+    Each window is represented as an exon feature in the GTF file. The script creates windows
+    for both the positive and negative strands of the genome.
+
+Output:
+    The script outputs a GTF file with the specified window size for the given genome.
+"""
 
 import os, argparse
 from platform import win32_edition

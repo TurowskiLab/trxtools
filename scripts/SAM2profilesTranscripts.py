@@ -1,4 +1,38 @@
 #!/usr/bin/env python
+"""
+SAM2profilesTranscripts.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This script generates profiles from SAM files for a list of given transcripts.
+It reads a SAM file, a list of genes, and a file with transcriptome details,
+and processes the data to create profiles. The output can be saved as a pickle
+DataFrame if specified.
+
+Usage:
+    SAM2profilesTranscripts.py -f file.sam -l list_of_genes.txt -d transcriptome_details.tab
+
+Options:
+    -f FILE, --sam_file FILE
+        SAM file to be processed.
+    -l FILE, --list_file FILE
+        File containing a list of genes.
+    -d FILE, --details_file FILE
+        File with transcriptome details. Default is '/homes/tollervey/COVID19/databases/transcriptome_details_biomart_tRNA_rRNA_UPDATEJan2021.tab'.
+    --del
+        Generate additional profiles for deletions.
+    -p, --pickle
+        Save output as a pickle DataFrame.
+    -e INT, --expand INT
+        For deletions, position can be expanded by the value on each side (e=5 gives 10 nt long). Default is 5.
+    -c STRING, --toClear STRING
+        String of signs to be cleared from the name of SAM file. Default is '_comp_flexbar_STARAligned.out'.
+    --chunks INT
+        Divide list of genes into chunks of given size. Default is 0.
+
+Example:
+    SAM2profilesTranscripts.py -f file.sam -l list_of_genes.txt -d transcriptome_details.tab
+
+"""
 
 import trxtools as tt
 import os, argparse
@@ -31,7 +65,7 @@ path = os.getcwd()+"/"
 with open(path+args.list_file) as f:
     gene_list = f.read().splitlines()
 
-tt.SAMtranscripts.sam2profiles(filename=args.sam_file, path=path,
+tt.sam.SAMtranscripts.sam2profiles(filename=args.sam_file, path=path,
              geneList=gene_list, toClear=args.toClear,df_details=df_details,
              deletions=args.deletions ,expand=args.expand,pickle=args.pickle,
              chunks=args.chunks)

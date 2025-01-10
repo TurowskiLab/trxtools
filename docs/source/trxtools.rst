@@ -1,34 +1,45 @@
 trxtools package
 ================
 
-trxtools.SAMgeneral module
+trxtools.sam module
 --------------------------
 
-.. automodule:: trxtools.SAMgeneral
+trxtools.sam.SAMgeneral submodule
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: trxtools.sam.SAMgeneral
    :members:
    :undoc-members:
    :show-inheritance:
 
-trxtools.SAMgenome module
--------------------------
+trxtools.sam.SAMgenome submodule
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: trxtools.SAMgenome
+.. automodule:: trxtools.sam.SAMgenome
    :members:
    :undoc-members:
    :show-inheritance:
 
-trxtools.SAMtranscripts module
-------------------------------
+trxtools.sam.SAMtranscripts submodule
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: trxtools.SAMtranscripts
+.. automodule:: trxtools.sam.SAMtranscripts
    :members:
    :undoc-members:
    :show-inheritance:
 
 trxtools.BigWig module
-------------------------------
+----------------------
 
 .. automodule:: trxtools.BigWig
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+trxtools.metaprofiles module
+----------------------------
+
+.. automodule:: trxtools.metaprofiles
    :members:
    :undoc-members:
    :show-inheritance:
@@ -41,8 +52,8 @@ trxtools.assays module
    :undoc-members:
    :show-inheritance:
 
-trxtools.go\_enrichment module
-------------------------------
+trxtools.go_enrichment module
+-----------------------------
 
 .. automodule:: trxtools.go_enrichment
    :members:
