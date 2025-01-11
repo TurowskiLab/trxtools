@@ -344,6 +344,26 @@ def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="5
     return temp_paths
 
 def parseHeader(filename,name,dirPath):
+    '''Parses the header of a SAM file to extract chromosome names and lengths.
+
+    :param filename: Path to the SAM file
+    :type filename: str
+    :param name: Name of the experiment
+    :type name: str
+    :param dirPath: Directory path to save intermediate files
+    :type dirPath: str
+
+    :return: DataFrame with chromosome names and lengths
+    :rtype: pd.DataFrame
+
+    :example:
+
+    >>> parseHeader("example.sam", "experiment1", "/path/to/dir")
+    chrName  length
+    chr1     248956422
+    chr2     242193529
+    ...
+    '''
     #geneList = chromosome list from the @SQ header of SAM file'
     command = "grep @SQ " + filename + " | cut -f2 | sed 's/SN\://' > " + dirPath + "/" + name + "_chr.list"
     tt.methods.bashCommand(command)

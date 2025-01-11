@@ -5,6 +5,35 @@ from trxtools.sam.SAMgeneral import *
 ####################################################
 
 def transcript2profile(l=[], length=int()):
+    '''Takes a list of tuples (position, CIGARstring) and generates a profile. 
+    Works with entire reads, for both strands.
+
+    :param l: List of tuples where each tuple contains a position and a CIGAR string.
+    :type l: list
+    :param length: The length of the profile to be generated.
+    :type length: int
+
+    :return: A pandas Series representing the profile, with positions as the index and counts as the values.
+    :rtype: pandas.Series
+
+    :example:
+
+    >>> l = [(1, '10M'), (2, '5M')]
+    >>> length = 10
+    >>> profile = transcript2profile(l, length)
+    >>> print(profile)
+    1    1.0
+    2    2.0
+    3    2.0
+    4    2.0
+    5    2.0
+    6    2.0
+    7    1.0
+    8    1.0
+    9    1.0
+    10   1.0
+    dtype: float64
+    '''
     '''Takes list of tuples position,CIGARstring) and generates profile. Works with entire reads, for both strands.'''
     list_hits = [countRead(i) for i in l]  # list of lists
     hits = [item for sublist in list_hits for item in sublist]  # transforms to flat list
@@ -14,7 +43,23 @@ def transcript2profile(l=[], length=int()):
     return profile
 
 def transcript2profileDeletions(l=[], expand=0, length=int()):
-    '''Takes list of tuples position,CIGARstring) and generates profile. Not tested for MINUS strand.'''
+    '''Takes a list of tuples (position, CIGARstring) and generates a profile for deletions.
+    
+    :param l: List of tuples where each tuple contains a position and a CIGAR string.
+    :type l: list
+    :param expand: The number of bases to expand around deletions.
+    :type expand: int
+    :param length: The length of the profile to be generated.
+    :type length: int
+
+    :return: A pandas Series representing the profile, with positions as the index and counts as the values.
+    :rtype: pandas.Series
+
+    :example:
+
+    >>> profile = transcript2profileDeletions(l, expand, length)
+    
+    '''
     list_hits = [countDeletion(i, expand=expand) for i in l]  # list of lists
     hits = [item for sublist in list_hits for item in sublist]  # transforms to flat list
     # returning the profile
@@ -27,7 +72,22 @@ def transcript2profileDeletions(l=[], expand=0, length=int()):
 ####################################################
 
 def reads2profile(name=str(), dirPath=str(), df_details=pd.DataFrame()):
-    '''Takes list of aligned reads and transform to profile for each transctipt. Tested only for PLUS strand.
+    '''Takes a list of aligned reads and transforms them into a profile for each transcript. Tested only for PLUS strand.
+
+    :param name: The name of the file (without extension) containing the aligned reads.
+    :type name: str
+    :param dirPath: The directory path where the file is located.
+    :type dirPath: str
+    :param df_details: A DataFrame containing details about the transcripts, including their lengths.
+    :type df_details: pandas.DataFrame
+
+    :return: A tuple containing the output DataFrame with profiles and a log list with status messages.
+    :rtype: tuple (pandas.DataFrame, list)
+
+    :example:
+
+    >>> output_df, log = reads2profile(name='aligned_reads', dirPath='/path/to/files', df_details=df_details)
+    
     '''
     cols = ['score', 'name', 'position', 'CIGAR', 'sequence', 'details']
     df_input = pd.read_csv(dirPath + "/" + name + ".tab", sep="\t", names=cols)
@@ -50,7 +110,25 @@ def reads2profile(name=str(), dirPath=str(), df_details=pd.DataFrame()):
     return output_df, log
 
 def reads2profileDeletions(name=str(), dirPath=str(), df_details=pd.DataFrame(), expand=5):
-    '''Tested only for PLUS strand.'''
+    '''Takes a list of aligned reads and transforms them into profiles for each transcript, including deletions. Tested only for PLUS strand.
+
+    :param name: The name of the file (without extension) containing the aligned reads.
+    :type name: str
+    :param dirPath: The directory path where the file is located.
+    :type dirPath: str
+    :param df_details: A DataFrame containing details about the transcripts, including their lengths.
+    :type df_details: pandas.DataFrame
+    :param expand: The number of bases to expand around deletions.
+    :type expand: int
+
+    :return: A tuple containing the output DataFrames with profiles (reads, deletions, deletions with expansion) and a log list with status messages.
+    :rtype: tuple (pandas.DataFrame, pandas.DataFrame, pandas.DataFrame, list)
+
+    :example:
+
+    >>> output_df, outputDel_df, outputDelExt_df, log = reads2profileDeletions(name='aligned_reads', dirPath='/path/to/files', df_details=df_details, expand=5)
+    
+    '''
     cols = ['score', 'name', 'position', 'CIGAR', 'sequence', 'details']
     df_input = pd.read_csv(dirPath + "/" + name + ".tab", sep="\t", names=cols)
 
@@ -91,25 +169,30 @@ def sam2profiles(filename="", path='', geneList=[], toClear='', df_details=pd.Da
                  deletions=False, expand=5, pickle=False,chunks=0):
     '''Function handling SAM files and generating profiles. Executed using wrapping script SAM2profiles.py.
 
-    :param filename: 
+    :param filename: The name of the SAM file to be processed.
     :type filename: str
-    :param path: 
+    :param path: The directory path where the SAM file is located.
     :type path: str
-    :param geneList: list of transcript to be selected
+    :param geneList: List of transcripts to be selected.
     :type geneList: list
-    :param toClear: element of filename to be removed, defaults to ''
+    :param toClear: Element of filename to be removed, defaults to ''.
     :type toClear: str, optional
-    :param df_details: Details of transcripts
-    :type df_details: DataFrame
-    :param deletions: Generate profile of deletions, defaults to False
+    :param df_details: DataFrame containing details of transcripts.
+    :type df_details: pandas.DataFrame
+    :param deletions: Whether to generate profile of deletions, defaults to False.
     :type deletions: bool, optional
-    :param expand: Expand deletions, defaults to 5
+    :param expand: Number of bases to expand around deletions, defaults to 5.
     :type expand: int, optional
-    :param pickle: save output in pickle format, defaults to False
+    :param pickle: Whether to save output in pickle format, defaults to False.
     :type pickle: bool, optional
-    :param chunks: Read SAM file in chunks, defaults to 0
+    :param chunks: Number of chunks to read SAM file in, defaults to 0.
     :type chunks: int, optional
 
+    :return: None
+
+    :example:
+
+    >>> sam2profiles(filename="example.sam", path="/path/to/files", geneList=["gene1", "gene2"], df_details=df_details)
     '''
     # making working directory
     name = filename.replace(".sam", "")

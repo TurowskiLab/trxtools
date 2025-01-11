@@ -81,16 +81,27 @@ Usage:
     python genomeNascentFolding.py -f genome.fasta -w 65 -t 37 -s both
 
 Arguments:
-    -f, --file: Path to the input FASTA file (required).
-    -g, --gzip: Enable gzip compression for the input file.
-    -w, --window: Size of the sliding window (default: 65).
-    -t, --temp: Temperature for RNA folding (default: 37).
-    -s, --strand: Strand to process ('plus', 'minus', or 'both'; default: 'both').
+
+    -f, --file
+      Path to the input FASTA file (required).
+
+    -g, --gzip
+      Enable gzip compression for the input file.
+
+    -w, --window
+      Size of the sliding window (default: 65).
+
+    -t, --temp
+      Temperature for RNA folding (default: 37).
+    
+    -s, --strand
+      Strand to process ('plus', 'minus', or 'both'; default: 'both').
 
 Output:
     The script generates sliding window sequences and their reverse complements, folds them using RNAfold, 
     and saves the folding free energy (dG) values in WIG and BigWig formats. The output files are saved in the same 
     directory as the input file, with appropriate naming conventions.
+
 
 
 Supporting scripts
@@ -123,8 +134,10 @@ Usage:
     python csv2pickle.py -f <filename.csv> --gzip
 
 Arguments:
+
     -f FILE, --csv_file FILE
         Path to the input CSV file.
+
     --gzip
         Enable gzip compression for the output pickle file.
 
@@ -140,12 +153,24 @@ Usage:
     python mergeSalmon.py -i 'Salmon_output' -u TPM -f 'sample' -a 'RNAseq'
 
 Options:
-    -i : String of signs to be found in Salmon output directory
-    -o : Name of output file (default: 'merged')
-    -u : Column to be used {TPM, NumReads} (default: 'NumReads')
-    -f : String of signs to be found in Salmon output directory. Optional as additional filter (default: None)
-    -c : String of signs to be found in Salmon output directory, will be cleared (default: None)
-    -a : String of signs to be added to experiment name (default: None)
+    -i
+      String of signs to be found in Salmon output directory
+
+    -o
+      Name of output file (default: 'merged')
+
+    -u 
+      Column to be used {TPM, NumReads} (default: 'NumReads')
+
+    -f 
+      String of signs to be found in Salmon output directory. Optional as additional filter (default: None)
+
+    -c  
+      String of signs to be found in Salmon output directory, will be cleared (default: None)
+
+    -a 
+      String of signs to be added to experiment name (default: None)
+
 
 fasta2slidingWindows.py
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -157,10 +182,22 @@ otherwise, it is saved as FASTA files.
 Usage:
     python fasta2slidingWindows.py -f genome.fasta -w 65 -t 37 -s both --tab
 
-    Arguments:
-    -f, --file       : Path to the input FASTA file (required).
-    -g, --gzip       : Enable gzip compression for the input file.
-    -w, --window     : Sliding window size (default: 65).
-    -t, --temp       : Temperature (default: 37).
-    -s, --strand     : Strand to process, options are "plus", "minus", or "both" (default: "both").
-    --tab            : Save output as tab-separated file.
+Arguments:
+
+    -f, --file       
+        Path to the input FASTA file (required).
+
+    -g, --gzip       
+        Enable gzip compression for the input file.
+
+    -w, --window     
+        Sliding window size (default: 65).
+
+    -t, --temp       
+        Temperature (default: 37).
+
+    -s, --strand     
+        Strand to process, options are "plus", "minus", or "both" (default: "both").
+        
+    --tab            
+        Save output as tab-separated file.

@@ -10,13 +10,25 @@ otherwise, it is saved as FASTA files.
 Usage:
     python fasta2slidingWindows.py -f genome.fasta -w 65 -t 37 -s both --tab
 
-    Arguments:
-    -f, --file       : Path to the input FASTA file (required).
-    -g, --gzip       : Enable gzip compression for the input file.
-    -w, --window     : Sliding window size (default: 65).
-    -t, --temp       : Temperature (default: 37).
-    -s, --strand     : Strand to process, options are "plus", "minus", or "both" (default: "both").
-    --tab            : Save output as tab-separated file.
+Arguments:
+
+    -f, --file       
+        Path to the input FASTA file (required).
+
+    -g, --gzip       
+        Enable gzip compression for the input file.
+
+    -w, --window     
+        Sliding window size (default: 65).
+
+    -t, --temp       
+        Temperature (default: 37).
+
+    -s, --strand     
+        Strand to process, options are "plus", "minus", or "both" (default: "both").
+
+    --tab            
+        Save output as tab-separated file.
 
 """
 

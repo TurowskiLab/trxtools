@@ -302,17 +302,28 @@ def noncoded2profile1(df=pd.DataFrame(), length=int()):
 
 def saveBigWig(paths=dict(),suffix=str(),bw_name=str(),chroms=list()):
     '''Save gzip pickle data to BigWig
+    This function saves data from gzip pickle files to a BigWig file.
 
-    :param paths: _description_, defaults to dict()
-    :type paths: _type_, optional
-    :param suffix: _description_, defaults to str()
-    :type suffix: _type_, optional
-    :param bw_name: _description_, defaults to str()
-    :type bw_name: _type_, optional
-    :param chroms: _description_, defaults to list()
-    :type chroms: _type_, optional
-    :return: _description_
-    :rtype: _type_
+    :param paths: Dictionary with paths to gzip pickle files, where keys are file paths and values are file contents.
+    :type paths: dict
+    :param suffix: Suffix to be removed from chromosome names in the paths, defaults to an empty string.
+    :type suffix: str, optional
+    :param bw_name: Name of the output BigWig file.
+    :type bw_name: str
+    :param chroms: List of tuples with chromosome names and their lengths.
+    :type chroms: list of tuples
+
+    :return: Success message indicating the suffix and that the file was saved successfully.
+    :rtype: str
+
+    :example:
+
+    >>> paths = {'/path/to/file_chr1.pkl.gz': 'data1', '/path/to/file_chr2.pkl.gz': 'data2'}
+    >>> suffix = '3end'
+    >>> bw_name = 'output.bw'
+    >>> chroms = [('chr1', 1000000), ('chr2', 2000000)]
+    >>> saveBigWig(paths, suffix, bw_name, chroms)
+    '3end saved successfully'
     '''
 
     bw = pyBigWig.open(bw_name, "w")
@@ -337,16 +348,26 @@ def saveBigWig(paths=dict(),suffix=str(),bw_name=str(),chroms=list()):
     return (suffix+" saved succesfully")
 
 def selectSortPaths(paths={},chroms=[],suffix=""):
-    '''pyBigWig requires for input sorted chromsomes
+    '''Select and sort paths based on chromosome names and suffix
+    This function filters and sorts the paths dictionary based on the provided chromosome names and suffix.
 
-    :param paths: _description_, defaults to {}
-    :type paths: dict, optional
-    :param chroms: _description_, defaults to []
-    :type chroms: list, optional
-    :param suffix: _description_, defaults to ""
+    :param paths: Dictionary with paths to gzip pickle files, where keys are file paths and values are file contents.
+    :type paths: dict
+    :param chroms: List of tuples with chromosome names and their lengths.
+    :type chroms: list of tuples
+    :param suffix: Suffix to be matched in the file paths, defaults to an empty string.
     :type suffix: str, optional
-    :return: _description_
-    :rtype: _type_
+
+    :return: Dictionary with filtered and sorted paths.
+    :rtype: dict
+
+    :example:
+
+    >>> paths = {'/path/to/file_chr1_3end.pkl.gz': 'data1', '/path/to/file_chr2_3end.pkl.gz': 'data2'}
+    >>> chroms = [('chr1', 1000000), ('chr2', 2000000)]
+    >>> suffix = '3end'
+    >>> selectSortPaths(paths, chroms, suffix)
+    {'/path/to/file_chr1_3end.pkl.gz': 'data1', '/path/to/file_chr2_3end.pkl.gz': 'data2'}
     '''
 
     out_dict = {}

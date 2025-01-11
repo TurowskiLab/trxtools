@@ -9,12 +9,24 @@ Usage:
     python mergeSalmon.py -i 'Salmon_output' -u TPM -f 'sample' -a 'RNAseq'
 
 Options:
-    -i : String of signs to be found in Salmon output directory
-    -o : Name of output file (default: 'merged')
-    -u : Column to be used {TPM, NumReads} (default: 'NumReads')
-    -f : String of signs to be found in Salmon output directory. Optional as additional filter (default: None)
-    -c : String of signs to be found in Salmon output directory, will be cleared (default: None)
-    -a : String of signs to be added to experiment name (default: None)
+    -i
+      String of signs to be found in Salmon output directory
+
+    -o
+      Name of output file (default: 'merged')
+
+    -u 
+      Column to be used {TPM, NumReads} (default: 'NumReads')
+
+    -f 
+      String of signs to be found in Salmon output directory. Optional as additional filter (default: None)
+
+    -c  
+      String of signs to be found in Salmon output directory, will be cleared (default: None)
+
+    -a 
+      String of signs to be added to experiment name (default: None)
+
 """
 import trxtools as tt
 import os, argparse

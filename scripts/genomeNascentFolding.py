@@ -11,11 +11,21 @@ Usage:
     python genomeNascentFolding.py -f genome.fasta -w 65 -t 37 -s both
 
 Arguments:
-    -f, --file: Path to the input FASTA file (required).
-    -g, --gzip: Enable gzip compression for the input file.
-    -w, --window: Size of the sliding window (default: 65).
-    -t, --temp: Temperature for RNA folding (default: 37).
-    -s, --strand: Strand to process ('plus', 'minus', or 'both'; default: 'both').
+
+    -f, --file
+      Path to the input FASTA file (required).
+
+    -g, --gzip
+      Enable gzip compression for the input file.
+
+    -w, --window
+      Size of the sliding window (default: 65).
+
+    -t, --temp
+      Temperature for RNA folding (default: 37).
+    
+    -s, --strand
+      Strand to process ('plus', 'minus', or 'both'; default: 'both').
 
 Output:
     The script generates sliding window sequences and their reverse complements, folds them using RNAfold, 
