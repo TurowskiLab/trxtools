@@ -483,23 +483,34 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="trxtools.sam.SAMgeneral.saveBigWig">
 <span class="sig-prename descclassname"><span class="pre">trxtools.sam.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">saveBigWig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chroms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.sam.SAMgeneral.saveBigWig" title="Link to this definition"></a></dt>
-<dd><p>Save gzip pickle data to BigWig</p>
+<dd><p>Save gzip pickle data to BigWig
+This function saves data from gzip pickle files to a BigWig file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>paths</strong> (<em>_type_</em><em>, </em><em>optional</em>) – _description_, defaults to dict()</p></li>
-<li><p><strong>suffix</strong> (<em>_type_</em><em>, </em><em>optional</em>) – _description_, defaults to str()</p></li>
-<li><p><strong>bw_name</strong> (<em>_type_</em><em>, </em><em>optional</em>) – _description_, defaults to str()</p></li>
-<li><p><strong>chroms</strong> (<em>_type_</em><em>, </em><em>optional</em>) – _description_, defaults to list()</p></li>
+<li><p><strong>paths</strong> (<em>dict</em>) – Dictionary with paths to gzip pickle files, where keys are file paths and values are file contents.</p></li>
+<li><p><strong>suffix</strong> (<em>str</em><em>, </em><em>optional</em>) – Suffix to be removed from chromosome names in the paths, defaults to an empty string.</p></li>
+<li><p><strong>bw_name</strong> (<em>str</em>) – Name of the output BigWig file.</p></li>
+<li><p><strong>chroms</strong> (<em>list</em><em> of </em><em>tuples</em>) – List of tuples with chromosome names and their lengths.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>_description_</p>
+<dd class="field-even"><p>Success message indicating the suffix and that the file was saved successfully.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_type_</p>
+<dd class="field-odd"><p>str</p>
 </dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
 </dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">paths</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;/path/to/file_chr1.pkl.gz&#39;</span><span class="p">:</span> <span class="s1">&#39;data1&#39;</span><span class="p">,</span> <span class="s1">&#39;/path/to/file_chr2.pkl.gz&#39;</span><span class="p">:</span> <span class="s1">&#39;data2&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">suffix</span> <span class="o">=</span> <span class="s1">&#39;3end&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bw_name</span> <span class="o">=</span> <span class="s1">&#39;output.bw&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">chroms</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;chr1&#39;</span><span class="p">,</span> <span class="mi">1000000</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;chr2&#39;</span><span class="p">,</span> <span class="mi">2000000</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">saveBigWig</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">bw_name</span><span class="p">,</span> <span class="n">chroms</span><span class="p">)</span>
+<span class="go">&#39;3end saved successfully&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -542,22 +553,32 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="trxtools.sam.SAMgeneral.selectSortPaths">
 <span class="sig-prename descclassname"><span class="pre">trxtools.sam.SAMgeneral.</span></span><span class="sig-name descname"><span class="pre">selectSortPaths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chroms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.sam.SAMgeneral.selectSortPaths" title="Link to this definition"></a></dt>
-<dd><p>pyBigWig requires for input sorted chromsomes</p>
+<dd><p>Select and sort paths based on chromosome names and suffix
+This function filters and sorts the paths dictionary based on the provided chromosome names and suffix.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>paths</strong> (<em>dict</em><em>, </em><em>optional</em>) – _description_, defaults to {}</p></li>
-<li><p><strong>chroms</strong> (<em>list</em><em>, </em><em>optional</em>) – _description_, defaults to []</p></li>
-<li><p><strong>suffix</strong> (<em>str</em><em>, </em><em>optional</em>) – _description_, defaults to “”</p></li>
+<li><p><strong>paths</strong> (<em>dict</em>) – Dictionary with paths to gzip pickle files, where keys are file paths and values are file contents.</p></li>
+<li><p><strong>chroms</strong> (<em>list</em><em> of </em><em>tuples</em>) – List of tuples with chromosome names and their lengths.</p></li>
+<li><p><strong>suffix</strong> (<em>str</em><em>, </em><em>optional</em>) – Suffix to be matched in the file paths, defaults to an empty string.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>_description_</p>
+<dd class="field-even"><p>Dictionary with filtered and sorted paths.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_type_</p>
+<dd class="field-odd"><p>dict</p>
 </dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
 </dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">paths</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;/path/to/file_chr1_3end.pkl.gz&#39;</span><span class="p">:</span> <span class="s1">&#39;data1&#39;</span><span class="p">,</span> <span class="s1">&#39;/path/to/file_chr2_3end.pkl.gz&#39;</span><span class="p">:</span> <span class="s1">&#39;data2&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">chroms</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;chr1&#39;</span><span class="p">,</span> <span class="mi">1000000</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;chr2&#39;</span><span class="p">,</span> <span class="mi">2000000</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">suffix</span> <span class="o">=</span> <span class="s1">&#39;3end&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">selectSortPaths</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">chroms</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+<span class="go">{&#39;/path/to/file_chr1_3end.pkl.gz&#39;: &#39;data1&#39;, &#39;/path/to/file_chr2_3end.pkl.gz&#39;: &#39;data2&#39;}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -690,7 +711,32 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="trxtools.sam.SAMgenome.parseHeader">
 <span class="sig-prename descclassname"><span class="pre">trxtools.sam.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">parseHeader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirPath</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.sam.SAMgenome.parseHeader" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Parses the header of a SAM file to extract chromosome names and lengths.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – Path to the SAM file</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Name of the experiment</p></li>
+<li><p><strong>dirPath</strong> (<em>str</em>) – Directory path to save intermediate files</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with chromosome names and lengths</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parseHeader</span><span class="p">(</span><span class="s2">&quot;example.sam&quot;</span><span class="p">,</span> <span class="s2">&quot;experiment1&quot;</span><span class="p">,</span> <span class="s2">&quot;/path/to/dir&quot;</span><span class="p">)</span>
+<span class="go">chrName  length</span>
+<span class="go">chr1     248956422</span>
+<span class="go">chr2     242193529</span>
+<span class="go">...</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="trxtools.sam.SAMgenome.reads2genome">
@@ -801,13 +847,54 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="trxtools.sam.SAMtranscripts.reads2profile">
 <span class="sig-prename descclassname"><span class="pre">trxtools.sam.SAMtranscripts.</span></span><span class="sig-name descname"><span class="pre">reads2profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirPath=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.sam.SAMtranscripts.reads2profile" title="Link to this definition"></a></dt>
-<dd><p>Takes list of aligned reads and transform to profile for each transctipt. Tested only for PLUS strand.</p>
+<dd><p>Takes a list of aligned reads and transforms them into a profile for each transcript. Tested only for PLUS strand.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name of the file (without extension) containing the aligned reads.</p></li>
+<li><p><strong>dirPath</strong> (<em>str</em>) – The directory path where the file is located.</p></li>
+<li><p><strong>df_details</strong> (<em>pandas.DataFrame</em>) – A DataFrame containing details about the transcripts, including their lengths.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the output DataFrame with profiles and a log list with status messages.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple (pandas.DataFrame, list)</p>
+</dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">output_df</span><span class="p">,</span> <span class="n">log</span> <span class="o">=</span> <span class="n">reads2profile</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;aligned_reads&#39;</span><span class="p">,</span> <span class="n">dirPath</span><span class="o">=</span><span class="s1">&#39;/path/to/files&#39;</span><span class="p">,</span> <span class="n">df_details</span><span class="o">=</span><span class="n">df_details</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="trxtools.sam.SAMtranscripts.reads2profileDeletions">
 <span class="sig-prename descclassname"><span class="pre">trxtools.sam.SAMtranscripts.</span></span><span class="sig-name descname"><span class="pre">reads2profileDeletions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirPath=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_details=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand=5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.sam.SAMtranscripts.reads2profileDeletions" title="Link to this definition"></a></dt>
-<dd><p>Tested only for PLUS strand.</p>
+<dd><p>Takes a list of aligned reads and transforms them into profiles for each transcript, including deletions. Tested only for PLUS strand.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name of the file (without extension) containing the aligned reads.</p></li>
+<li><p><strong>dirPath</strong> (<em>str</em>) – The directory path where the file is located.</p></li>
+<li><p><strong>df_details</strong> (<em>pandas.DataFrame</em>) – A DataFrame containing details about the transcripts, including their lengths.</p></li>
+<li><p><strong>expand</strong> (<em>int</em>) – The number of bases to expand around deletions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the output DataFrames with profiles (reads, deletions, deletions with expansion) and a log list with status messages.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple (pandas.DataFrame, pandas.DataFrame, pandas.DataFrame, list)</p>
+</dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">output_df</span><span class="p">,</span> <span class="n">outputDel_df</span><span class="p">,</span> <span class="n">outputDelExt_df</span><span class="p">,</span> <span class="n">log</span> <span class="o">=</span> <span class="n">reads2profileDeletions</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;aligned_reads&#39;</span><span class="p">,</span> <span class="n">dirPath</span><span class="o">=</span><span class="s1">&#39;/path/to/files&#39;</span><span class="p">,</span> <span class="n">df_details</span><span class="o">=</span><span class="n">df_details</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -817,30 +904,92 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>filename</strong> (<em>str</em>)</p></li>
-<li><p><strong>path</strong> (<em>str</em>)</p></li>
-<li><p><strong>geneList</strong> (<em>list</em>) – list of transcript to be selected</p></li>
-<li><p><strong>toClear</strong> (<em>str</em><em>, </em><em>optional</em>) – element of filename to be removed, defaults to ‘’</p></li>
-<li><p><strong>df_details</strong> (<em>DataFrame</em>) – Details of transcripts</p></li>
-<li><p><strong>deletions</strong> (<em>bool</em><em>, </em><em>optional</em>) – Generate profile of deletions, defaults to False</p></li>
-<li><p><strong>expand</strong> (<em>int</em><em>, </em><em>optional</em>) – Expand deletions, defaults to 5</p></li>
-<li><p><strong>pickle</strong> (<em>bool</em><em>, </em><em>optional</em>) – save output in pickle format, defaults to False</p></li>
-<li><p><strong>chunks</strong> (<em>int</em><em>, </em><em>optional</em>) – Read SAM file in chunks, defaults to 0</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – The name of the SAM file to be processed.</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – The directory path where the SAM file is located.</p></li>
+<li><p><strong>geneList</strong> (<em>list</em>) – List of transcripts to be selected.</p></li>
+<li><p><strong>toClear</strong> (<em>str</em><em>, </em><em>optional</em>) – Element of filename to be removed, defaults to ‘’.</p></li>
+<li><p><strong>df_details</strong> (<em>pandas.DataFrame</em>) – DataFrame containing details of transcripts.</p></li>
+<li><p><strong>deletions</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to generate profile of deletions, defaults to False.</p></li>
+<li><p><strong>expand</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bases to expand around deletions, defaults to 5.</p></li>
+<li><p><strong>pickle</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to save output in pickle format, defaults to False.</p></li>
+<li><p><strong>chunks</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of chunks to read SAM file in, defaults to 0.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Example<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
 </dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sam2profiles</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;example.sam&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/path/to/files&quot;</span><span class="p">,</span> <span class="n">geneList</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;gene1&quot;</span><span class="p">,</span> <span class="s2">&quot;gene2&quot;</span><span class="p">],</span> <span class="n">df_details</span><span class="o">=</span><span class="n">df_details</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="trxtools.sam.SAMtranscripts.transcript2profile">
 <span class="sig-prename descclassname"><span class="pre">trxtools.sam.SAMtranscripts.</span></span><span class="sig-name descname"><span class="pre">transcript2profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.sam.SAMtranscripts.transcript2profile" title="Link to this definition"></a></dt>
-<dd><p>Takes list of tuples position,CIGARstring) and generates profile. Works with entire reads, for both strands.</p>
+<dd><p>Takes a list of tuples (position, CIGARstring) and generates a profile. 
+Works with entire reads, for both strands.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>l</strong> (<em>list</em>) – List of tuples where each tuple contains a position and a CIGAR string.</p></li>
+<li><p><strong>length</strong> (<em>int</em>) – The length of the profile to be generated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A pandas Series representing the profile, with positions as the index and counts as the values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.Series</p>
+</dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">l</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;10M&#39;</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;5M&#39;</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">length</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">profile</span> <span class="o">=</span> <span class="n">transcript2profile</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">profile</span><span class="p">)</span>
+<span class="go">1    1.0</span>
+<span class="go">2    2.0</span>
+<span class="go">3    2.0</span>
+<span class="go">4    2.0</span>
+<span class="go">5    2.0</span>
+<span class="go">6    2.0</span>
+<span class="go">7    1.0</span>
+<span class="go">8    1.0</span>
+<span class="go">9    1.0</span>
+<span class="go">10   1.0</span>
+<span class="go">dtype: float64</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="trxtools.sam.SAMtranscripts.transcript2profileDeletions">
 <span class="sig-prename descclassname"><span class="pre">trxtools.sam.SAMtranscripts.</span></span><span class="sig-name descname"><span class="pre">transcript2profileDeletions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.sam.SAMtranscripts.transcript2profileDeletions" title="Link to this definition"></a></dt>
-<dd><p>Takes list of tuples position,CIGARstring) and generates profile. Not tested for MINUS strand.</p>
+<dd><p>Takes a list of tuples (position, CIGARstring) and generates a profile for deletions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>l</strong> (<em>list</em>) – List of tuples where each tuple contains a position and a CIGAR string.</p></li>
+<li><p><strong>expand</strong> (<em>int</em>) – The number of bases to expand around deletions.</p></li>
+<li><p><strong>length</strong> (<em>int</em>) – The length of the profile to be generated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A pandas Series representing the profile, with positions as the index and counts as the values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.Series</p>
+</dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">profile</span> <span class="o">=</span> <span class="n">transcript2profileDeletions</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">expand</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

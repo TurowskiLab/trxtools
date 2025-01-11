@@ -184,12 +184,28 @@ The results are saved in WIG and BigWig formats for visualization.</p>
 <dl class="simple">
 <dt>Usage:</dt><dd><p>python genomeNascentFolding.py -f genome.fasta -w 65 -t 37 -s both</p>
 </dd>
-<dt>Arguments:</dt><dd><p>-f, –file: Path to the input FASTA file (required).
--g, –gzip: Enable gzip compression for the input file.
--w, –window: Size of the sliding window (default: 65).
--t, –temp: Temperature for RNA folding (default: 37).
--s, –strand: Strand to process (‘plus’, ‘minus’, or ‘both’; default: ‘both’).</p>
+</dl>
+<p>Arguments:</p>
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-f</span>, <span class="option">--file</span></kbd></dt>
+<dd><p>Path to the input FASTA file (required).</p>
 </dd>
+<dt><kbd><span class="option">-g</span>, <span class="option">--gzip</span></kbd></dt>
+<dd><p>Enable gzip compression for the input file.</p>
+</dd>
+<dt><kbd><span class="option">-w</span>, <span class="option">--window</span></kbd></dt>
+<dd><p>Size of the sliding window (default: 65).</p>
+</dd>
+<dt><kbd><span class="option">-t</span>, <span class="option">--temp</span></kbd></dt>
+<dd><p>Temperature for RNA folding (default: 37).</p>
+</dd>
+<dt><kbd><span class="option">-s</span>, <span class="option">--strand</span></kbd></dt>
+<dd><p>Strand to process (‘plus’, ‘minus’, or ‘both’; default: ‘both’).</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="simple">
 <dt>Output:</dt><dd><p>The script generates sliding window sequences and their reverse complements, folds them using RNAfold,
 and saves the folding free energy (dG) values in WIG and BigWig formats. The output files are saved in the same
 directory as the input file, with appropriate naming conventions.</p>
@@ -225,18 +241,21 @@ for both the positive and negative strands of the genome.</p>
 <section id="csv2pickle-py">
 <h3>csv2pickle.py<a class="headerlink" href="#csv2pickle-py" title="Link to this heading"></a></h3>
 <p>This script reads a CSV file and saves it as a pickle file. It supports optional gzip compression.</p>
-<dl>
+<dl class="simple">
 <dt>Usage:</dt><dd><p>python csv2pickle.py -f &lt;filename.csv&gt; –gzip</p>
 </dd>
-<dt>Arguments:</dt><dd><dl class="option-list">
+</dl>
+<p>Arguments:</p>
+<blockquote>
+<div><dl class="option-list">
 <dt><kbd><span class="option">-f <var>FILE</var></span>, <span class="option">--csv_file <var>FILE</var></span></kbd></dt>
 <dd><p>Path to the input CSV file.</p>
 </dd>
-<dt><kbd><span class="option">--gzip</span></kbd></dt>
-<dd><p>Enable gzip compression for the output pickle file.</p>
-</dd>
 </dl>
-</dd>
+<p class="attribution">—gzip
+Enable gzip compression for the output pickle file.</p>
+</div></blockquote>
+<dl class="simple">
 <dt>Notes:</dt><dd><p>The script reads the CSV file from the current working directory and saves the pickle file in the same directory.</p>
 </dd>
 </dl>
@@ -244,15 +263,29 @@ for both the positive and negative strands of the genome.</p>
 <section id="mergesalmon-py">
 <h3>mergeSalmon.py<a class="headerlink" href="#mergesalmon-py" title="Link to this heading"></a></h3>
 <p>This script merges multiple Salmon quantification files into a single tab-delimited file. It takes the name of the Salmon output directory and the column to be used (TPM or NumReads). The script can also filter the files to be loaded, clear some strings from the experiment name, and add some strings to the experiment name. The output is saved in the current directory with the name ‘merged.tab’.</p>
-<dl class="simple">
+<dl>
 <dt>Usage:</dt><dd><p>python mergeSalmon.py -i ‘Salmon_output’ -u TPM -f ‘sample’ -a ‘RNAseq’</p>
 </dd>
-<dt>Options:</dt><dd><p>-i : String of signs to be found in Salmon output directory
--o : Name of output file (default: ‘merged’)
--u : Column to be used {TPM, NumReads} (default: ‘NumReads’)
--f : String of signs to be found in Salmon output directory. Optional as additional filter (default: None)
--c : String of signs to be found in Salmon output directory, will be cleared (default: None)
--a : String of signs to be added to experiment name (default: None)</p>
+<dt>Options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-i</span></kbd></dt>
+<dd><p>String of signs to be found in Salmon output directory</p>
+</dd>
+<dt><kbd><span class="option">-o</span></kbd></dt>
+<dd><p>Name of output file (default: ‘merged’)</p>
+</dd>
+<dt><kbd><span class="option">-u</span></kbd></dt>
+<dd><p>Column to be used {TPM, NumReads} (default: ‘NumReads’)</p>
+</dd>
+<dt><kbd><span class="option">-f</span></kbd></dt>
+<dd><p>String of signs to be found in Salmon output directory. Optional as additional filter (default: None)</p>
+</dd>
+<dt><kbd><span class="option">-c</span></kbd></dt>
+<dd><p>String of signs to be found in Salmon output directory, will be cleared (default: None)</p>
+</dd>
+<dt><kbd><span class="option">-a</span></kbd></dt>
+<dd><p>String of signs to be added to experiment name (default: None)</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </section>
@@ -262,17 +295,32 @@ for both the positive and negative strands of the genome.</p>
 The output is saved in a folder named with the prefix ‘window’ followed by the window size. Each chromosome
 is saved in a separate file. If the tab_output option is selected, the output is saved as a tab-separated file;
 otherwise, it is saved as FASTA files.</p>
-<dl>
+<dl class="simple">
 <dt>Usage:</dt><dd><p>python fasta2slidingWindows.py -f genome.fasta -w 65 -t 37 -s both –tab</p>
-<p>Arguments:
--f, –file       : Path to the input FASTA file (required).
--g, –gzip       : Enable gzip compression for the input file.
--w, –window     : Sliding window size (default: 65).
--t, –temp       : Temperature (default: 37).
--s, –strand     : Strand to process, options are “plus”, “minus”, or “both” (default: “both”).
-–tab            : Save output as tab-separated file.</p>
 </dd>
 </dl>
+<p>Arguments:</p>
+<blockquote>
+<div><dl class="option-list">
+<dt><kbd><span class="option">-f</span>, <span class="option">--file</span></kbd></dt>
+<dd><p>Path to the input FASTA file (required).</p>
+</dd>
+<dt><kbd><span class="option">-g</span>, <span class="option">--gzip</span></kbd></dt>
+<dd><p>Enable gzip compression for the input file.</p>
+</dd>
+<dt><kbd><span class="option">-w</span>, <span class="option">--window</span></kbd></dt>
+<dd><p>Sliding window size (default: 65).</p>
+</dd>
+<dt><kbd><span class="option">-t</span>, <span class="option">--temp</span></kbd></dt>
+<dd><p>Temperature (default: 37).</p>
+</dd>
+<dt><kbd><span class="option">-s</span>, <span class="option">--strand</span></kbd></dt>
+<dd><p>Strand to process, options are “plus”, “minus”, or “both” (default: “both”).</p>
+</dd>
+</dl>
+<p class="attribution">—tab
+Save output as tab-separated file.</p>
+</div></blockquote>
 </section>
 </section>
 </section>
