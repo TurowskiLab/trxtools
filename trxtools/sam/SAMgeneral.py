@@ -177,87 +177,108 @@ def countDeletion(i=tuple(), expand=0):
     output = (output + position) * outputMask
     return output[output != 0]
 
-def parseNoncoded(d=dict(), minLen=3):
-    '''Parse dict with non-coded ends and returns structured DataFrame
+# def parseNoncoded(d=dict(), minLen=3):
+#     '''Parse dict with non-coded ends and returns structured DataFrame
 
-    :param d: dictionary with list of tuples for each chromosme ``{"chrI" : [], "chrII" : []}``, defaults to dict()
-    :type d: dict
-    :param minLen: minimal length for non-coded end to keep, defaults to 3
-    :type minLen: int, optional
-    :return: DataFrame with parsed non-coded ends
-    :rtype: DataFrame
+#     :param d: dictionary with list of tuples for each chromosme ``{"chrI" : [], "chrII" : []}``, defaults to dict()
+#     :type d: dict
+#     :param minLen: minimal length for non-coded end to keep, defaults to 3
+#     :type minLen: int, optional
+#     :return: DataFrame with parsed non-coded ends
+#     :rtype: DataFrame
 
-    >>> parseNoncoded({"chrI":[(40, 'AAA'), (35, 'AACAA')]})
-       index  AAA  AACAA   chr
-    0     40  1.0    NaN  chrI
-    1     35  NaN    1.0  chrI
-    '''
+#     >>> parseNoncoded({"chrI":[(40, 'AAA'), (35, 'AACAA')]})
+#        index  AAA  AACAA   chr
+#     0     40  1.0    NaN  chrI
+#     1     35  NaN    1.0  chrI
+#     '''
 
-    df_output = pd.DataFrame()
-    for name in d.keys():
-        df_temp = pd.DataFrame(d[name], columns=['position','end'])
-        df_temp = df_temp[df_temp['end'].str.len() >= minLen].sort_values('end') #keep only minLen ends
+#     df_output = pd.DataFrame()
+#     for name in d.keys():
+#         df_temp = pd.DataFrame(d[name], columns=['position','end'])
+#         df_temp = df_temp[df_temp['end'].str.len() >= minLen].sort_values('end') #keep only minLen ends
         
-        df_short = pd.DataFrame()
-        for n,df in df_temp.groupby('end'):
-            # df_short = df_short.append(df.groupby('position')['end'].count().sort_index().rename(n))
-            s = df.groupby('position')['end'].count().sort_index().rename(n)
-            df_short = pd.concat([df_short,s],axis=1) #append
-            # df_short = pd.concat([df_short,s]) #append
-        df_short['chr'] = name
-        df_output = pd.concat([df_output, df_short.reset_index()])
+#         df_short = pd.DataFrame()
+#         for n,df in df_temp.groupby('end'):
+#             # df_short = df_short.append(df.groupby('position')['end'].count().sort_index().rename(n))
+#             s = df.groupby('position')['end'].count().sort_index().rename(n)
+#             df_short = pd.concat([df_short,s],axis=1) #append
+#             # df_short = pd.concat([df_short,s]) #append
+#         df_short['chr'] = name
+#         df_output = pd.concat([df_output, df_short.reset_index()])
 
-    return df_output.reset_index(drop=True)
+#     return df_output.reset_index(drop=True)
 
-def parseNoncodedList(l=[], minLen=3):
-    '''Parse list with non-coded ends and returns structured DataFrame
+# def parseNoncodedList(l=[], minLen=3):
+#     '''Parse list with non-coded ends and returns structured DataFrame
 
-    :param l: list of tuples ``[(int,str)]``, defaults to lits()
+#     :param l: list of tuples ``[(int,str)]``, defaults to lits()
+#     :type l: list
+#     :param minLen: minimal length for non-coded end to keep, defaults to 3
+#     :type minLen: int, optional
+#     :return: DataFrame with parsed non-coded ends
+#     :rtype: DataFrame
+
+#     >>> parseNoncodedList([(40, 'AAA'), (35, 'AACAA')])
+#         AAA	AACAA
+#     35	NaN	1.0
+#     40	1.0	NaN
+#     '''
+#     df_temp = pd.DataFrame(l, columns=['position','end'])
+#     df_temp = df_temp[df_temp['end'].str.len() >= minLen].sort_values('end') #keep only minLen ends
+    
+#     df_short = pd.DataFrame()
+#     for n,df in df_temp.groupby('end'):
+#         s = df.groupby('position')['end'].count().sort_index().rename(n)
+#         df_short = pd.concat([df_short,s],axis=1) #append
+
+#     return df_short
+
+# def selectPolyA(df=pd.DataFrame()):
+#     '''Select only polyA non-coded ends containinig ``"AAA"`` and "A"-content above 75%
+
+#     :param df: output of parseNoncoded or parseNoncodedList
+#     :type df: DataFrame
+#     :return: modified DataFrame
+#     :rtype: DataFrame
+#     '''
+#     #select columns with at least "AAA" and "A" content above 0.75
+#     cols = df.columns[(df.columns.str.contains("AAA"))&((df.columns.to_series().apply(tt.methods.letterContent)>0.75))]
+#     if 'chr' in df.columns.values:
+#         return df[['index','chr']+cols.tolist()]
+#     else:
+#         return df[cols.tolist()]
+    
+def selectNoncodedAndProfile(l=[],minLen=3,tail="AAA",letter="A",content=0.80):
+    '''Select sequences with non-coded ends and profile their occurrence.
+
+    :param l: list of tuples where each tuple contains a position of 3' end of read match and a sequence string, defaults to []
     :type l: list
-    :param minLen: minimal length for non-coded end to keep, defaults to 3
+    :param minLen: minimum length of the sequence to be considered, defaults to 3
     :type minLen: int, optional
-    :return: DataFrame with parsed non-coded ends
-    :rtype: DataFrame
+    :param tail: the non-coded end sequence to look for, defaults to "AAA"
+    :type tail: str, optional
+    :param letter: the letter to check the content of in the sequence, defaults to "A"
+    :type letter: str, optional
+    :param content: the minimum content threshold of the letter in the sequence, defaults to >=0.80
+    :type content: float, optional
 
-    >>> parseNoncodedList([(40, 'AAA'), (35, 'AACAA')])
-        AAA	AACAA
-    35	NaN	1.0
-    40	1.0	NaN
+    :return: a pandas Series profiling the occurrence of selected sequences
+    :rtype: pd.Series
+
+    :example:
+
+    >>> l = [(1, "AAA"), (2, "AACAA")]
+    >>> selectNoncodedAndProfile(l, minLen=3,tail="AAA",letter="A",content=0.80)
+    1    1
     '''
-    df_temp = pd.DataFrame(l, columns=['position','end'])
-    df_temp = df_temp[df_temp['end'].str.len() >= minLen].sort_values('end') #keep only minLen ends
-    
-    df_short = pd.DataFrame()
-    for n,df in df_temp.groupby('end'):
-        s = df.groupby('position')['end'].count().sort_index().rename(n)
-        df_short = pd.concat([df_short,s],axis=1) #append
-
-    return df_short
-
-def selectPolyA(df=pd.DataFrame()):
-    '''Select only polyA non-coded ends containinig ``"AAA"`` and "A"-content above 75%
-
-    :param df: output of parseNoncoded or parseNoncodedList
-    :type df: DataFrame
-    :return: modified DataFrame
-    :rtype: DataFrame
-    '''
-    #select columns with at least "AAA" and "A" content above 0.75
-    cols = df.columns[(df.columns.str.contains("AAA"))&((df.columns.to_series().apply(tt.methods.letterContent)>0.75))]
-    if 'chr' in df.columns.values:
-        return df[['index','chr']+cols.tolist()]
-    else:
-        return df[cols.tolist()]
-    
-def selectNoncodedAndProfile(l=[],minLen=3,tail="AAA",letter="A",content=0.75):
-
     l_output = []
     for i in l:
         if tail in i[1]: #check if contains non-coded end
             if tt.methods.letterContent(i[1],letter)>=content: #check if content of letter is above threshold
                 l_output.append(i[0])
     
-    profile = pd.Series(collections.Counter(l_output)).sort_index().astype(float)  # faster that using zip and numpy
+    profile = pd.Series(collections.Counter(l_output), dtype="int").sort_index().astype(float)  # faster that using zip and numpy
 
     return profile
     
