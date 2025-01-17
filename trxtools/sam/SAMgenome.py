@@ -213,6 +213,7 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3
     '''
 
     cols = ['score', 'name', 'position', 'CIGAR', 'sequence', 'details']
+    #name is reference name (chr name)
     df_input_fwd = pd.read_csv(dirPath + "/" + name + "_fwd.tab", sep="\t", names=cols)
     df_input_rev = pd.read_csv(dirPath + "/" + name + "_rev.tab", sep="\t", names=cols)
 
@@ -238,9 +239,11 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3
 
         if noncoded==True:
             try:
-                l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
-                #above file could be saved as raw noncoded ends
-                noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
+                noncoded_profile = selectNoncodedAndProfile(l=l1_noncoded,minLen=3,tail="AAA",letter="A",content=0.75)
+                
+                # l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
+                # #above file could be saved as raw noncoded ends
+                # noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
                 to_save = pd.DataFrame(noncoded_profile.rename(n))
                 fileName = dirPath+"/temp_"+n_name+"_"+ends+"_fwd.pcl.gz"
                 to_save.to_pickle(path=fileName,compression="gzip")
@@ -267,9 +270,10 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3
 
         if noncoded==True:
             try:
-                l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
-                #above file could be saved as raw noncoded ends
-                noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
+                noncoded_profile = selectNoncodedAndProfile(l=l1_noncoded,minLen=3,tail="AAA",letter="A",content=0.75)
+                # l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
+                # #above file could be saved as raw noncoded ends
+                # noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
                 to_save = pd.DataFrame(noncoded_profile.rename(n))
                 fileName = dirPath+"/temp_"+n_name+"_"+ends+"_rev.pcl.gz"
                 to_save.to_pickle(path=fileName,compression="gzip")
@@ -343,7 +347,44 @@ def reads2genome5end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="5
 
     return temp_paths
 
-def parseHeader(filename,name,dirPath):
+# def parseHeader(filename,name,dirPath):
+#     ### old version of the function
+#     '''Parses the header of a SAM file to extract chromosome names and lengths.
+
+#     :param filename: Path to the SAM file
+#     :type filename: str
+#     :param name: Name of the experiment
+#     :type name: str
+#     :param dirPath: Directory path to save intermediate files
+#     :type dirPath: str
+
+#     :return: DataFrame with chromosome names and lengths
+#     :rtype: pd.DataFrame
+
+#     :example:
+
+#     >>> parseHeader("example.sam", "experiment1", "/path/to/dir")
+#     chrName  length
+#     chr1     248956422
+#     chr2     242193529
+#     ...
+#     '''
+#     #geneList = chromosome list from the @SQ header of SAM file'
+#     command = "grep @SQ " + filename + " | cut -f2 | sed 's/SN\://' > " + dirPath + "/" + name + "_chr.list"
+#     tt.methods.bashCommand(command)
+#     geneList = tt.methods.read_list(dirPath + "/" + name + "_chr.list")
+#     #chromosome lengths from SAM header
+#     #-f4 for sam as direct STAR output, but -f3 for BAM output and samtools view -h
+#     command = "grep @SQ " + filename + " | cut -f3 | sed 's/LN\://' > " + dirPath + "/" + name + "_chr.len"
+#     tt.methods.bashCommand(command)
+#     geneLen = tt.methods.read_list(dirPath + "/" + name + "_chr.len")
+    
+#     df_details = pd.DataFrame(data={"chrName" : geneList, "length" : geneLen}).set_index('chrName')
+#     df_details['length'] = df_details['length'].astype(int)
+
+#     return df_details
+
+def parseHeader(filename, name, dirPath):
     '''Parses the header of a SAM file to extract chromosome names and lengths.
 
     :param filename: Path to the SAM file
@@ -364,19 +405,22 @@ def parseHeader(filename,name,dirPath):
     chr2     242193529
     ...
     '''
-    #geneList = chromosome list from the @SQ header of SAM file'
-    command = "grep @SQ " + filename + " | cut -f2 | sed 's/SN\://' > " + dirPath + "/" + name + "_chr.list"
-    tt.methods.bashCommand(command)
-    geneList = tt.methods.read_list(dirPath + "/" + name + "_chr.list")
-    #chromosome lengths from SAM header
-    #-f4 for sam as direct STAR output, but -f3 for BAM output and samtools view -h
-    command = "grep @SQ " + filename + " | cut -f3 | sed 's/LN\://' > " + dirPath + "/" + name + "_chr.len"
-    tt.methods.bashCommand(command)
-    geneLen = tt.methods.read_list(dirPath + "/" + name + "_chr.len")
-    
-    df_details = pd.DataFrame(data={"chrName" : geneList, "length" : geneLen}).set_index('chrName')
-    df_details['length'] = df_details['length'].astype(int)
+    geneList = []
+    geneLen = []
 
+    with open(filename, 'r') as file:
+        for line in file:
+            if not line.startswith('@'):
+                break
+            if line.startswith('@SQ'):
+                match = re.search(r'SN:(\S+)\s+LN:(\d+)', line)
+                if match:
+                    chr_name = match.group(1)
+                    chr_len = match.group(2)
+                geneList.append(chr_name)
+                geneLen.append(int(chr_len))
+
+    df_details = pd.DataFrame(data={"chrName": geneList, "length": geneLen}).set_index('chrName')
     return df_details
 
 ####################################################

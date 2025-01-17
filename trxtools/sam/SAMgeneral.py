@@ -248,6 +248,19 @@ def selectPolyA(df=pd.DataFrame()):
         return df[['index','chr']+cols.tolist()]
     else:
         return df[cols.tolist()]
+    
+def selectNoncodedAndProfile(l=[],minLen=3,tail="AAA",letter="A",content=0.75):
+
+    l_output = []
+    for i in l:
+        if tail in i[1]: #check if contains non-coded end
+            if tt.methods.letterContent(i[1],letter)>=content: #check if content of letter is above threshold
+                l_output.append(i[0])
+    
+    profile = pd.Series(collections.Counter(l_output)).sort_index().astype(float)  # faster that using zip and numpy
+
+    return profile
+    
 
 def selectEnds(df=pd.DataFrame(),ends="polyA"):
     '''Wrapper for functions selecting non-coded ends
