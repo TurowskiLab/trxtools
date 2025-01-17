@@ -213,6 +213,7 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3
     '''
 
     cols = ['score', 'name', 'position', 'CIGAR', 'sequence', 'details']
+    #name is reference name (chr name)
     df_input_fwd = pd.read_csv(dirPath + "/" + name + "_fwd.tab", sep="\t", names=cols)
     df_input_rev = pd.read_csv(dirPath + "/" + name + "_rev.tab", sep="\t", names=cols)
 
@@ -238,9 +239,11 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3
 
         if noncoded==True:
             try:
-                l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
-                #above file could be saved as raw noncoded ends
-                noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
+                noncoded_profile = selectNoncodedAndProfile(l=l1_noncoded,minLen=3,tail="AAA",letter="A",content=0.75)
+                
+                # l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
+                # #above file could be saved as raw noncoded ends
+                # noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
                 to_save = pd.DataFrame(noncoded_profile.rename(n))
                 fileName = dirPath+"/temp_"+n_name+"_"+ends+"_fwd.pcl.gz"
                 to_save.to_pickle(path=fileName,compression="gzip")
@@ -267,9 +270,10 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3
 
         if noncoded==True:
             try:
-                l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
-                #above file could be saved as raw noncoded ends
-                noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
+                noncoded_profile = selectNoncodedAndProfile(l=l1_noncoded,minLen=3,tail="AAA",letter="A",content=0.75)
+                # l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
+                # #above file could be saved as raw noncoded ends
+                # noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
                 to_save = pd.DataFrame(noncoded_profile.rename(n))
                 fileName = dirPath+"/temp_"+n_name+"_"+ends+"_rev.pcl.gz"
                 to_save.to_pickle(path=fileName,compression="gzip")
