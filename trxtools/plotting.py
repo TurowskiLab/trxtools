@@ -937,7 +937,7 @@ def plot_as_box_plot(df=pd.DataFrame(), title="", start=None, stop=None, name='m
     else:
         plt.show()
 
-def plotAndFolding(df=pd.DataFrame(), dG=pd.Series(), title="", start=None, stop=None, legend=True,
+def plotAndFolding(df=pd.DataFrame(), dG=pd.Series(dtype="float"), title="", start=None, stop=None, legend=True,
                    figsize=(7, 3), ylim=(None, 0.01), dpi=150, color='green', name='median',
                    h_lines=[], lc="red", offset=0, fname=None):
     '''Plot a figure similar to a box plot with additional delta G values.

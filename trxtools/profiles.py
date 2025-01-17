@@ -278,7 +278,7 @@ def ntotal(df=pd.DataFrame, drop=True):
         df['nucleotide'] = s2_nt
         return df
 
-def binCollect3(s1=pd.Series(), lengths=[500,72,500], bins=[50, 10, 50]):
+def binCollect3(s1=pd.Series(dtype="float"), lengths=[500,72,500], bins=[50, 10, 50]):
     '''
     Collects and sums data from a series into bins of specified lengths.
 
