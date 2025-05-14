@@ -413,10 +413,10 @@ def parseHeader(filename, name, dirPath):
             if not line.startswith('@'):
                 break
             if line.startswith('@SQ'):
-                match = re.search(r'SN:(\S+)\s+LN:(\d+)', line)
+                match = re.search(r'SN:(\S+)\s+(?:AS:(\S+)\s+)?LN:(\d+)', line)
                 if match:
                     chr_name = match.group(1)
-                    chr_len = match.group(2)
+                    chr_len = match.group(3)
                 geneList.append(chr_name)
                 geneLen.append(int(chr_len))
 
