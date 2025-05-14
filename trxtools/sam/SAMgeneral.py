@@ -334,7 +334,7 @@ def noncoded2profile1(df=pd.DataFrame(), length=int()):
     # profile = profile.reindex(pd.RangeIndex(length + 1)).fillna(0.0)  # fills spaces with 0 counts
     return profile
 
-def saveBigWig(paths=dict(),suffix=str(),bw_name=str(),chroms=list()):
+def saveBigWig(paths=dict(),suffix=str(),bw_name=str(),chroms=list(),pkl=True):
     '''Save gzip pickle data to BigWig
     This function saves data from gzip pickle files to a BigWig file.
 
@@ -362,22 +362,34 @@ def saveBigWig(paths=dict(),suffix=str(),bw_name=str(),chroms=list()):
 
     bw = pyBigWig.open(bw_name, "w")
     bw.addHeader(chroms)
-    for p in paths.keys():
-        c = p.replace(suffix,"")
-        df = pd.read_pickle(paths[p],compression='gzip')
-        try:
-            stops = df.index.to_numpy()
-            starts = stops-1
-            vals=df[c].to_numpy()
-            bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
-        except: #dealing with potential problems - unclear the origin of the problems
-            print(c+" using except")
-            df = df.sort_index()
-            stops = df.index.to_numpy()
-            starts = list(stops-1)
-            if len(starts)==0: continue
-            vals=df[c].to_list()
-            bw.addEntries([c] * len(starts), starts, ends=stops.tolist(), values=vals)
+    if pkl == True:
+        for p in paths.keys():
+            c = p.replace(suffix,"")
+            df = pd.read_pickle(paths[p],compression='gzip')
+            try:
+                stops = df.index.to_numpy()
+                starts = stops-1
+                vals=df[c].to_numpy()
+                bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
+            except: #dealing with potential problems - unclear the origin of the problems
+                print(c+" using except")
+                df = df.sort_index()
+                stops = df.index.to_numpy()
+                starts = list(stops-1)
+                if len(starts)==0: continue
+                vals=df[c].to_list()
+                bw.addEntries([c] * len(starts), starts, ends=stops.tolist(), values=vals)
+    else:
+        for p in paths.keys():
+            c = p.replace(suffix,"")
+            vals = paths[p]
+            vals = pd.Series(vals).dropna()
+            starts = vals.index.to_numpy()
+            stops = starts+1
+            # stops = np.arange(1,chr_len+1)
+            # starts = stops-1
+            bw.addEntries([c] * len(starts), starts, ends=stops, values=vals.to_numpy())
+            
     bw.close()
     return (suffix+" saved succesfully")
 

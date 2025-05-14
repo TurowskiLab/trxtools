@@ -32,6 +32,7 @@ setuptools.setup(
         'scripts/mergeSalmon.py',
         'scripts/SAM2profilesGenomic.py',
         'scripts/SAM2profilesTranscripts.py',
+        'scripts/polyAfraction.py',
         ],
     install_requires=[
         'scikit-learn','pandas', 'numpy', 'pybedtools',
