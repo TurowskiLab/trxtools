@@ -56,6 +56,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#csv2pickle-py">csv2pickle.py</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mergesalmon-py">mergeSalmon.py</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fasta2slidingwindows-py">fasta2slidingWindows.py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#polyafraction-py">polyAfraction.py</a></li>
 </ul>
 </li>
 </ul>
@@ -321,6 +322,31 @@ otherwise, it is saved as FASTA files.</p>
 <p class="attribution">—tab
 Save output as tab-separated file.</p>
 </div></blockquote>
+</section>
+<section id="polyafraction-py">
+<h3>polyAfraction.py<a class="headerlink" href="#polyafraction-py" title="Link to this heading"></a></h3>
+<p>This script generates fraction (eg. polyA) for genomic profiles from BigWig files. Bot fwd and rev files will be processed.</p>
+<dl>
+<dt>Usage:</dt><dd><p>polyAfraction.py -f file_polyA_fwd.bw</p>
+</dd>
+<dt>Options:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-f <var>FILE</var></span>, <span class="option">--sam_file <var>FILE</var></span></kbd></dt>
+<dd><p>BigWig file to be processed. Requires file with suffix “_fwd.bw” or “_rev.bw”. Either can be used.
+The script will automatically detect the suffix and process the file accordingly.
+The script will also look for the corresponding file with the other suffix (if not provided).
+For example, if you provide “file_polyA_fwd.bw”, it will look for “file_polyA_rev.bw” in the same directory.</p>
+</dd>
+<dt><kbd><span class="option">-s <var>SUFFIX</var></span>, <span class="option">--suffix <var>SUFFIX</var></span></kbd></dt>
+<dd><p>Suffix for the input file (default: polyA).</p>
+</dd>
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>Show this help message and exit.</p>
+</dd>
+</dl>
+</dd>
+<dt>Example:</dt><dd><p>polyAfraction.py -f file_polyA_fwd.bw</p>
+</dd>
+</dl>
 </section>
 </section>
 </section>

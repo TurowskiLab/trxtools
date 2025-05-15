@@ -201,3 +201,25 @@ Arguments:
         
     --tab            
         Save output as tab-separated file.
+
+polyAfraction.py
+^^^^^^^^^^^^^^^^^^^^^^
+
+This script generates fraction (eg. polyA) for genomic profiles from BigWig files. Bot fwd and rev files will be processed.
+
+Usage:
+    polyAfraction.py -f file_polyA_fwd.bw
+
+Options:
+    -f FILE, --sam_file FILE
+        BigWig file to be processed. Requires file with suffix "_fwd.bw" or "_rev.bw". Either can be used.
+        The script will automatically detect the suffix and process the file accordingly.
+        The script will also look for the corresponding file with the other suffix (if not provided).
+        For example, if you provide "file_polyA_fwd.bw", it will look for "file_polyA_rev.bw" in the same directory.
+    -s SUFFIX, --suffix SUFFIX
+        Suffix for the input file (default: polyA).
+    -h, --help
+        Show this help message and exit.
+
+Example:
+    polyAfraction.py -f file_polyA_fwd.bw
