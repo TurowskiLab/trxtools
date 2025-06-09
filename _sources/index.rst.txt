@@ -6,7 +6,7 @@
 trxtools
 ========
 
-version 0.3.0
+version 0.3.1
 
 trxtools is set of bioinformatic tools and methods to facilitate analysis of transcriptional data. 
 
@@ -32,19 +32,19 @@ Contents
 --------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 5
 
    scripts
 
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 5
    
    trxtools
 
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 5
    
    release
 
