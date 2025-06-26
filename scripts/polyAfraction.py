@@ -46,7 +46,9 @@ filename = args.bw_file.replace("_fwd.bw","").replace("_rev.bw","")
 name = filename.replace("_"+args.suffix,"")
 
 #### FWD ####
+print("Processing forward strand BigWig file: ", args.bw_file)
 bw_A = pyBigWig.open(path+name+"_"+args.suffix+"_fwd.bw")
+print("Corresponding reverse strand BigWig file: ", path+name+"_rev.bw")
 bw_B = pyBigWig.open(path+name+"_fwd.bw")
 
 chroms = bw_A.chroms()
