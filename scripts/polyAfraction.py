@@ -48,37 +48,74 @@ name = filename.replace("_"+args.suffix,"")
 #### FWD ####
 print("Processing forward strand BigWig file: ", args.bw_file)
 bw_A = pyBigWig.open(path+name+"_"+args.suffix+"_fwd.bw")
-print("Corresponding reverse strand BigWig file: ", path+name+"_rev.bw")
+print("Corresponding strand BigWig file: ", name+"_rev.bw")
 bw_B = pyBigWig.open(path+name+"_fwd.bw")
 
 chroms = bw_A.chroms()
-chroms_touple = [i for i in chroms.items()]
+chroms_touple = [i for i in chroms.items()] 
+chroms_touple.sort(key=lambda x: int(x[1]), reverse=True)  # Sort by chromosome len - longest first
+# print(chroms_touple)
 
 paths = {}
-for chr in chroms:
-    len_chr = int(chroms[chr])
+for c in chroms_touple:
+    chr, len_chr = c[0], c[1]
     A_series = np.array(bw_A.values(chr,0,len_chr))
-    raw = np.array(bw_B.values(chr,0,len_chr))
-    fraction_polyA = A_series/raw
-    paths[chr] = fraction_polyA
+    if np.isnan(A_series).all():
+        print("Warning: No data found for chromosome", chr)
+        output_fraction = np.full(len_chr, np.nan)
+    else:
+        raw = np.array(bw_B.values(chr,0,len_chr))
+        output_fraction = A_series/raw
+    
+    df_to_save = pd.DataFrame(output_fraction, columns=["fraction"])
+    temp_filename = path + "temp_" + name + "_fractionOF" + args.suffix + "_fwd_" + chr + ".pkl.gz"
+    df_to_save.to_pickle(temp_filename, compression="gzip")
+    paths[chr] = temp_filename
 
+print("Saving BigWig file with fraction of "+args.suffix+"...")
 bw_name = path + name + "_fractionOF"+args.suffix+"_fwd.bw"
-l = tt.SAMgeneral.saveBigWig(paths=paths,suffix="",bw_name=bw_name,chroms=chroms_touple,pkl=False)
+l = tt.SAMgeneral.saveBigWig(paths=paths,suffix="",bw_name=bw_name,chroms=chroms_touple,pkl=True)
 print("BigWig file saved as: ", bw_name)
 
-#### REV ####
+# Remove all temporary files created and stored in paths
+for temp_file in paths.values():
+    if os.path.exists(temp_file):
+        os.remove(temp_file)
+
+# #### REV ####
+
+print("Processing reverse strand BigWig file: ", args.bw_file)
 bw_A = pyBigWig.open(path+name+"_"+args.suffix+"_rev.bw")
+print("Corresponding  strand BigWig file: ", path+name+"_rev.bw")
 bw_B = pyBigWig.open(path+name+"_rev.bw")
 
 chroms = bw_A.chroms()
-paths = {}
-for chr in chroms:
-    len_chr = int(chroms[chr])
-    A_series = np.array(bw_A.values(chr,0,len_chr))
-    raw = np.array(bw_B.values(chr,0,len_chr))
-    fraction_polyA = A_series/raw
-    paths[chr] = fraction_polyA
+chroms_touple = [i for i in chroms.items()] 
+chroms_touple.sort(key=lambda x: int(x[1]), reverse=True)  # Sort by chromosome len - longest first
+# print(chroms_touple)
 
+paths = {}
+for c in chroms_touple:
+    chr, len_chr = c[0], c[1]
+    A_series = np.array(bw_A.values(chr,0,len_chr))
+    if np.isnan(A_series).all():
+        print("Warning: No data found for chromosome", chr)
+        output_fraction = np.full(len_chr, np.nan)
+    else:
+        raw = np.array(bw_B.values(chr,0,len_chr))
+        output_fraction = A_series/raw
+    
+    df_to_save = pd.DataFrame(output_fraction, columns=["fraction"])
+    temp_filename = path + "temp_" + name + "_fractionOF" + args.suffix + "_fwd_" + chr + ".pkl.gz"
+    df_to_save.to_pickle(temp_filename, compression="gzip")
+    paths[chr] = temp_filename
+
+print("Saving BigWig file with fraction of "+args.suffix+"...")
 bw_name = path + name + "_fractionOF"+args.suffix+"_rev.bw"
-l = tt.SAMgeneral.saveBigWig(paths=paths,suffix="",bw_name=bw_name,chroms=chroms_touple,pkl=False)
+l = tt.SAMgeneral.saveBigWig(paths=paths,suffix="",bw_name=bw_name,chroms=chroms_touple,pkl=True)
 print("BigWig file saved as: ", bw_name)
+
+# Remove all temporary files created and stored in paths
+for temp_file in paths.values():
+    if os.path.exists(temp_file):
+        os.remove(temp_file)
