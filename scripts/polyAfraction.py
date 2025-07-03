@@ -55,10 +55,12 @@ chroms = bw_A.chroms()
 chroms_touple = [i for i in chroms.items()] 
 chroms_touple.sort(key=lambda x: int(x[1]), reverse=True)  # Sort by chromosome len - longest first
 # print(chroms_touple)
+chroms_touple = [c for c in chroms_touple if c[0] in ["chrM"]]  # Include listed chromosomes only, e.g. ["chrM"] for mitochondrial DNA
 
 paths = {}
 for c in chroms_touple:
     chr, len_chr = c[0], c[1]
+    print("Processing chromosome:", chr, "with length:", len_chr)
     A_series = np.array(bw_A.values(chr,0,len_chr))
     if np.isnan(A_series).all():
         print("Warning: No data found for chromosome", chr)
@@ -67,7 +69,7 @@ for c in chroms_touple:
         raw = np.array(bw_B.values(chr,0,len_chr))
         output_fraction = A_series/raw
     
-    df_to_save = pd.DataFrame(output_fraction, columns=["fraction"])
+    df_to_save = pd.DataFrame(output_fraction, columns=[chr], index=np.arange(len_chr)+1)  # Index starts from 1
     temp_filename = path + "temp_" + name + "_fractionOF" + args.suffix + "_fwd_" + chr + ".pkl.gz"
     df_to_save.to_pickle(temp_filename, compression="gzip")
     paths[chr] = temp_filename
@@ -84,19 +86,20 @@ for temp_file in paths.values():
 
 # #### REV ####
 
-print("Processing reverse strand BigWig file: ", args.bw_file)
+print("Processing reverse strand BigWig file: "+name+"_rev.bw")
 bw_A = pyBigWig.open(path+name+"_"+args.suffix+"_rev.bw")
-print("Corresponding  strand BigWig file: ", path+name+"_rev.bw")
 bw_B = pyBigWig.open(path+name+"_rev.bw")
 
 chroms = bw_A.chroms()
 chroms_touple = [i for i in chroms.items()] 
 chroms_touple.sort(key=lambda x: int(x[1]), reverse=True)  # Sort by chromosome len - longest first
 # print(chroms_touple)
+chroms_touple = [c for c in chroms_touple if c[0] in ["chrM"]]  # Include listed chromosomes only, e.g. ["chrM"] for mitochondrial DNA
 
 paths = {}
 for c in chroms_touple:
     chr, len_chr = c[0], c[1]
+    print("Processing chromosome:", chr, "with length:", len_chr)
     A_series = np.array(bw_A.values(chr,0,len_chr))
     if np.isnan(A_series).all():
         print("Warning: No data found for chromosome", chr)
@@ -105,7 +108,7 @@ for c in chroms_touple:
         raw = np.array(bw_B.values(chr,0,len_chr))
         output_fraction = A_series/raw
     
-    df_to_save = pd.DataFrame(output_fraction, columns=["fraction"])
+    df_to_save = pd.DataFrame(output_fraction, columns=[chr], index=np.arange(len_chr)+1)  # Index starts from 1
     temp_filename = path + "temp_" + name + "_fractionOF" + args.suffix + "_fwd_" + chr + ".pkl.gz"
     df_to_save.to_pickle(temp_filename, compression="gzip")
     paths[chr] = temp_filename
