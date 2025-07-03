@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from scipy.sparse import coo_array, lil_array, vstack, save_npz, load_npz
 import pyBigWig
 import warnings
 import trxtools as tt
@@ -186,7 +187,7 @@ def matrixFromBigWig(
         bw_path, bed_df, flank_5=0, flank_3=0,
         fill_na=True, pseudocounts=None,
         align_3end=False, skip_zeroes=False,
-        chunk_baselimit=None):
+        chunk_baselimit=None, verbose=False):
     '''Get matrix with BigWig scores for all regions in a bed df from a single BigWig file.
     Matrix rows correspond to regions in BED.
     Columns correpond to nucleotide positions in regions + flanks.
@@ -222,6 +223,9 @@ def matrixFromBigWig(
         return {'regions': np.array([]), 'matrix': np.array([[]], dtype=np.float32), 'lengths': np.array([])}
 
     bw = pyBigWig.open(bw_path)
+    if verbose:
+        print(f"Opened BigWig file: {bw_path}")
+        print(f"Max region length (including flanks): {max_length}")        
     try:
         data_arrays = []
         region_names = []
@@ -233,6 +237,10 @@ def matrixFromBigWig(
         
         for _, row in bed_df.iterrows():
             region_length = row[2] - row[1]
+            if verbose:
+                print(f"Current region length: {region_length}", end="")
+                print("\r", end="")
+
             curr_chunk_size += region_length
             
             # Get BigWig values as numpy array directly
@@ -304,7 +312,14 @@ def matrixFromBigWig(
                     curr_chunk_size = region_length
         
         # Combine all data
+    
+    finally:
+        bw.close()
+        if verbose:
+            print(f"\nClosed BigWig")
         if dumped_data:
+            if verbose:
+                print(f"Loading {len(chunk_files)} chunks from disk...")
             # Load and combine all chunks
             all_matrices = []
             all_regions = []
@@ -316,8 +331,12 @@ def matrixFromBigWig(
                 all_matrices.append(chunk_data['matrix'])
                 all_regions.append(chunk_data['regions'])
                 all_lengths.append(chunk_data['lengths'])
+            if verbose:
+                print("OK")
             
             # Add current data if any
+            if verbose:
+                print(f"Adding current data...")
             if data_arrays:
                 current_matrix = np.stack(data_arrays, axis=0)
                 current_regions = np.array(region_names)
@@ -327,6 +346,8 @@ def matrixFromBigWig(
                 all_lengths.append(current_lengths)
             
             # Combine all
+            if verbose:
+                print(f"Combining all chunks...")
             if all_matrices:
                 final_matrix = np.vstack(all_matrices)
                 final_regions = np.concatenate(all_regions)
@@ -335,8 +356,12 @@ def matrixFromBigWig(
                 final_matrix = np.array([[]], dtype=np.float32)
                 final_regions = np.array([])
                 final_lengths = np.array([])
+            if verbose:
+                print("OK")
         else:
             # No chunking needed
+            if verbose:
+                print(f"Combining all chunks...")
             if data_arrays:
                 final_matrix = np.stack(data_arrays, axis=0)
                 final_regions = np.array(region_names)
@@ -345,15 +370,232 @@ def matrixFromBigWig(
                 final_matrix = np.array([[]], dtype=np.float32)
                 final_regions = np.array([])
                 final_lengths = np.array([])
-    
-    finally:
-        bw.close()
+            if verbose:
+                print("OK")
         # Clean up temporary files
+        if verbose:
+            print(f"Cleaning up {len(chunk_files)} temporary files...")
         for chunk_file in chunk_files:
             if os.path.exists(chunk_file):
                 os.remove(chunk_file)
-    
+        if verbose:
+            print("OK")
+    if verbose:
+            print(f"Finished processing BigWig file: {bw_path}")
     return {'regions': final_regions, 'matrix': final_matrix, 'lengths': final_lengths}
+
+def matrixFromBigWigSparse(
+        bw_path, bed_df, flank_5=0, flank_3=0,
+        fill_na=True, pseudocounts=None,
+        align_3end=False, skip_zeroes=False,
+        chunk_baselimit=None, verbose=False):
+    '''
+    matrixFromBigWig optimized for sparse data (features with mostly 0 coverage).
+    Use when your bait protein binds in well defined sites (e.g TFs) as opposed to e.g. processive helicases or polymerases.
+    Get matrix with BigWig scores for all regions in a bed df from a single BigWig file.
+    Matrix rows correspond to regions in BED.
+    Columns correpond to nucleotide positions in regions + flanks.
+    Flanks are strand-aware.
+    
+
+    :param bw_path: Path to target BigWig file
+    :type bw_path: str
+    :param bed_df: DataFrame with BED data (use read_bed())
+    :type bed_df: pandas.DataFrame
+    :param flank_5: length of 5'flank to extend BED regions by, defaults to 0
+    :type flank_5: int, optional
+    :param flank_3: length of 3'flank to extend BED regions by, defaults to 0
+    :type flank_3: int, optional
+    :param fill_na: If true replace NaN values with 0 (pybigwig returns positions with 0 coverage as NaN), defaults to True
+    :type fill_na: bool, optional
+    :param pseudocounts: pseudocounts to add to retrieved scores, defaults to None
+    :type pseudocounts: float, optional
+    :param align_3end: If true, position 0 in the resulting matrix will be set at the target region's 3'end instead of 5'end, defaults to False
+    :type align_3end: bool, optional
+    :return: Dictionary with 'regions' (numpy array), 'matrix' (numpy array), and 'lengths' (numpy array) keys
+    :rtype: dict
+    '''
+    if bed_df.empty:
+        return {'regions': np.array([]), 'matrix': np.array([[]], dtype=np.float32), 'lengths': np.array([])}
+
+    # First pass: determine maximum region length for padding
+    max_length = 0
+    for _, row in bed_df.iterrows():
+        region_length = (row[2] - row[1]) + flank_5 + flank_3
+        max_length = max(max_length, region_length)
+    
+    if max_length == 0:
+        return {'regions': np.array([]), 'matrix': np.array([[]], dtype=np.float32), 'lengths': np.array([])}
+
+    bw = pyBigWig.open(bw_path)
+    if verbose:
+        print(f"Opened BigWig file: {bw_path}")
+        print(f"Max region length (including flanks): {max_length}")        
+    try:
+        data_arrays = []
+        region_names = []
+        region_lengths = []
+        curr_chunk_size = 0
+        chunk_num = 0
+        dumped_data = False
+        chunk_files = []
+        name_files = []
+        
+        for _, row in bed_df.iterrows():
+            region_length = row[2] - row[1]
+            if verbose:
+                print(f"Current region length: {region_length}", end="")
+                print("\r", end="")
+
+            curr_chunk_size += region_length
+            
+            # Get BigWig values as numpy array directly
+            if row[5] == '+':
+                values = bw.values(row[0], int(row[1]-flank_5), int(row[2]+flank_3))
+            else:  # minus strand
+                values = bw.values(row[0], int(row[1]-flank_3), int(row[2]+flank_5))
+                values = values[::-1] # reverse for minus strand
+            
+            # Convert to numpy array with memory-efficient dtype
+            arr = np.array(values, dtype=np.float32)
+            actual_length = len(arr)
+            
+            # # Reverrse data for - strand
+            # if row[5] == '-':
+            #     arr = arr[::-1]
+            
+            # Handle NaN values
+            if fill_na:
+                arr = np.nan_to_num(arr, nan=0.0)
+            
+            # Add pseudocounts
+            if pseudocounts is not None:
+                arr += pseudocounts
+            
+            # Skip features with no coverage to reduce mamory load
+            if skip_zeroes and np.sum(arr) == 0:
+                continue
+            
+            # Pad array to max_length with zeros
+            if actual_length < max_length:
+                padded_arr = np.zeros(max_length, dtype=np.float32)
+                # Pad on 5'end side if aligning to 3'end
+                if align_3end:
+                    padded_arr[actual_length:] = arr
+                else:
+                    padded_arr[:actual_length] = arr
+                arr = padded_arr
+            elif actual_length > max_length:
+                # Truncate if somehow longer than expected
+                arr = arr[:max_length]
+                actual_length = max_length
+            
+            # Store data
+            data_arrays.append(arr)
+            region_names.append(row[3])
+            region_lengths.append(actual_length)
+            
+            # Check if we need to dump data to disk
+            if isinstance(chunk_baselimit, int) and curr_chunk_size > chunk_baselimit:
+                if len(data_arrays) > 0:
+                    chunk_file = f'temp_chunk_{chunk_num}.npz'
+                    name_file = f'temp_chunk_{chunk_num}_names.npz'
+                    # Stack arrays and save with numpy
+                    chunk_matrix = np.stack(data_arrays, axis=0)
+                    chunk_matrix = coo_array(chunk_matrix)
+                    chunk_regions = np.array(region_names)
+                    # chunk_lengths = np.array(region_lengths)
+                    np.savez_compressed(name_file, regions=chunk_regions)
+                    save_npz(chunk_file, chunk_matrix)
+                    chunk_files.append(chunk_file)
+                    name_files.append(name_file)
+                    
+                    # Clear memory
+                    data_arrays = []
+                    region_names = []
+                    region_lengths = []
+                    chunk_num += 1
+                    dumped_data = True
+                    curr_chunk_size = region_length
+        
+        # Combine all data
+    
+    finally:
+        bw.close()
+        if verbose:
+            print(f"\nClosed BigWig")
+        if dumped_data:
+            if verbose:
+                print(f"Loading {len(chunk_files)} chunks from disk...", end="")
+            # Load and combine all chunks
+            all_matrices = []
+            all_regions = []
+            all_lengths = []
+            
+            # Load dumped chunks
+            for chunk_file, name_file in zip(chunk_files, name_files):
+                chunk_data = lil_array(load_npz(chunk_file))
+                chunk_regions_loaded = np.load(name_file, allow_pickle=True)['regions']
+                all_matrices.append(chunk_data)
+                all_regions.append(chunk_regions_loaded)
+                # all_lengths.append(chunk_data['lengths'])
+            if verbose:
+                print("OK")
+            
+            # Add current data if any
+            if verbose:
+                print(f"Adding current data...")
+            if data_arrays:
+                current_matrix = np.stack(data_arrays, axis=0)
+                current_matrix = lil_array(current_matrix)
+                current_regions = np.array(region_names)
+                # current_lengths = np.array(region_lengths)
+                all_matrices.append(current_matrix)
+                all_regions.append(current_regions)
+                # all_lengths.append(current_lengths)
+            
+            # Combine all
+            if verbose:
+                print(f"Combining all chunks...", end="")
+            if all_matrices:
+                final_matrix = vstack(all_matrices)
+                final_regions = np.concatenate(all_regions)
+                # final_lengths = np.concatenate(all_lengths)
+            else:
+                final_matrix = np.array([[]], dtype=np.float32)
+                final_regions = np.array([])
+                # final_lengths = np.array([])
+            if verbose:
+                print("OK")
+        else:
+            # No chunking needed
+            if verbose:
+                print(f"Combining all chunks...", end="")
+            if data_arrays:
+                final_matrix = np.stack(data_arrays, axis=0)
+                final_matrix = lil_array(final_matrix)
+                final_regions = np.array(region_names)
+                # final_lengths = np.array(region_lengths)
+            else:
+                final_matrix = np.array([[]], dtype=np.float32)
+                final_regions = np.array([])
+                # final_lengths = np.array([])
+            if verbose:
+                print("OK")
+        # Clean up temporary files
+        if verbose:
+            print(f"Cleaning up {len(chunk_files)} temporary files...", end="")
+        for chunk_file in chunk_files:
+            if os.path.exists(chunk_file):
+                os.remove(chunk_file)
+        for name_file in name_files:
+            if os.path.exists(name_file):
+                os.remove(name_file)
+        if verbose:
+            print("OK")
+    if verbose:
+            print(f"Finished processing BigWig file: {bw_path}")
+    return {'regions': final_regions, 'matrix': final_matrix}
 
 def join_strand_matrices(plus_dict, minus_dict):
     '''Combine score matrices for regions on + and - strands.
@@ -451,7 +693,7 @@ def peak2matrice(bed_df=pd.DataFrame, peak_file_path='',
 def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, 
                         fill_na=True, pseudocounts=None, normalize_libsize=True,
                         align_3end=False, skip_zeroes=False, chunk_baselimit=None,
-                        sparse=False):
+                        verbose=False):
     
     '''Get score matrices for positions in given regions (with optional flanks) from multiple BigWig files.
     Matrix rows correspond to regions in BED.
@@ -498,7 +740,8 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
                 pseudocounts=pseudocounts,
                 align_3end=align_3end,
                 skip_zeroes=skip_zeroes,
-                chunk_baselimit=chunk_baselimit
+                chunk_baselimit=chunk_baselimit,
+                verbose=verbose
                 )
             
             # Process minus strand  
@@ -511,11 +754,16 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
                 pseudocounts=pseudocounts,
                 align_3end=align_3end,
                 skip_zeroes=skip_zeroes,
-                chunk_baselimit=chunk_baselimit
+                chunk_baselimit=chunk_baselimit,
+                verbose=verbose
                 )
+            if verbose:
+                print("Finished processing BigWigs")
             
             # Apply library size normalization if requested
             if normalize_libsize:
+                if verbose:
+                    print(f"Normalizing by library size...")
                 # Calculate library sizes
                 with pyBigWig.open(bw_plus) as bwp:
                     libsize_plus = int(bwp.header()['sumData'])
@@ -528,8 +776,12 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
                 if libsize_total > 0:
                     plus_result['matrix'] = plus_result['matrix'] / libsize_total
                     minus_result['matrix'] = minus_result['matrix'] / libsize_total
+                if verbose:
+                    print("OK")
             
             # Combine strands and store result
+            if verbose:
+                print(f"Combining strand matrices")
             all_regions = np.concatenate([plus_result['regions'], minus_result['regions']])
             max(np.shape(plus_result['matrix'])[1], np.shape(minus_result['matrix'])[1])
             # Pad shorter matrix to make them stack
@@ -544,16 +796,19 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
                 padded_plus[:,:shape_plus[1]] = plus_result['matrix']
                 plus_result['matrix'] = padded_plus
             all_matrices = np.vstack([plus_result['matrix'], minus_result['matrix']])
-            all_lengths = np.concatenate([plus_result['lengths'], minus_result['lengths']])
+            # all_lengths = np.concatenate([plus_result['lengths'], minus_result['lengths']])
             # out_dict[bw_plus] = {'regions': all_regions, 'matrix': all_matrices, 'lengths': all_lengths}
-            # Convert to sparse or normal df
-            if sparse:
-                out_dict[bw_plus] = pd.DataFrame(all_matrices, index=all_regions).astype(pd.SparseDtype("float", 0.0))
-            else:
-                out_dict[bw_plus] = pd.DataFrame(all_matrices, index=all_regions)
-            # shift columns so position 0 aligns with to 5' or 3'ends
+            # Convert to df
+            if verbose:
+                print(f"Converting to DataFrame")
+            out_dict[bw_plus] = pd.DataFrame(all_matrices, index=all_regions)
             # Clean up intermediate variables to free memory
+            if verbose:
+                print(f"Cleaning up intermediate variables")
             del plus_result, minus_result, all_regions, all_matrices
+            # shift columns so position 0 aligns with to 5' or 3'ends
+            if verbose:
+                print("Aligning flanks...")
             if align_3end:
                 out_dict[bw_plus].columns = out_dict[bw_plus].columns - out_dict[bw_plus].columns - flank_3
             else:
@@ -562,7 +817,142 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
         except Exception as e:
             print(f"Error processing {bw_plus} and {bw_minus}: {e}")
             continue
+    if verbose:
+        print(f"Finished!")
+    return out_dict
+
+def getMultipleMatricesSparse(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, 
+                        fill_na=True, pseudocounts=None, normalize_libsize=True,
+                        align_3end=False, skip_zeroes=False, chunk_baselimit=None,
+                        verbose=False):
     
+    '''
+    getMultipleMatrices optimized for sparse data (features with mostly 0 coverage).
+    Use when your bait protein binds in well defined sites (e.g TFs) as opposed to e.g. processive helicases or polymerases.
+    Get score matrices for positions in given regions (with optional flanks) from multiple BigWig files.
+    Matrix rows correspond to regions in BED.
+    Columns correpond to nucleotide positions in regions + flanks.
+
+    :param bw_paths_plus: list of paths to BigWig files (+ strand)
+    :type bw_paths_plus: list
+    :param bw_paths_minus: list of paths to BigWig files (- strand)
+    :type bw_paths_minus: list
+    :param bed_df: dataframe in BED format containing genomic coordinates of target regions
+    :type bed_df: pandas.DataFrame
+    :param flank_5: number of nt that input regions will be extended by on 5' side, defaults to 0
+    :type flank_5: int, optional
+    :param flank_3: number of nt that input regions will be extended by on 3' side, defaults to 0
+    :type flank_3: int, optional
+    :param fill_na: _description_, defaults to True
+    :type fill_na: bool, optional
+    :param pseudocounts: pseudocounts to add to datapoints, defaults to None
+    :type pseudocounts: float, optional
+    :param normalize_libsize: normalization to library size (sum of scores in a bigwig file), defaults to True
+    :type normalize_libsize: bool, optional
+    :param align_3end: if True, align profiles at the 3'end of features. Otherwise align at 5'end, defaults to False
+    :type align_3end: bool, optional
+    :return:  A dictionary containing score matrices for individual BigWig files. Dictionary keys are BigWig file names.
+    :rtype: dict
+    '''
+
+    # Split strands once to avoid repeated operations
+    bed_plus, bed_minus = bed_split_strands(bed_df)
+    
+    # Initialize output dictionary
+    out_dict = {}
+    
+    # Process BigWig files one at a time to minimize memory usage
+    for bw_plus, bw_minus in zip(bw_paths_plus, bw_paths_minus):
+        try:
+            # Process plus strand
+            plus_result = matrixFromBigWig(
+                bw_path=bw_plus,
+                bed_df=bed_plus,
+                flank_5=flank_5,
+                flank_3=flank_3,
+                fill_na=fill_na,
+                pseudocounts=pseudocounts,
+                align_3end=align_3end,
+                skip_zeroes=skip_zeroes,
+                chunk_baselimit=chunk_baselimit,
+                verbose=verbose
+                )
+            
+            # Process minus strand  
+            minus_result = matrixFromBigWig(
+                bw_path=bw_minus,
+                bed_df=bed_minus,
+                flank_5=flank_5,
+                flank_3=flank_3,
+                fill_na=fill_na,
+                pseudocounts=pseudocounts,
+                align_3end=align_3end,
+                skip_zeroes=skip_zeroes,
+                chunk_baselimit=chunk_baselimit,
+                verbose=verbose
+                )
+            if verbose:
+                print("Finished processing BigWigs")
+            
+            # Apply library size normalization if requested
+            if normalize_libsize:
+                if verbose:
+                    print(f"Normalizing by library size...", end="")
+                # Calculate library sizes
+                with pyBigWig.open(bw_plus) as bwp:
+                    libsize_plus = int(bwp.header()['sumData'])
+                with pyBigWig.open(bw_minus) as bwm:
+                    libsize_minus = int(bwm.header()['sumData'])
+                
+                libsize_total = libsize_plus + libsize_minus
+                
+                # Normalize in-place to save memory
+                if libsize_total > 0:
+                    plus_result['matrix'] = plus_result['matrix'] / libsize_total
+                    minus_result['matrix'] = minus_result['matrix'] / libsize_total
+                if verbose:
+                    print("OK")
+            
+            # Combine strands and store result
+            if verbose:
+                print(f"Combining strand matrices")
+            all_regions = np.concatenate([plus_result['regions'], minus_result['regions']])
+            # Pad shorter matrix to make them stack
+            shape_plus = np.shape(plus_result['matrix'])
+            shape_minus = np.shape(minus_result['matrix'])
+            if shape_plus[1] > shape_minus[1]:
+                padded_minus = lil_array(np.zeros((shape_minus[0], shape_plus[1]), dtype=np.float32))
+                padded_minus[:, :shape_minus[1]] = minus_result['matrix']
+                minus_result['matrix'] = coo_array(padded_minus)
+                
+            elif shape_plus[1] < shape_minus[1]:
+                padded_plus = lil_array(np.zeros((shape_plus[0], shape_minus[1]), dtype=np.float32))
+                padded_plus[:,:shape_plus[1]] = plus_result['matrix']
+                plus_result['matrix'] = coo_array(padded_plus)
+            all_matrices = vstack([plus_result['matrix'], minus_result['matrix']])
+            # all_lengths = np.concatenate([plus_result['lengths'], minus_result['lengths']])
+            # out_dict[bw_plus] = {'regions': all_regions, 'matrix': all_matrices, 'lengths': all_lengths}
+            # Convert to sparse df
+            if verbose:
+                print(f"Converting to DataFrame")
+            out_dict[bw_plus] = pd.DataFrame.sparse.from_spmatrix(all_matrices, index=all_regions)
+            # Clean up intermediate variables to free memory
+            if verbose:
+                print(f"Cleaning up intermediate variables")
+            del plus_result, minus_result, all_regions, all_matrices
+            # shift columns so position 0 aligns with to 5' or 3'ends
+            if verbose:
+                print("Aligning flanks...")
+            if align_3end:
+                out_dict[bw_plus].columns = out_dict[bw_plus].columns - out_dict[bw_plus].columns - flank_3
+            else:
+                out_dict[bw_plus].columns = out_dict[bw_plus].columns - 50
+                       
+        except Exception as e:
+            print(f"Error processing {bw_plus} and {bw_minus}: {e}")
+            continue
+    if verbose:
+        print(f"Finished!")
     return out_dict
 
 def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
