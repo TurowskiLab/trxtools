@@ -55,7 +55,7 @@ chroms = bw_A.chroms()
 chroms_touple = [i for i in chroms.items()] 
 chroms_touple.sort(key=lambda x: int(x[1]), reverse=True)  # Sort by chromosome len - longest first
 # print(chroms_touple)
-chroms_touple = [c for c in chroms_touple if c[0] in ["chrM"]]  # Include listed chromosomes only, e.g. ["chrM"] for mitochondrial DNA
+# chroms_touple = [c for c in chroms_touple if c[0] in ["chrM"]]  # Include listed chromosomes only, e.g. ["chrM"] for mitochondrial DNA
 
 paths = {}
 for c in chroms_touple:
@@ -94,7 +94,7 @@ chroms = bw_A.chroms()
 chroms_touple = [i for i in chroms.items()] 
 chroms_touple.sort(key=lambda x: int(x[1]), reverse=True)  # Sort by chromosome len - longest first
 # print(chroms_touple)
-chroms_touple = [c for c in chroms_touple if c[0] in ["chrM"]]  # Include listed chromosomes only, e.g. ["chrM"] for mitochondrial DNA
+# chroms_touple = [c for c in chroms_touple if c[0] in ["chrM"]]  # Include listed chromosomes only, e.g. ["chrM"] for mitochondrial DNA
 
 paths = {}
 for c in chroms_touple:
