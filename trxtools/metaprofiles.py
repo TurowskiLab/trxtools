@@ -275,7 +275,7 @@ def matrixFromBigWig(
                 padded_arr = np.zeros(max_length, dtype=np.float32)
                 # Pad on 5'end side if aligning to 3'end
                 if align_3end:
-                    padded_arr[actual_length:] = arr
+                    padded_arr[-actual_length:] = arr
                 else:
                     padded_arr[:actual_length] = arr
                 arr = padded_arr
@@ -481,7 +481,7 @@ def matrixFromBigWigSparse(
                 padded_arr = np.zeros(max_length, dtype=np.float32)
                 # Pad on 5'end side if aligning to 3'end
                 if align_3end:
-                    padded_arr[actual_length:] = arr
+                    padded_arr[-actual_length:] = arr
                 else:
                     padded_arr[:actual_length] = arr
                 arr = padded_arr
@@ -721,6 +721,8 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
     :rtype: dict
     '''
 
+    warn = False
+
     # Split strands once to avoid repeated operations
     bed_plus, bed_minus = bed_split_strands(bed_df)
     
@@ -783,7 +785,6 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
             if verbose:
                 print(f"Combining strand matrices")
             all_regions = np.concatenate([plus_result['regions'], minus_result['regions']])
-            max(np.shape(plus_result['matrix'])[1], np.shape(minus_result['matrix'])[1])
             # Pad shorter matrix to make them stack
             shape_plus = np.shape(plus_result['matrix'])
             shape_minus = np.shape(minus_result['matrix'])
@@ -810,15 +811,21 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
             if verbose:
                 print("Aligning flanks...")
             if align_3end:
-                out_dict[bw_plus].columns = out_dict[bw_plus].columns - out_dict[bw_plus].columns - flank_3
+                # Because how matrixFromBigWig works, the 3'end is always at the end of the matrix
+                # Then we just need to subtract max gene length and add 3'flank to set 0 at the correct position
+                out_dict[bw_plus].columns = out_dict[bw_plus].columns - max(out_dict[bw_plus].columns) + flank_3
             else:
-                out_dict[bw_plus].columns = out_dict[bw_plus].columns - 50
+                out_dict[bw_plus].columns = out_dict[bw_plus].columns - flank_5
                        
         except Exception as e:
             print(f"Error processing {bw_plus} and {bw_minus}: {e}")
+            warn = True
             continue
     if verbose:
-        print(f"Finished!")
+        if warn:
+            print(f"Execution finished with some errors, examine output for details")
+        else:
+            print(f"Finished!")
     return out_dict
 
 def getMultipleMatricesSparse(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, 
@@ -944,9 +951,9 @@ def getMultipleMatricesSparse(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, 
             if verbose:
                 print("Aligning flanks...")
             if align_3end:
-                out_dict[bw_plus].columns = out_dict[bw_plus].columns - out_dict[bw_plus].columns - flank_3
+                out_dict[bw_plus].columns = out_dict[bw_plus].columns - max(out_dict[bw_plus].columns) + flank_3
             else:
-                out_dict[bw_plus].columns = out_dict[bw_plus].columns - 50
+                out_dict[bw_plus].columns = out_dict[bw_plus].columns - flank_5
                        
         except Exception as e:
             print(f"Error processing {bw_plus} and {bw_minus}: {e}")
@@ -954,6 +961,33 @@ def getMultipleMatricesSparse(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, 
     if verbose:
         print(f"Finished!")
     return out_dict
+
+def normalizeToLibrary(metaprofile=pd.DataFrame(), bigwig_plus=[], bigwig_minus=[]):
+    '''Normalize metaprofile to library size (sum of scores in a bigwig file).
+    :param metaprofile: DataFrame with metaprofile data
+    :type metaprofile: pandas.DataFrame
+    :param bigwig_plus: list of paths to BigWig files for + strand
+    :type bigwig_plus: list
+    :param bigwig_minus: list of paths to BigWig files for - strand
+    :type bigwig_minus: list
+    :return: normalized metaprofile DataFrame
+    :rtype: pandas.DataFrame
+    '''
+    out_df = metaprofile.copy()
+    if len(bigwig_plus) != len(bigwig_minus):
+        raise Exception("Number of + and - strand BigWig files must match")
+    
+    for bw_plus, bw_minus in zip(bigwig_plus, bigwig_minus):
+        with pyBigWig.open(bw_plus) as bwp:
+            lib_size_plus = int(bwp.header()['sumData'])
+            bwp.close()
+        with pyBigWig.open(bw_minus) as bwm:
+            lib_size_minus = int(bwm.header()['sumData'])
+            bwm.close()
+        out_df[bw_plus] = out_df[bw_plus] / (lib_size_plus+lib_size_minus)
+    return out_df
+    
+
 
 def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
                  g='references/GRCh38.primary_assembly.genome.cleaned.len', 
@@ -982,7 +1016,7 @@ def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
     
     return out_dict
 
-def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False, subset=None):
+def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False, subset=None, name_col=None):
     '''Calculate metaprofiles from score matrices by aggregating each position in all regions.
 
     :param matrix_dict: Dict containing score matrices returned by get_multiple_matrices()
@@ -1000,13 +1034,23 @@ def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False, subset=N
         raise Exception("Wrong agg_type; available values: 'mean', 'median', 'sum'")
 
     if isinstance(subset, pd.DataFrame):
-        matrix_dict = {key: value[value['region'].isin(subset.index)] for key, value in matrix_dict.items()}
+        if name_col is not None:
+            matrix_dict = {key: value[value[name_col].isin(subset.index)] for key, value in matrix_dict.items()}
+        else:
+            matrix_dict = {key: value[value.index.isin(subset.index)] for key, value in matrix_dict.items()}
     elif isinstance(subset, list):
-        matrix_dict = {key: value[value['region'].isin(subset)] for key, value in matrix_dict.items()}
+        if name_col is not None:
+            matrix_dict = {key: value[value[name_col].isin(subset)] for key, value in matrix_dict.items()}
+        else:
+            matrix_dict = {key: value[value.index.isin(subset)] for key, value in matrix_dict.items()}
+        # matrix_dict = {key: value[value['region'].isin(subset)] for key, value in matrix_dict.items()}
 
 
     if normalize_internal:
-        dropped = {key: value.drop('region', axis=1).div(value.sum(axis=1,numeric_only=True),axis=0) for key, value in matrix_dict.items()}
+        if name_col is not None:
+            dropped = {key: value.set_index(name_col).div(value.sum(axis=1,numeric_only=True),axis=0) for key, value in matrix_dict.items()}
+        else:
+            dropped = {key: value.div(value.sum(axis=1,numeric_only=True),axis=0) for key, value in matrix_dict.items()}
         return pd.DataFrame({key: value.agg(agg_type,numeric_only=True) for key, value in dropped.items()})
 
     else:
