@@ -312,7 +312,8 @@ def binCollect3(s1=pd.Series(dtype="float"), lengths=[500,72,500], bins=[50, 10,
 #############        major trxtools
 
 def preprocess(input_df=pd.DataFrame(), let_in=[''], let_out=['wont_find_this_string'],
-              stats=False, smooth=True , window=10, win_type='blackman', pseudocounts_param=True, ntotal_param=True):
+              stats=False, smooth=True , window=10, win_type='blackman', 
+              pseudocounts_param=True, pseudo_value=0.01, ntotal_param=True):
     '''Combines methods.filterExp and expStats. Returns DataFrame with chosen experiments, optionally apply smoothing and stats.
 
     :param input_df: DataFrame containing the input data
@@ -349,7 +350,7 @@ def preprocess(input_df=pd.DataFrame(), let_in=[''], let_out=['wont_find_this_st
 
     # optional arguments
     if pseudocounts_param:
-        input_df = pseudocounts(input_df)
+        input_df = pseudocounts(input_df, value=pseudo_value)
     if ntotal_param:
         input_df = ntotal(input_df)
 

@@ -6,7 +6,7 @@ import warnings
 # BigWig functions for extracting data from BigWig files. 
 # DEPRECATION WARNING: These functions will be removed in a future version.
 
-def strip_BigWig_names(files=list()):
+def strip_BigWig_names(files=list(), suffix=".bw"):
     '''Remove _fwd.bw and _rev.bw from the list of BigWig files
 
     :param files: list of filenames, defaults to list()
@@ -20,9 +20,9 @@ def strip_BigWig_names(files=list()):
 
     warnings.warn("The strip_BigWig_names function is deprecated and will be removed in a future version.", DeprecationWarning)
     #returns uniq names for *fwd.bw and *rev.bw files
-    return list(set([f.replace("_fwd.bw","").replace("_rev.bw","") for f in files]))
+    return list(set([f.replace("_fwd"+suffix,"").replace("_rev"+suffix,"") for f in files]))
 
-def getSeqData(gene_name, data_path, name, gtf, ranges=0):
+def getSeqData(gene_name, data_path, name, gtf, ranges=0, suffix=".bw"):
     '''Load BigWig data for a gene/chromosome region and return as pandas Series.
 
     :param gene_name: Name of the gene/chromosome to retrieve data for.
@@ -49,10 +49,10 @@ def getSeqData(gene_name, data_path, name, gtf, ranges=0):
 
     strand, chromosome, coordinates = gtf.strand(gene_name), gtf.chromosome(gene_name), gtf.chromosomeCoordinates(gene_name)
     if strand == "+":
-        bw = pyBigWig.open(data_path+name+"_fwd.bw")
+        bw = pyBigWig.open(data_path+name+"_fwd"+suffix)
         return pd.Series(bw.values(chromosome,min(coordinates)-ranges,max(coordinates)+ranges))
     if strand == "-":
-        bw = pyBigWig.open(data_path+name+"_rev.bw")
+        bw = pyBigWig.open(data_path+name+"_rev"+suffix)
         return pd.Series(bw.values(chromosome,min(coordinates)-ranges,max(coordinates)+ranges)[::-1])
 
 def geneFromBigWig(gene_name, data_path, data_files, gtf, ranges=0,verbose=False):
@@ -85,6 +85,48 @@ def geneFromBigWig(gene_name, data_path, data_files, gtf, ranges=0,verbose=False
     for name in strip_BigWig_names(data_files):
         if verbose==True: print(name)
         df_t1[name] = getSeqData(gene_name, data_path, name, gtf, ranges=ranges)
+    return df_t1
+
+def geneFromBigWigTree(gene_name, data_path, gtf, ranges=0,verbose=False, suffix=".bw"):
+    '''Extracts nucleotide sequences and associated data for a given gene from BigWig files.
+    
+    :param gene_name: Name of the gene to extract data for.
+    :type gene_name: str
+    :param data_path: Path to the directory containing subdirectories containing BigWig files.
+    :type data_path: str
+    :param gtf: GTF file object containing gene annotations.
+    :type gtf: GTF
+    :param ranges: Range of nucleotides to extract, defaults to 0.
+    :param verbose: If True, prints the name of each BigWig file being processed, defaults to False.
+    
+    :return: DataFrame containing nucleotide sequences and associated data.
+    :rtype: pd.DataFrame
+
+    :example:
+    
+    >>> gtf = GTF("/path/to/annotations.gtf")
+    >>> df = geneFromBigWig("BRCA1", "/path/to/bigwig/", gtf, ranges=1000, verbose=True)
+    >>> print(df.head())
+    '''    
+    
+    df_t1 = pd.DataFrame()
+    df_t1["nucleotide"] = "_".join(gtf.genomicSequence(gene_name,ranges=ranges)).split("_")
+    # Loop through each subdirectory in the data path
+    for folder in os.listdir(data_path):
+        # Check if the item is a directory
+        if not os.path.isdir(data_path + folder):
+            continue
+        if verbose==True: print("Folder: "+folder)
+        # Get the list of BigWig names in the subdirectory
+        names = strip_BigWig_names(files=[f for f in os.listdir(data_path+folder)], suffix=suffix)
+        if verbose==True: print("Number of datasets in folder: ", len(names))
+        
+        for name in names:
+            # getSeqData function retrieves data for each BigWig file
+            if verbose==True: print(name)
+            df_t1[name] = getSeqData(gene_name, data_path + folder + "/", name, gtf, ranges=ranges, suffix=suffix)
+    
+    print("Number of datasets: ", len(df_t1.T)-1)
     return df_t1
 
 def foldingFromBigWig(gene_name, data_path, data_files, gtf, ranges=0,range5end=0,offset=15):

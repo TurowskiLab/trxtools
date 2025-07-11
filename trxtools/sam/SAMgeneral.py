@@ -366,29 +366,36 @@ def saveBigWig(paths=dict(),suffix=str(),bw_name=str(),chroms=list(),pkl=True):
         for p in paths.keys():
             c = p.replace(suffix,"")
             df = pd.read_pickle(paths[p],compression='gzip')
-            # try:
-            #     stops = df.index.to_numpy()
-            #     starts = stops-1
-            #     vals=df[c].to_numpy()
-            #     bw.addEntries([c] * len(starts), starts, ends=stops, values=vals)
+            vals=df[p]
+            if vals.empty: continue #skip empty chromosomes
+            if vals.index.to_list()[0] == 0: # if index starts from 0, we need to shift it by 1
+                vals.index = vals.index + 1
+            stops = df.index.to_numpy()
+            starts = stops-1
+            bw.addEntries([c] * len(starts), starts, ends=stops, values=vals.to_numpy())
             # except: #dealing with potential problems - unclear the origin of the problems
             #     print(c+" using except")
-            df = df.sort_index()
-            stops = df.index.to_numpy()
-            starts = list(stops-1)
-            if len(starts)==0: continue
-            vals=df[c].to_list()
-            bw.addEntries([c] * len(starts), starts, ends=stops.tolist(), values=vals)
+            # df = df.sort_index()          
+            
+            # # vals=df[p].dropna()
+            # # if vals.empty: continue
+            # # starts = vals.index.to_numpy()
+            # # stops = starts+1
+
+            # stops = df.index.to_numpy()
+            # starts = list(stops-1)
+            # if len(starts)==0: continue
+            # vals=df[c].to_list()
+            # bw.addEntries([c] * len(starts), starts, ends=stops.tolist(), values=vals)
     else:
         for p in paths.keys():
             c = p.replace(suffix,"")
             vals = paths[p]
             vals = pd.Series(vals).dropna()
-            # vals = pd.Series(vals)
+            if vals.empty: continue
             starts = vals.index.to_numpy()
             stops = starts+1
-            # stops = np.arange(1,chr_len+1)
-            # starts = stops-1
+
             bw.addEntries([c] * len(starts), starts, ends=stops, values=vals.to_numpy())
             
     bw.close()
