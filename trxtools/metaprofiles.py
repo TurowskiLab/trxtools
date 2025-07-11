@@ -134,6 +134,35 @@ def readBED(bed_path):
     return bed_df
 
 ### level -2
+def trim_bed(row, align_3end, len_cutoff):
+            region_length = row[2] - row[1]
+            if align_3end:
+                # go len_cutoff bases upstream from 3'end
+                if region_length > len_cutoff:
+                    if row[5] == '+':
+                        row[1] = row[2] - len_cutoff
+                    elif row[5] == '-':
+                        row[2] = row[1] + len_cutoff
+            else:  # go len_cutoff bases downstream from 5'end
+                if region_length > len_cutoff:
+                    if row[5] == '+':
+                        row[2] = row[1] + len_cutoff
+                    elif row[5] == '-':
+                        row[1] = row[2] - len_cutoff
+            return row
+
+def get_chrom_lens(bw):
+    '''Get chromosome lengths from a BigWig file.
+
+    :param bw: A pyBigWig object to retrieve chromosome lengths from.
+    :type bw: pyBigWig
+    :return: A dictionary with chromosome names as keys and their lengths as values.
+    :rtype: dict
+    '''
+    # Get chromosome lengths from a BigWig file.
+    chrom_lens = {chrom: bw.chroms()[chrom] for chrom in bw.chroms()}
+    return chrom_lens
+
 def get_bw_data(bed_row, bw, flank_5=0, flank_3=0, align_3end=False):
     '''Retrieve BigWig scores for positions in a given region, optionally including flanks of given length.
 
@@ -186,7 +215,7 @@ def bed_split_strands(bed_df):
 def matrixFromBigWig(
         bw_path, bed_df, flank_5=0, flank_3=0,
         fill_na=True, pseudocounts=None,
-        align_3end=False, skip_zeroes=False,
+        align_3end=False, len_cutoff=None, skip_zeroes=False,
         chunk_baselimit=None, verbose=False):
     '''Get matrix with BigWig scores for all regions in a bed df from a single BigWig file.
     Matrix rows correspond to regions in BED.
@@ -210,14 +239,32 @@ def matrixFromBigWig(
     :return: Dictionary with 'regions' (numpy array), 'matrix' (numpy array), and 'lengths' (numpy array) keys
     :rtype: dict
     '''
+
+
+    # Sanity checks for len_cutoff
+    if len_cutoff is not None:
+        if not isinstance(len_cutoff, int):
+            raise ValueError("len_cutoff must be an integer")
+        else:
+            if not align_3end and flank_3 > 0:
+                raise ValueError("len_cutoff is not compatible with flank_3 when align_3end=False.")
+            if align_3end and flank_5 > 0:
+                raise ValueError("len_cutoff is not compatible with flank_5 when align_3end=True.")
+            
     if bed_df.empty:
         return {'regions': np.array([]), 'matrix': np.array([[]], dtype=np.float32), 'lengths': np.array([])}
 
+    # Trim regions in BED when using len_cutoff
+    if len_cutoff is not None:
+        bed_df = bed_df.apply(trim_bed, axis=1, align_3end=align_3end, len_cutoff=len_cutoff)
+        # No need to check lengths:
+        max_length = flank_5 + flank_3 + len_cutoff
+    else:
     # First pass: determine maximum region length for padding
-    max_length = 0
-    for _, row in bed_df.iterrows():
-        region_length = (row[2] - row[1]) + flank_5 + flank_3
-        max_length = max(max_length, region_length)
+        max_length = 0
+        for _, row in bed_df.iterrows():
+            region_length = (row[2] - row[1]) + flank_5 + flank_3
+            max_length = max(max_length, region_length)
     
     if max_length == 0:
         return {'regions': np.array([]), 'matrix': np.array([[]], dtype=np.float32), 'lengths': np.array([])}
@@ -225,7 +272,9 @@ def matrixFromBigWig(
     bw = pyBigWig.open(bw_path)
     if verbose:
         print(f"Opened BigWig file: {bw_path}")
-        print(f"Max region length (including flanks): {max_length}")        
+        print(f"Max region length (including flanks): {max_length}")
+    # Get chromosome lengths
+    chrom_lens = get_chrom_lens(bw)  
     try:
         data_arrays = []
         region_names = []
@@ -245,9 +294,23 @@ def matrixFromBigWig(
             
             # Get BigWig values as numpy array directly
             if row[5] == '+':
-                values = bw.values(row[0], int(row[1]-flank_5), int(row[2]+flank_3))
+                left = int(row[1]-flank_5)
+                right = int(row[2]+flank_3)
+                # Trim region if it extends beyond chromosome length
+                if left < 0:
+                    left = 0
+                if right > chrom_lens[row[0]]:
+                    right = chrom_lens[row[0]]
+                values = bw.values(row[0], left, right)
             else:  # minus strand
-                values = bw.values(row[0], int(row[1]-flank_3), int(row[2]+flank_5))
+                left = int(row[1]-flank_3)
+                right = int(row[2]+flank_5)
+                # Trim region if it extends beyond chromosome length
+                if left < 0:
+                    left = 0
+                if right > chrom_lens[row[0]]:
+                    right = chrom_lens[row[0]]
+                values = bw.values(row[0], left, right)
                 values = values[::-1] # reverse for minus strand
             
             # Convert to numpy array with memory-efficient dtype
@@ -387,7 +450,7 @@ def matrixFromBigWig(
 def matrixFromBigWigSparse(
         bw_path, bed_df, flank_5=0, flank_3=0,
         fill_na=True, pseudocounts=None,
-        align_3end=False, skip_zeroes=False,
+        align_3end=False, len_cutoff=None, skip_zeroes=False,
         chunk_baselimit=None, verbose=False):
     '''
     matrixFromBigWig optimized for sparse data (features with mostly 0 coverage).
@@ -415,14 +478,31 @@ def matrixFromBigWigSparse(
     :return: Dictionary with 'regions' (numpy array), 'matrix' (numpy array), and 'lengths' (numpy array) keys
     :rtype: dict
     '''
+
+    # Sanity checks for len_cutoff
+    if len_cutoff is not None:
+        if not isinstance(len_cutoff, int):
+            raise ValueError("len_cutoff must be an integer")
+        else:
+            if not align_3end and flank_3 > 0:
+                raise ValueError("len_cutoff is not compatible with flank_3 when align_3end=False.")
+            if align_3end and flank_5 > 0:
+                raise ValueError("len_cutoff is not compatible with flank_5 when align_3end=True.")
+            
     if bed_df.empty:
         return {'regions': np.array([]), 'matrix': np.array([[]], dtype=np.float32), 'lengths': np.array([])}
 
+    # Trim regions in BED when using len_cutoff
+    if len_cutoff is not None:
+        bed_df = bed_df.apply(trim_bed, axis=1, align_3end=align_3end, len_cutoff=len_cutoff)
+        # No need to check lengths:
+        max_length = flank_5 + flank_3 + len_cutoff
+    else:
     # First pass: determine maximum region length for padding
-    max_length = 0
-    for _, row in bed_df.iterrows():
-        region_length = (row[2] - row[1]) + flank_5 + flank_3
-        max_length = max(max_length, region_length)
+        max_length = 0
+        for _, row in bed_df.iterrows():
+            region_length = (row[2] - row[1]) + flank_5 + flank_3
+            max_length = max(max_length, region_length)
     
     if max_length == 0:
         return {'regions': np.array([]), 'matrix': np.array([[]], dtype=np.float32), 'lengths': np.array([])}
@@ -430,7 +510,9 @@ def matrixFromBigWigSparse(
     bw = pyBigWig.open(bw_path)
     if verbose:
         print(f"Opened BigWig file: {bw_path}")
-        print(f"Max region length (including flanks): {max_length}")        
+        print(f"Max region length (including flanks): {max_length}") 
+    # Get chromosome lengths
+    chrom_lens = get_chrom_lens(bw)       
     try:
         data_arrays = []
         region_names = []
@@ -451,9 +533,23 @@ def matrixFromBigWigSparse(
             
             # Get BigWig values as numpy array directly
             if row[5] == '+':
-                values = bw.values(row[0], int(row[1]-flank_5), int(row[2]+flank_3))
+                left = int(row[1]-flank_5)
+                right = int(row[2]+flank_3)
+                # Trim region if it extends beyond chromosome length
+                if left < 0:
+                    left = 0
+                if right > chrom_lens[row[0]]:
+                    right = chrom_lens[row[0]]
+                values = bw.values(row[0], left, right)
             else:  # minus strand
-                values = bw.values(row[0], int(row[1]-flank_3), int(row[2]+flank_5))
+                left = int(row[1]-flank_3)
+                right = int(row[2]+flank_5)
+                # Trim region if it extends beyond chromosome length
+                if left < 0:
+                    left = 0
+                if right > chrom_lens[row[0]]:
+                    right = chrom_lens[row[0]]
+                values = bw.values(row[0], left, right)
                 values = values[::-1] # reverse for minus strand
             
             # Convert to numpy array with memory-efficient dtype
@@ -692,7 +788,7 @@ def peak2matrice(bed_df=pd.DataFrame, peak_file_path='',
 ### level 0
 def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, 
                         fill_na=True, pseudocounts=None, normalize_libsize=True,
-                        align_3end=False, skip_zeroes=False, chunk_baselimit=None,
+                        align_3end=False, len_cutoff=None, skip_zeroes=False, chunk_baselimit=None,
                         verbose=False):
     
     '''Get score matrices for positions in given regions (with optional flanks) from multiple BigWig files.
@@ -741,6 +837,7 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
                 fill_na=fill_na,
                 pseudocounts=pseudocounts,
                 align_3end=align_3end,
+                len_cutoff=len_cutoff,
                 skip_zeroes=skip_zeroes,
                 chunk_baselimit=chunk_baselimit,
                 verbose=verbose
@@ -755,6 +852,7 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
                 fill_na=fill_na,
                 pseudocounts=pseudocounts,
                 align_3end=align_3end,
+                len_cutoff=len_cutoff,
                 skip_zeroes=skip_zeroes,
                 chunk_baselimit=chunk_baselimit,
                 verbose=verbose
@@ -830,7 +928,7 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
 
 def getMultipleMatricesSparse(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_3=0, 
                         fill_na=True, pseudocounts=None, normalize_libsize=True,
-                        align_3end=False, skip_zeroes=False, chunk_baselimit=None,
+                        align_3end=False, len_cutoff=None, skip_zeroes=False, chunk_baselimit=None,
                         verbose=False):
     
     '''
@@ -872,7 +970,7 @@ def getMultipleMatricesSparse(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, 
     for bw_plus, bw_minus in zip(bw_paths_plus, bw_paths_minus):
         try:
             # Process plus strand
-            plus_result = matrixFromBigWig(
+            plus_result = matrixFromBigWigSparse(
                 bw_path=bw_plus,
                 bed_df=bed_plus,
                 flank_5=flank_5,
@@ -880,13 +978,14 @@ def getMultipleMatricesSparse(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, 
                 fill_na=fill_na,
                 pseudocounts=pseudocounts,
                 align_3end=align_3end,
+                len_cutoff=len_cutoff,
                 skip_zeroes=skip_zeroes,
                 chunk_baselimit=chunk_baselimit,
                 verbose=verbose
                 )
             
             # Process minus strand  
-            minus_result = matrixFromBigWig(
+            minus_result = matrixFromBigWigSparse(
                 bw_path=bw_minus,
                 bed_df=bed_minus,
                 flank_5=flank_5,
@@ -894,6 +993,7 @@ def getMultipleMatricesSparse(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, 
                 fill_na=fill_na,
                 pseudocounts=pseudocounts,
                 align_3end=align_3end,
+                len_cutoff=len_cutoff,
                 skip_zeroes=skip_zeroes,
                 chunk_baselimit=chunk_baselimit,
                 verbose=verbose
