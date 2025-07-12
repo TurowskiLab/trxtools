@@ -81,7 +81,12 @@ def geneFromBigWig(gene_name, data_path, data_files, gtf, ranges=0,verbose=False
     
     warnings.warn("The geneFromBigWig function is deprecated and will be removed in a future version.", DeprecationWarning)
     df_t1 = pd.DataFrame()
-    df_t1["nucleotide"] = "_".join(gtf.genomicSequence(gene_name,ranges=ranges)).split("_")
+    try: df_t1["nucleotide"] = "_".join(gtf.genomicSequence(gene_name,ranges=ranges)).split("_")
+    except Exception as e:
+        print(f"Error retrieving sequence for {gene_name}: {e}")
+        df_t1["nucleotide"] = []
+
+    # Loop through each BigWig file in the provided list
     for name in strip_BigWig_names(data_files):
         if verbose==True: print(name)
         df_t1[name] = getSeqData(gene_name, data_path, name, gtf, ranges=ranges)
