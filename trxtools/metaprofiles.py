@@ -882,19 +882,27 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
             # Combine strands and store result
             if verbose:
                 print(f"Combining strand matrices")
-            all_regions = np.concatenate([plus_result['regions'], minus_result['regions']])
-            # Pad shorter matrix to make them stack
-            shape_plus = np.shape(plus_result['matrix'])
-            shape_minus = np.shape(minus_result['matrix'])
-            if shape_plus[1] > shape_minus[1]:
-                padded_minus = np.zeros((shape_minus[0], shape_plus[1]), dtype=np.float32)
-                padded_minus[:, :shape_minus[1]] = minus_result['matrix']
-                minus_result['matrix'] = padded_minus
-            elif shape_plus[1] < shape_minus[1]:
-                padded_plus = np.zeros((shape_plus[0], shape_minus[1]), dtype=np.float32)
-                padded_plus[:,:shape_plus[1]] = plus_result['matrix']
-                plus_result['matrix'] = padded_plus
-            all_matrices = np.vstack([plus_result['matrix'], minus_result['matrix']])
+            if plus_result['regions'].size > 0 and minus_result['regions'].size > 0:
+                all_regions = np.concatenate([plus_result['regions'], minus_result['regions']])
+                # Pad shorter matrix to make them stack
+                shape_plus = np.shape(plus_result['matrix'])
+                shape_minus = np.shape(minus_result['matrix'])
+                if shape_plus[1] > shape_minus[1]:
+                    padded_minus = np.zeros((shape_minus[0], shape_plus[1]), dtype=np.float32)
+                    padded_minus[:, :shape_minus[1]] = minus_result['matrix']
+                    minus_result['matrix'] = padded_minus
+                elif shape_plus[1] < shape_minus[1]:
+                    padded_plus = np.zeros((shape_plus[0], shape_minus[1]), dtype=np.float32)
+                    padded_plus[:,:shape_plus[1]] = plus_result['matrix']
+                    plus_result['matrix'] = padded_plus
+                all_matrices = np.vstack([plus_result['matrix'], minus_result['matrix']])
+            elif plus_result['regions'].size == 0:
+                all_regions = minus_result['regions']
+                all_matrices = minus_result['matrix']
+            elif minus_result['regions'].size == 0:
+                all_regions = plus_result['regions']
+                all_matrices = plus_result['matrix']
+            
             # all_lengths = np.concatenate([plus_result['lengths'], minus_result['lengths']])
             # out_dict[bw_plus] = {'regions': all_regions, 'matrix': all_matrices, 'lengths': all_lengths}
             # Convert to df
@@ -1023,20 +1031,26 @@ def getMultipleMatricesSparse(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, 
             # Combine strands and store result
             if verbose:
                 print(f"Combining strand matrices")
-            all_regions = np.concatenate([plus_result['regions'], minus_result['regions']])
-            # Pad shorter matrix to make them stack
-            shape_plus = np.shape(plus_result['matrix'])
-            shape_minus = np.shape(minus_result['matrix'])
-            if shape_plus[1] > shape_minus[1]:
-                padded_minus = lil_array(np.zeros((shape_minus[0], shape_plus[1]), dtype=np.float32))
-                padded_minus[:, :shape_minus[1]] = minus_result['matrix']
-                minus_result['matrix'] = coo_array(padded_minus)
-                
-            elif shape_plus[1] < shape_minus[1]:
-                padded_plus = lil_array(np.zeros((shape_plus[0], shape_minus[1]), dtype=np.float32))
-                padded_plus[:,:shape_plus[1]] = plus_result['matrix']
-                plus_result['matrix'] = coo_array(padded_plus)
-            all_matrices = vstack([plus_result['matrix'], minus_result['matrix']])
+            if plus_result['regions'].size > 0 and minus_result['regions'].size > 0:
+                all_regions = np.concatenate([plus_result['regions'], minus_result['regions']])
+                # Pad shorter matrix to make them stack
+                shape_plus = np.shape(plus_result['matrix'])
+                shape_minus = np.shape(minus_result['matrix'])
+                if shape_plus[1] > shape_minus[1]:
+                    padded_minus = lil_array(np.zeros((shape_minus[0], shape_plus[1]), dtype=np.float32))
+                    padded_minus[:, :shape_minus[1]] = minus_result['matrix']
+                    minus_result['matrix'] = coo_array(padded_minus)
+                elif shape_plus[1] < shape_minus[1]:
+                    padded_plus = lil_array(np.zeros((shape_plus[0], shape_minus[1]), dtype=np.float32))
+                    padded_plus[:,:shape_plus[1]] = plus_result['matrix']
+                    plus_result['matrix'] = coo_array(padded_plus)
+                all_matrices = vstack([plus_result['matrix'], minus_result['matrix']])
+            elif plus_result['regions'].size == 0:
+                all_regions = minus_result['regions']
+                all_matrices = minus_result['matrix']
+            elif minus_result['regions'].size == 0:
+                all_regions = plus_result['regions']
+                all_matrices = plus_result['matrix']
             # all_lengths = np.concatenate([plus_result['lengths'], minus_result['lengths']])
             # out_dict[bw_plus] = {'regions': all_regions, 'matrix': all_matrices, 'lengths': all_lengths}
             # Convert to sparse df
