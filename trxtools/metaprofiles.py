@@ -1292,28 +1292,76 @@ def regionScore(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0
         align_3end=False
         )
     # Aggregate all positions per gene using chosen function
-    result_dict = {}
-    for key, value in outdict.items():
-        regions = value['regions']
-        matrix = value['matrix']
-        lengths = value['lengths']
-        
-        # Calculate aggregated score for each region
-        region_scores = []
-        for i, length in enumerate(lengths):
-            row_data = matrix[i, :length]  # Only consider actual data, not padding
-            if agg_type == 'sum':
-                score = np.sum(row_data)
-            elif agg_type == 'mean':
-                score = np.mean(row_data)
-            elif agg_type == 'median':
-                score = np.median(row_data)
-            region_scores.append(score)
-        
-        result_dict[key] = pd.Series(region_scores, index=regions)
-    
-    out_df = pd.DataFrame(result_dict)
+    outdict = {key:value.agg(func=agg_type, axis=1) for key, value in outdict.items()}
+    out_df = pd.DataFrame(outdict)
     return out_df
+
+
+## OLD VERSION
+## kept for debugging and backwards compatibility
+## remove in future
+# def regionScore(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True):
+#     '''Calculate coverage or statistic for multiple regions in multiple BigWig files.
+
+#     :param bw_paths_plus: list of paths to BigWig files (+ strand)
+#     :type bw_paths_plus: list
+#     :param bw_paths_minus: list of paths to BigWig files (- strand)
+#     :type bw_paths_minus: list
+#     :param bed_df: dataframe in BED format containing genomic coordinates of target regions
+#     :type bed_df: pandas.DataFrame
+#     :param agg_type: operation to perform on region scores. Available options: 'sum', 'mean', 'median', defaults to 'sum'
+#     :type agg_type: str, optional
+#     :param flank_5: number of nt that input regions will be extended by on 5' side, defaults to 0
+#     :type flank_5: int, optional
+#     :param flank_3: number of nt that input regions will be extended by on 3' side, defaults to 0
+#     :type flank_3: int, optional
+#     :param fill_na: If true, NaNs will be replaced with zeroes (recommended, as pyBigWig reports positions with 0 score as NaN), defaults to True
+#     :type fill_na: bool, optional
+#     :param pseudocounts: pseudocounts to add to datapoints, defaults to None
+#     :type pseudocounts: float, optional
+#     :param normalize_libsize: normalization to library size (sum of scores in a bigwig file), defaults to True
+#     :type normalize_libsize: bool, optional
+#     :return:  DataFrame with calculated scores. Rows are regions/genes, columns are BigWig files.
+#     :rtype: pandas.DataFrame
+#     '''
+
+#     if agg_type not in ['mean', 'median', 'sum']:
+#         raise Exception("Wrong agg_type; available values: 'mean', 'median', 'sum'")
+#     # Get score matrices
+#     outdict = getMultipleMatrices(
+#         bw_paths_plus=bw_paths_plus,
+#         bw_paths_minus=bw_paths_minus,
+#         bed_df=bed_df,
+#         flank_5=flank_5,
+#         flank_3=flank_3,
+#         fill_na=fill_na,
+#         pseudocounts=pseudocounts,
+#         normalize_libsize=normalize_libsize,
+#         align_3end=False
+#         )
+#     # Aggregate all positions per gene using chosen function
+#     result_dict = {}
+#     for key, value in outdict.items():
+#         regions = value['regions']
+#         matrix = value['matrix']
+#         lengths = value['lengths']
+        
+#         # Calculate aggregated score for each region
+#         region_scores = []
+#         for i, length in enumerate(lengths):
+#             row_data = matrix[i, :length]  # Only consider actual data, not padding
+#             if agg_type == 'sum':
+#                 score = np.sum(row_data)
+#             elif agg_type == 'mean':
+#                 score = np.mean(row_data)
+#             elif agg_type == 'median':
+#                 score = np.median(row_data)
+#             region_scores.append(score)
+        
+#         result_dict[key] = pd.Series(region_scores, index=regions)
+    
+#     out_df = pd.DataFrame(result_dict)
+#     return out_df
 
 ### level 1
 def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(),
