@@ -366,7 +366,7 @@ def saveBigWig(paths=dict(),suffix=str(),bw_name=str(),chroms=list(),pkl=True):
         for p in paths.keys():
             c = p.replace(suffix,"")
             df = pd.read_pickle(paths[p],compression='gzip')
-            vals=df[p]
+            vals=df[c]
             if vals.empty: continue #skip empty chromosomes
             if vals.index.to_list()[0] == 0: # if index starts from 0, we need to shift it by 1
                 vals.index = vals.index + 1
