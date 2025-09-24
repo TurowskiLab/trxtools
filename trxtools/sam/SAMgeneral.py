@@ -249,7 +249,10 @@ def countDeletion(i=tuple(), expand=0):
 #     else:
 #         return df[cols.tolist()]
     
-def selectNoncodedAndProfile(l=[],minLen=3,tail="AAA",letter="A",content=0.80):
+def selectNoncodedAndProfile(l=[],minLen=3,maxLen=20,
+                             tail="AAA",letter="A",content=0.80):
+
+
     '''Select sequences with non-coded ends and profile their occurrence.
 
     :param l: list of tuples where each tuple contains a position of 3' end of read match and a sequence string, defaults to []
@@ -272,6 +275,9 @@ def selectNoncodedAndProfile(l=[],minLen=3,tail="AAA",letter="A",content=0.80):
     >>> selectNoncodedAndProfile(l, minLen=3,tail="AAA",letter="A",content=0.80)
     1    1
     '''
+
+    ### TO DO: add maxLen parameter and workout minlen
+
     l_output = []
     for i in l:
         if tail in i[1]: #check if contains non-coded end

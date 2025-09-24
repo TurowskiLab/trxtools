@@ -54,7 +54,11 @@ files.add_argument("-u", dest="use", help="Generate profiles using reads (read) 
 files.add_argument("-n", dest="noncoded", help="Save non-coded ends. Can be used ONLY with: -u 3end",
                         action="store_true",default=False)
 files.add_argument("-s", dest="noncoded_suffix", help="Select non-coded ends. Can be used ONLY with: -u 3end",
-                        type=str,choices=["polyA"],default="polyA")
+                        type=str,choices=["polyA", "polyAmm"],default="polyA")
+files.add_argument("-min", dest="ncLen_min", help="Minimal length of noncoded tail for noncoded_suffix=polyAmm",
+                        type=int,default=3)
+files.add_argument("-max", dest="ncLen_max", help="Maximal length of noncoded tail for noncoded_suffix=polyAmm",
+                        type=int,default=20)
 files.add_argument("-e", dest="expand", help="Will expand position of each deletion by +/- the value. Works ONLY with: -u del",
                         type=int,default=0)
 files.add_argument("-c", dest="toClear", help="String of signs to be cleared from the name of SAM file", type=str, default='_comp_flexbar_STARAligned.out')
@@ -72,4 +76,6 @@ sam2genome(filename=args.sam_file,
                 use=args.use,
                 noncoded=args.noncoded, # for 3end only
                 noncoded_suffix=args.noncoded_suffix, # for 3end and noncoded==True
+                ncLen_min=args.ncLen_min,
+                ncLen_max=args.ncLen_max,
                 expand=args.expand) # for del

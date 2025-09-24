@@ -197,7 +197,8 @@ def reads2genomeDeletions(name=str(), dirPath=str(), df_details=pd.DataFrame(),u
     return temp_paths
 
 def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3end",
-                noncoded=True,ends='polyA',logName=str(),minLen=3):
+                noncoded=True,ends='polyA',logName=str(),
+                ncLen_min=3,ncLen_max=15):
     '''Function used by sam2genome3end. Works for both strands.
 
     :param name: name of experiment
@@ -222,6 +223,10 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3
     log_file.write(timestamp()+"\t"+"Processing SAM to profiles: -u "+use+'\n')
     temp_paths = {} #stores paths for each temp file
     
+    if ends in ["polyA","polyAmm"]:
+        tail = "AAA"
+        letter = "A"
+
     # strand "+"
     for n, df in df_input_fwd.groupby('name'):
         n_name = n+"_"+use
@@ -239,16 +244,22 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3
 
         if noncoded==True:
             try:
-                noncoded_profile = selectNoncodedAndProfile(l=l1_noncoded,minLen=3,tail="AAA",letter="A",content=0.75)
+                noncoded_profile = selectNoncodedAndProfile(l=l1_noncoded,minLen=ncLen_min,maxLen=ncLen_max,
+                                                            tail=tail,letter=letter,content=0.75)
                 
                 # l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
                 # #above file could be saved as raw noncoded ends
                 # noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
+                if ends=="polyAmm":
+                    ends_name = "polyAmm"+str(ncLen_min)+"-"+str(ncLen_max)
+                else:
+                    ends_name = ends
+
                 to_save = pd.DataFrame(noncoded_profile.rename(n))
-                fileName = dirPath+"/temp_"+n_name+"_"+ends+"_fwd.pcl.gz"
+                fileName = dirPath+"/temp_"+n_name+"_"+ends_name+"_fwd.pcl.gz"
                 to_save.to_pickle(path=fileName,compression="gzip")
-                temp_paths[n_name+"_"+ends+"_fwd"] = fileName
-                log_file.write(timestamp()+"\t"+n_name + " - FWD "+ends+" profile generated successfully" + '\n')
+                temp_paths[n_name+"_"+ends_name+"_fwd"] = fileName
+                log_file.write(timestamp()+"\t"+n_name + " - FWD "+ends_name+" profile generated successfully" + '\n')
             except:
                 # temp_paths[n+"_fwd"] = None
                 log_file.write(timestamp()+"\t"+n_name + " - FWD profile/noncode profile FAILED" + '\n')
@@ -274,11 +285,16 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3
                 # l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
                 # #above file could be saved as raw noncoded ends
                 # noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
+                if ends=="polyAmm":
+                    ends_name = "polyAmm"+str(ncLen_min)+"-"+str(ncLen_max)
+                else:
+                    ends_name = ends
+                
                 to_save = pd.DataFrame(noncoded_profile.rename(n))
-                fileName = dirPath+"/temp_"+n_name+"_"+ends+"_rev.pcl.gz"
+                fileName = dirPath+"/temp_"+n_name+"_"+ends_name+"_rev.pcl.gz"
                 to_save.to_pickle(path=fileName,compression="gzip")
-                temp_paths[n_name+"_"+ends+"_rev"] = fileName
-                log_file.write(timestamp()+"\t"+n_name + " - REV "+ends+" profile generated successfully" + '\n')
+                temp_paths[n_name+"_"+ends_name+"_rev"] = fileName
+                log_file.write(timestamp()+"\t"+n_name + " - REV "+ends_name+" profile generated successfully" + '\n')
             except:
                 # temp_paths[n+"_fwd"] = None
                 log_file.write(timestamp()+"\t"+n_name + " - REV profile/noncode profile FAILED" + '\n')
@@ -427,7 +443,7 @@ def parseHeader(filename, name, dirPath):
 #              final functions (level 0)           #
 ####################################################
 
-def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",expand=0,noncoded=True,noncoded_suffix="polyA"):
+def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",expand=0,noncoded=True,noncoded_suffix="polyA", ncLen_min=3, ncLen_max=10):
     '''Function handling SAM files and generating profiles. Executed using wrapping script SAM2profilesGenomic.py.
 
     :param filename: 
@@ -438,15 +454,24 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",expand=0,non
     :type toClear: str, optional
     :param chunks: Read SAM file in chunks, defaults to 0
     :type chunks: int, optional
-    :param noncoded_pA: Save non-coded polyA ends, defaults to True
-    :type noncoded_pA: bool, optional
-    :param noncoded_raw: Save all non-coded ends, defaults to False
-    :type noncoded_raw: bool, optional
+    :param use: ``'read'``, ``'3end'``, ``'5end'``, or ``'del'``, defaults to '3end'
+    :type use: str, optional
+    :param expand: For deletions position can be expanded by the value on each side (e=5 gives 10 nt long), defaults to 0
+    :type expand: int, optional
+    :param noncoded: Save non-coded ends, defaults to True
+    :type noncoded: bool, optional
+    :param noncoded_suffix: Suffix for non-coded ends, defaults to 'polyA'
+    :type noncoded_suffix: str, optional
+    :param ncLen_min: Minimal length of non-coded tail for noncoded_suffix=polyAmm, defaults to 5
+    :type ncLen_min: int, optional
+    :param ncLen_max: Maximal length of non-coded tail for noncoded_suffix=polyAmm, defaults to 10
+    :type ncLen_max: int, optional
+
     '''
     # checking use
     if use not in ["read","3end","5end",'del']: exit("Wrong -u parameter selected")
     if use=="3end" and noncoded==True: 
-        if noncoded_suffix not in ["polyA"]: exit("Wrong -s parameter selected")
+        if noncoded_suffix not in ["polyA", "polyAmm"]: exit("Wrong -s parameter selected")
     
     # making working directory
     name = filename.replace(".sam", "")
@@ -509,7 +534,7 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",expand=0,non
         temp_paths = reads2genome(name=name, dirPath=dirPath,df_details=df_details, logName=logName)
     elif use=="3end":
         temp_paths = reads2genome3end(name=name, dirPath=dirPath, df_details=df_details,
-                                        noncoded=noncoded,ends=noncoded_suffix,logName=logName,minLen=3)
+                                        noncoded=noncoded,ends=noncoded_suffix,logName=logName,ncLen_min=ncLen_min,ncLen_max=ncLen_max)
     elif use=="5end":
         temp_paths = reads2genome5end(name=name, dirPath=dirPath,df_details=df_details, logName=logName)
     elif use=="del":
@@ -544,21 +569,26 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",expand=0,non
     log_file.write(timestamp()+"\t"+l+"\n")
 
     if use=="3end" and noncoded==True:
+        if noncoded_suffix=="polyAmm":
+            noncoded_suffix_name = noncoded_suffix+str(ncLen_min)+"-"+str(ncLen_max)
+        else:
+            noncoded_suffix_name = noncoded_suffix
+
         log_file.write(timestamp()+"\t"+"Saving output for noncoded ends"+"\n")
 
         ### fwd strand ###
         log_file.write(timestamp()+"\t"+"Saving FWD strand (noncoded)"+"\n")
-        suffix = "_"+use+"_"+noncoded_suffix+"_fwd"
+        suffix = "_"+use+"_"+noncoded_suffix_name+"_fwd"
         paths = selectSortPaths(paths=temp_paths,chroms=chroms,suffix=suffix)
-        bw_name = path + name + "_PROFILE_"+use+"_"+noncoded_suffix+"_fwd.bw"
+        bw_name = path + name + "_PROFILE_"+use+"_"+noncoded_suffix_name+"_fwd.bw"
         l = saveBigWig(paths=paths,suffix=suffix,bw_name=bw_name,chroms=chroms)
         log_file.write(timestamp()+"\t"+l+"\n")
 
         ### rev strand ###
         log_file.write(timestamp()+"\t"+"Saving REV strand (noncoded)"+"\n")
-        suffix = "_"+use+"_"+noncoded_suffix+"_rev"
+        suffix = "_"+use+"_"+noncoded_suffix_name+"_rev"
         paths = selectSortPaths(paths=temp_paths,chroms=chroms,suffix=suffix)
-        bw_name = path + name + "_PROFILE_"+use+"_"+noncoded_suffix+"_rev.bw"
+        bw_name = path + name + "_PROFILE_"+use+"_"+noncoded_suffix_name+"_rev.bw"
         l = saveBigWig(paths=paths,suffix=suffix,bw_name=bw_name,chroms=chroms)
         log_file.write(timestamp()+"\t"+l+"\n")
 
