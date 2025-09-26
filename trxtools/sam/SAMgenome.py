@@ -198,7 +198,7 @@ def reads2genomeDeletions(name=str(), dirPath=str(), df_details=pd.DataFrame(),u
 
 def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3end",
                 noncoded=True,ends='polyA',logName=str(),
-                ncLen_min=3,ncLen_max=15):
+                ncLen_min=3,ncLen_max=30):
     '''Function used by sam2genome3end. Works for both strands.
 
     :param name: name of experiment
@@ -443,7 +443,8 @@ def parseHeader(filename, name, dirPath):
 #              final functions (level 0)           #
 ####################################################
 
-def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",expand=0,noncoded=True,noncoded_suffix="polyA", ncLen_min=3, ncLen_max=10):
+def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",expand=0,
+               noncoded=True,noncoded_suffix="polyA", ncLen_min=3, ncLen_max=10):
     '''Function handling SAM files and generating profiles. Executed using wrapping script SAM2profilesGenomic.py.
 
     :param filename: 
@@ -534,7 +535,8 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",expand=0,non
         temp_paths = reads2genome(name=name, dirPath=dirPath,df_details=df_details, logName=logName)
     elif use=="3end":
         temp_paths = reads2genome3end(name=name, dirPath=dirPath, df_details=df_details,
-                                        noncoded=noncoded,ends=noncoded_suffix,logName=logName,ncLen_min=ncLen_min,ncLen_max=ncLen_max)
+                                        noncoded=noncoded,ends=noncoded_suffix,logName=logName,
+                                        ncLen_min=ncLen_min,ncLen_max=ncLen_max)
     elif use=="5end":
         temp_paths = reads2genome5end(name=name, dirPath=dirPath,df_details=df_details, logName=logName)
     elif use=="del":

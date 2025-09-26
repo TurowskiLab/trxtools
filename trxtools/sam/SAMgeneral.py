@@ -249,8 +249,8 @@ def countDeletion(i=tuple(), expand=0):
 #     else:
 #         return df[cols.tolist()]
     
-def selectNoncodedAndProfile(l=[],minLen=3,maxLen=20,
-                             tail="AAA",letter="A",content=0.80):
+def selectNoncodedAndProfile(l=[],minLen=3,maxLen=30,
+                             tail="AAA",letter="A",content=0.75):
 
 
     '''Select sequences with non-coded ends and profile their occurrence.
@@ -282,7 +282,8 @@ def selectNoncodedAndProfile(l=[],minLen=3,maxLen=20,
     for i in l:
         if tail in i[1]: #check if contains non-coded end
             if tt.methods.letterContent(i[1],letter)>=content: #check if content of letter is above threshold
-                l_output.append(i[0])
+                if (len(i[1])>=minLen) and (len(i[1])<=maxLen): #check length
+                    l_output.append(i[0])
     
     profile = pd.Series(collections.Counter(l_output), dtype="int").sort_index().astype(float)  # faster that using zip and numpy
 

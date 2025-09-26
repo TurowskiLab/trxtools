@@ -58,7 +58,7 @@ files.add_argument("-s", dest="noncoded_suffix", help="Select non-coded ends. Ca
 files.add_argument("-min", dest="ncLen_min", help="Minimal length of noncoded tail for noncoded_suffix=polyAmm",
                         type=int,default=3)
 files.add_argument("-max", dest="ncLen_max", help="Maximal length of noncoded tail for noncoded_suffix=polyAmm",
-                        type=int,default=20)
+                        type=int,default=30)
 files.add_argument("-e", dest="expand", help="Will expand position of each deletion by +/- the value. Works ONLY with: -u del",
                         type=int,default=0)
 files.add_argument("-c", dest="toClear", help="String of signs to be cleared from the name of SAM file", type=str, default='_comp_flexbar_STARAligned.out')
