@@ -63,6 +63,7 @@ files.add_argument("-e", dest="expand", help="Will expand position of each delet
                         type=int,default=0)
 files.add_argument("-c", dest="toClear", help="String of signs to be cleared from the name of SAM file", type=str, default='_comp_flexbar_STARAligned.out')
 files.add_argument("--chunks", dest="chunks", help="Divide list of genes into a chunks of given size", type=int, default=0)
+files.add_argument("--save_intermediate", dest="save_intermediate", help="Save intermediate files for noncoded ends filtering. WARNING: This will create and keep additional files in temp subdirectory.", action="store_true", default=False)
 args = parser.parse_args()
 
 # print("Start at "+tt.methods.timestamp())
@@ -78,4 +79,6 @@ sam2genome(filename=args.sam_file,
                 noncoded_suffix=args.noncoded_suffix, # for 3end and noncoded==True
                 ncLen_min=args.ncLen_min,
                 ncLen_max=args.ncLen_max,
-                expand=args.expand) # for del
+                expand=args.expand,
+                save_intermediate=args.save_intermediate
+                ) # for del

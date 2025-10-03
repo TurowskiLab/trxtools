@@ -198,7 +198,7 @@ def reads2genomeDeletions(name=str(), dirPath=str(), df_details=pd.DataFrame(),u
 
 def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3end",
                 noncoded=True,ends='polyA',logName=str(),
-                ncLen_min=3,ncLen_max=30):
+                ncLen_min=3,ncLen_max=30, save_intermediate=False):
     '''Function used by sam2genome3end. Works for both strands.
 
     :param name: name of experiment
@@ -243,17 +243,21 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3
         log_file.write(timestamp()+"\t"+n_name + " - FWD profile generated successfully" + '\n')
 
         if noncoded==True:
+            if ends=="polyAmm":
+                ends_name = "polyAmm"+str(ncLen_min)+"-"+str(ncLen_max)
+            else:
+                ends_name = ends
+
             try:
                 noncoded_profile = selectNoncodedAndProfile(l=l1_noncoded,minLen=ncLen_min,maxLen=ncLen_max,
-                                                            tail=tail,letter=letter,content=0.75)
+                                                            tail=tail,letter=letter,content=0.75,
+                                                            save_intermediate=save_intermediate, 
+                                                            filepath=dirPath+"/temp_"+n_name+"_"+ends_name+"_fwd")
                 
                 # l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
                 # #above file could be saved as raw noncoded ends
                 # noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
-                if ends=="polyAmm":
-                    ends_name = "polyAmm"+str(ncLen_min)+"-"+str(ncLen_max)
-                else:
-                    ends_name = ends
+
 
                 to_save = pd.DataFrame(noncoded_profile.rename(n))
                 fileName = dirPath+"/temp_"+n_name+"_"+ends_name+"_fwd.pcl.gz"
@@ -261,6 +265,7 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3
                 temp_paths[n_name+"_"+ends_name+"_fwd"] = fileName
                 log_file.write(timestamp()+"\t"+n_name + " - FWD "+ends_name+" profile generated successfully" + '\n')
             except:
+                print('lut')
                 # temp_paths[n+"_fwd"] = None
                 log_file.write(timestamp()+"\t"+n_name + " - FWD profile/noncode profile FAILED" + '\n')
 
@@ -281,7 +286,12 @@ def reads2genome3end(name=str(), dirPath=str(), df_details=pd.DataFrame(),use="3
 
         if noncoded==True:
             try:
-                noncoded_profile = selectNoncodedAndProfile(l=l1_noncoded,minLen=3,tail="AAA",letter="A",content=0.75)
+                noncoded_profile = selectNoncodedAndProfile(l=l1_noncoded,minLen=ncLen_min,maxLen=ncLen_max,
+                                                            tail=tail,letter=letter,content=0.75,
+                                                            save_intermediate=save_intermediate, 
+                                                            filepath=dirPath+"/temp_"+n_name+"_"+ends_name+"_rev")
+                
+                # noncoded_profile = selectNoncodedAndProfile(l=l1_noncoded,minLen=3,tail="AAA",letter="A",content=0.75)
                 # l1_noncoded = parseNoncodedList(l1_noncoded, minLen=minLen)
                 # #above file could be saved as raw noncoded ends
                 # noncoded_profile = noncoded2profile1(selectEnds(l1_noncoded,ends=ends),length=df_details.loc[n]['length'])
@@ -444,7 +454,8 @@ def parseHeader(filename, name, dirPath):
 ####################################################
 
 def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",expand=0,
-               noncoded=True,noncoded_suffix="polyA", ncLen_min=3, ncLen_max=10):
+               noncoded=True,noncoded_suffix="polyA", ncLen_min=3, ncLen_max=10,
+               save_intermediate=False):
     '''Function handling SAM files and generating profiles. Executed using wrapping script SAM2profilesGenomic.py.
 
     :param filename: 
@@ -536,7 +547,8 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",expand=0,
     elif use=="3end":
         temp_paths = reads2genome3end(name=name, dirPath=dirPath, df_details=df_details,
                                         noncoded=noncoded,ends=noncoded_suffix,logName=logName,
-                                        ncLen_min=ncLen_min,ncLen_max=ncLen_max)
+                                        ncLen_min=ncLen_min,ncLen_max=ncLen_max, 
+                                        save_intermediate=save_intermediate)
     elif use=="5end":
         temp_paths = reads2genome5end(name=name, dirPath=dirPath,df_details=df_details, logName=logName)
     elif use=="del":
@@ -594,10 +606,11 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",expand=0,
         l = saveBigWig(paths=paths,suffix=suffix,bw_name=bw_name,chroms=chroms)
         log_file.write(timestamp()+"\t"+l+"\n")
 
-    # clean
-    log_file.write(timestamp()+"\t"+"Cleaninig"+"\n")
-    os.chdir(path)
-    shutil.rmtree(name + timestampRnd, ignore_errors=True)
+    # cleaning
+    if save_intermediate==False:
+        log_file.write(timestamp()+"\t"+"Cleaning"+"\n")
+        os.chdir(path)
+        shutil.rmtree(name + timestampRnd, ignore_errors=True)
 
     log_file.write(timestamp()+"\t"+"Done"+"\n")
     log_file.close()

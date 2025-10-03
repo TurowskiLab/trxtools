@@ -250,7 +250,8 @@ def countDeletion(i=tuple(), expand=0):
 #         return df[cols.tolist()]
     
 def selectNoncodedAndProfile(l=[],minLen=3,maxLen=30,
-                             tail="AAA",letter="A",content=0.75):
+                             tail="AAA",letter="A",content=0.75,
+                             save_intermediate=False, filepath=str()):
 
 
     '''Select sequences with non-coded ends and profile their occurrence.
@@ -276,16 +277,23 @@ def selectNoncodedAndProfile(l=[],minLen=3,maxLen=30,
     1    1
     '''
 
-    ### TO DO: add maxLen parameter and workout minlen
-
     l_output = []
+    l_output_ends = []
     for i in l:
         if tail in i[1]: #check if contains non-coded end
             if tt.methods.letterContent(i[1],letter)>=content: #check if content of letter is above threshold
                 if (len(i[1])>=minLen) and (len(i[1])<=maxLen): #check length
                     l_output.append(i[0])
+                    if save_intermediate==True:
+                        l_output_ends.append(i[1])
     
     profile = pd.Series(collections.Counter(l_output), dtype="int").sort_index().astype(float)  # faster that using zip and numpy
+
+    if save_intermediate==True:
+        df_intermediate_in = pd.DataFrame(l, columns=['position','end'])
+        df_intermediate_in.to_csv(filepath+"_intermediateALL.tab",sep="\t",index=False)
+        df_intermediate_out = pd.DataFrame(zip(l_output, l_output_ends), columns=['position','end'])
+        df_intermediate_out.to_csv(filepath+"_intermediateFILTERED.tab",sep="\t",index=False)
 
     return profile
     
