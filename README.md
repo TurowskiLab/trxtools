@@ -1,4 +1,4 @@
-trxtools v0.3.2
+trxtools v0.3.3
 ===============
 
 Transcription/Transcriptomic tools. Package of python tools facilitating bioinformatic analysis of RNA and nascent RNA sequencing data.
