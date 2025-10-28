@@ -819,6 +819,15 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
 
     warn = False
 
+    # Sanitize BED header
+    if len(bed_df.columns) < 6:
+        raise ValueError("BED dataframe must be in BED6 format (chrom, start, end, name, score, strand)")
+    elif len(bed_df.columns) == 6:
+        bed_df.columns = [0,1,2,3,4,5]
+    else:
+        bed_df = bed_df.iloc[:, :6]
+        bed_df.columns = [0,1,2,3,4,5]
+
     # Split strands once to avoid repeated operations
     bed_plus, bed_minus = bed_split_strands(bed_df)
     
