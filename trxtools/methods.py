@@ -1003,7 +1003,7 @@ def runPCA(data=pd.DataFrame(), n_components=2):
 
     return finalDf, [round(i*100,2) for i in values.tolist()]
 
-def addCluster(df=pd.DataFrame(), n=10):
+def addCluster(df=pd.DataFrame(), n=10, plot=True):
     '''Assigns n clusters to the data using KMeans algorithm
 
     :param df: DataFrame containing the data to be clustered
@@ -1033,7 +1033,8 @@ def addCluster(df=pd.DataFrame(), n=10):
     df = df.sort_values('cluster', ascending=True)
 
     # summary
-    tt.plotting.clusterClusterMap(df)
+    if plot:
+        tt.plotting.clusterClusterMap(df)
 
     return df
 
