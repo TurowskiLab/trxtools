@@ -253,7 +253,6 @@ def selectNoncodedAndProfile(l=[],minLen=3,maxLen=30,
                              tail="AAA",letter="A",content=0.75,
                              save_intermediate=False, filepath=str()):
 
-
     '''Select sequences with non-coded ends and profile their occurrence.
 
     :param l: list of tuples where each tuple contains a position of 3' end of read match and a sequence string, defaults to []

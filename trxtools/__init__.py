@@ -2,27 +2,30 @@ from trxtools.sam import SAMgeneral
 from trxtools.sam import SAMgenome
 from trxtools.sam import SAMtranscripts
 
-import trxtools.profiles
-import trxtools.assays
-import trxtools.methods
-import trxtools.nascent
-import trxtools.secondary
-import trxtools.plotting
-import trxtools.metaprofiles
-import trxtools.go_enrichment
-import trxtools.BigWig
+from trxtools.profiles import profiles
+from trxtools.profiles import metaprofiles
+from trxtools.profiles import BigWig
+
+from trxtools.folding import assays
+from trxtools.folding import nascent
+from trxtools.folding import secondary
+
+from trxtools.tables import go_enrichment
+  
+from trxtools import plotting
+from trxtools import methods
 
 __all__ = [
-    'SAMgeneral',
-    'SAMgenome',
-    'SAMtranscripts',
-    'profiles',
-    'assays',
-    'methods',
-    'nascent',
-    'secondary',
-    'plotting',
-    'metaprofiles',
-    'go_enrichment',
-    'BigWig'
+    "SAMgeneral",
+    "SAMgenome",
+    "SAMtranscripts",
+    "profiles",
+    "metaprofiles",
+    "BigWig",
+    "assays",
+    "nascent",
+    "secondary",
+    "go_enrichment",
+    "plotting",
+    "methods",
 ]

@@ -2,8 +2,8 @@ from turtle import st
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import trxtools.profiles as profiles
-import trxtools.metaprofiles as meta
+import trxtools.profiles.profiles as profiles
+import trxtools.profiles.metaprofiles as meta
 from adjustText import adjust_text
 import seaborn as sns
 import matplotlib
