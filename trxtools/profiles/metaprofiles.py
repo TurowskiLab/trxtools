@@ -1270,8 +1270,19 @@ def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
     :type flank_5: int, optional
     :param flank_3: length of 3'flank to extend BED regions by, defaults to 0
     :type flank_3: int, optional
+
     :return: dictionary of score matrices for each peak file
     :rtype: dict
+
+    :example:
+    >>> peak_files = ['sample1_peaks.narrowPeak', 'sample2_peaks.narrowPeak']
+    >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],
+    ...                             'start': [1000, 2000],
+    ...                             'end': [1500, 2500],
+    ...                             'name': ['region1', 'region2'],
+    ...                             'score': [0, 0],
+    ...                             'strand': ['+', '-']})
+    >>> mm = getMultipleMatricesFromPeak(peak_files, bed_regions, flank_5=100, flank_3=100) 
     '''
     #TODO: example in docstring
     out_dict = {}
