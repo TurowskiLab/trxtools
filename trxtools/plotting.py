@@ -2,7 +2,7 @@ from turtle import st
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import trxtools.profiles.profiles as profiles
+import trxtools.profiles.profileTools as pp
 import trxtools.profiles.metaprofiles as meta
 from adjustText import adjust_text
 import seaborn as sns
@@ -1164,7 +1164,7 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label1="reference", labe
 
     ranges_dict = {'mm': 'min-max', 'qq': 'q1-q3'}
 
-    differences_df = profiles.compareMoretoRef(dataset=dataset, ranges=ranges, ref=reference)[start:stop]
+    differences_df = pp.compareMoretoRef(dataset=dataset, ranges=ranges, ref=reference)[start:stop]
     dataset, s2 = dataset[start:stop], reference[start:stop]  # preparing datasets
     # plotting
     fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)

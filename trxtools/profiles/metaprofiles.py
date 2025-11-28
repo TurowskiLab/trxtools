@@ -1410,17 +1410,17 @@ def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(),
         # bin individual profiles of tRNAs
         if region_col is not None:
             for region,row in value.set_index(region_col).iterrows():
-                results_df[region] = tt.profiles.binCollect3(s1=row,
+                results_df[region] = tt.profileTools.binCollect3(s1=row,
                                             lengths=length_df.loc[region].tolist(),
                                             bins=bins)
         elif 'region' in value.columns:
             for region,row in value.set_index('region').iterrows():
-                results_df[region] = tt.profiles.binCollect3(s1=row,
+                results_df[region] = tt.profileTools.binCollect3(s1=row,
                                             lengths=length_df.loc[region].tolist(),
                                             bins=bins)
         else:
             for region,row in value.iterrows():
-                results_df[region] = tt.profiles.binCollect3(s1=row,
+                results_df[region] = tt.profileTools.binCollect3(s1=row,
                                             lengths=length_df.loc[region].tolist(),
                                             bins=bins)
         

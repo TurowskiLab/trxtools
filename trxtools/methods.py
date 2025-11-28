@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
-import trxtools as tt
+from trxtools.plotting import clusterClusterMap
 
 ### METHODS ###
 # various python methods
@@ -1033,7 +1033,7 @@ def addCluster(df=pd.DataFrame(), n=10):
     df = df.sort_values('cluster', ascending=True)
 
     # summary
-    tt.plotting.clusterClusterMap(df)
+    clusterClusterMap(df)
 
     return df
 

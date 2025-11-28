@@ -1,5 +1,5 @@
-import trxtools.profile.BigWig
-import trxtools.profile.metaprofiles
-import trxtools.profile.profiles
+import trxtools.profiles.BigWig
+import trxtools.profiles.metaprofiles
+import trxtools.profiles.profileTools
 
 __all__ = ['BigWig', 'metaprofiles', 'profiles']

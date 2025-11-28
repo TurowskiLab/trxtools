@@ -2,7 +2,7 @@ from trxtools.sam import SAMgeneral
 from trxtools.sam import SAMgenome
 from trxtools.sam import SAMtranscripts
 
-from trxtools.profiles import profiles
+from trxtools.profiles import profileTools
 from trxtools.profiles import metaprofiles
 from trxtools.profiles import BigWig
 
@@ -19,7 +19,7 @@ __all__ = [
     "SAMgeneral",
     "SAMgenome",
     "SAMtranscripts",
-    "profiles",
+    "profileTools",
     "metaprofiles",
     "BigWig",
     "assays",
