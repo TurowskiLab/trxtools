@@ -6,7 +6,7 @@
 trxtools
 ========
 
-version 0.3.0
+version 0.3.4
 
 trxtools is set of bioinformatic tools and methods to facilitate analysis of transcriptional data. 
 

@@ -9,6 +9,12 @@ If you encounter a bug, please report it on the `GitHub issue tracker <https://g
 Versions
 --------
 
+v0.3.4
+^^^^^^
+- added functions for metaprofile analysis
+- documentation updated
+- minor bug fixes
+
 v0.3.0
 ^^^^^^
 - fully functional version of the package
