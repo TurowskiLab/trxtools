@@ -1236,6 +1236,7 @@ def normalizeToLibrary(metaprofile=pd.DataFrame(), bigwig_plus=[], bigwig_minus=
     :rtype: pandas.DataFrame
 
     :example:
+    
     >>> metaprofile_df = trxtools.metaprofile(matrix_dict)
     >>> normalized_metaprofile = trxtools.normalizeToLibrary(metaprofile_df, bigwig_plus=['sample1_plus.bw'], bigwig_minus=['sample1_minus.bw'])
     '''
@@ -1258,7 +1259,8 @@ def normalizeToLibrary(metaprofile=pd.DataFrame(), bigwig_plus=[], bigwig_minus=
 def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
                  g='references/GRCh38.primary_assembly.genome.cleaned.len', 
                  flank_5=0, flank_3=0):
-    '''Get score matrices for positions in given regions (with optional flanks) from multiple peak files.
+    '''
+    Get score matrices for positions in given regions (with optional flanks) from multiple peak files.
     Matrix rows correspond to regions in BED. Columns correpond to nucleotide positions in regions + flanks.
     :param peak_paths: list of paths to peak files (broadPeak or narrowPeak format)
     :type peak_paths: list
@@ -1275,6 +1277,7 @@ def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
     :rtype: dict
 
     :example:
+
     >>> peak_files = ['sample1_peaks.narrowPeak', 'sample2_peaks.narrowPeak']
     >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],
     ...                             'start': [1000, 2000],
@@ -1296,7 +1299,6 @@ def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
 def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False, subset=None, name_col=None):
     '''
     Calculate metaprofiles for each sample from score matrices by aggregating each position across all regions.
-
     :param matrix_dict: Dict containing score matrices returned by getMultipleMatrices()
     :type matrix_dict: dict
     :param agg_type: Type of aggregation to use. Available: 'mean', 'median', 'sum', defaults to 'mean'
@@ -1309,6 +1311,7 @@ def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False, subset=N
     :rtype: pandas.DataFrame
 
     :example:
+
     >>> bw_plus_files = ['sample1_plus.bw', 'sample2_plus.bw']
     >>> bw_minus_files = ['sample1_minus.bw', 'sample2_minus.bw']
     >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],
@@ -1458,6 +1461,7 @@ def regionScore(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0
     :rtype: pandas.DataFrame
 
     :example:
+
     >>> bw_plus_files = ['sample1_plus.bw', 'sample2_plus.bw']
     >>> bw_minus_files = ['sample1_minus.bw', 'sample2_minus.bw']
     >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],
@@ -1560,7 +1564,6 @@ def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(),
                         flank_5=None, flank_3=None, region_col=None):
     '''
     Bin multiple matrices of gene profiles into a single dataframe
-      
     :param mm: dictionary of matrices of gene profiles 
     :type mm: dict
     :param bins: How many bins to use for each region part (5' flank, region body, 3' flank), defaults to [50, 10, 50]
@@ -1569,10 +1572,8 @@ def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(),
     :type bed_df: pandas.DataFrame, optional
     :param flank_5: length of 5'flank to extend BED regions by, defaults to None
     :type flank_5: int, optional
-    :type bed_df: pandas.DataFrame, optional
     :param flank_3: length of 3'flank to extend BED regions by, defaults to None
     :type flank_3: int, optional
-    :type bed_df: pandas.DataFrame, optional
     :raises ValueError: if bins is not a list of three integers
     :raises ValueError: if input_value is not an integer or a DataFrame
     
@@ -1580,6 +1581,7 @@ def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(),
     :rtype: dict
 
     :example:
+    
     >>> bw_plus_files = ['sample1_plus.bw', 'sample2_plus.bw']
     >>> bw_minus_files = ['sample1_minus.bw', 'sample2_minus.bw']
     >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],
@@ -1649,6 +1651,7 @@ def selectSubsetMM(matrix_dict, subset=None):
     :rtype: dict
 
     :example:
+    
     >>> bw_plus_files = ['sample1_plus.bw', 'sample2_plus.bw']
     >>> bw_minus_files = ['sample1_minus.bw', 'sample2_minus.bw']
     >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],

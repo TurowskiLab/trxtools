@@ -10,7 +10,7 @@ from trxtools.folding import assays
 from trxtools.folding import nascent
 from trxtools.folding import secondary
 
-from trxtools.tables import go_enrichment
+from trxtools.tables import goEnrichment
   
 from trxtools import plotting
 from trxtools import methods
@@ -25,7 +25,7 @@ __all__ = [
     "assays",
     "nascent",
     "secondary",
-    "go_enrichment",
+    "goEnrichment",
     "plotting",
     "methods",
 ]

@@ -15,7 +15,9 @@ def groupCIGAR(cigar_string=""):
     :type cigar_string: str
     :return: list of tuples ``[( ),()]``
     :rtype: list
-
+    
+    :example:
+    
     >>> groupCIGAR("3S44M1S1H")
     [('3', 'S'), ('44', 'M'), ('1', 'S'), ('1', 'H')]
     '''
@@ -43,6 +45,8 @@ def tostripCIGARfive(match=[]):
     :return: number of substituted nucleotides
     :rtype: int
 
+    :example:
+    
     >>> tostripCIGARfive([('3', 'S'), ('44', 'M'), ('1', 'S'), ('1', 'H')])
     3
     '''
@@ -61,6 +65,8 @@ def tostripCIGARthree(match=[]):
     :return: number of substituted nucleotides
     :rtype: int
 
+    :example:
+    
     >>> tostripCIGARthree([('3', 'S'), ('44', 'M'), ('1', 'S')])
     1
     '''
@@ -95,6 +101,8 @@ def countRead(i=tuple()):
     :return: list of mapped positions
     :rtype: np.array
 
+    :example:
+    
     >>> countRead((400,"3S15M1D9M2S"))
     array([400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412,
        413, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424])
@@ -121,6 +129,8 @@ def countMiddle(i=tuple(), expand=0):
     :return: list of mapped positions
     :rtype: np.array
 
+    :example:
+    
     >>> countMiddle((400,"3S15M1D9M2S"))
     array([412])
     >>> countMiddle((400,"3S15M1D9M2S"),expand=3)
@@ -151,6 +161,8 @@ def countDeletion(i=tuple(), expand=0):
     :return: list of mapped positions
     :rtype: np.array
 
+    :example:
+    
     >>> countDeletion((400,"3S15M1D9M2S"))
     array([415])
     >>> countDeletion((400,"3S15M1D9M2S"),expand=3)
