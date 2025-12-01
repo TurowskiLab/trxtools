@@ -1,0 +1,394 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>trxtools &mdash; trxtools 0.3.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=e6c5d56c" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=1e28cc32"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Scripts" href="scripts.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            trxtools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripts</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="trxtools.html">trxtools package</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="release.html">Release information</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">trxtools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">trxtools</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="trxtools">
+<h1>trxtools<a class="headerlink" href="#trxtools" title="Link to this heading"></a></h1>
+<p>version 0.3.4</p>
+<p>trxtools is set of bioinformatic tools and methods to facilitate analysis of transcriptional data.</p>
+<p>Major focus is put on postprocessing of high-troughput sequencing data originating from the followin methods:</p>
+<ul class="simple">
+<li><p>CRAC/CLIP</p></li>
+<li><p>RNA-seq</p></li>
+<li><p>tRNA-seq</p></li>
+<li><p>NET-seq</p></li>
+<li><p>ChIP-seq</p></li>
+</ul>
+<p>Some functions in the package use a specific file naming system:</p>
+<p><code class="docutils literal notranslate"><span class="pre">'expID',</span> <span class="pre">'expDate',</span> <span class="pre">'protein',</span> <span class="pre">'condition1',</span> <span class="pre">'condition2',</span> <span class="pre">'condition3'</span></code></p>
+<p>i.e. <code class="docutils literal notranslate"><span class="pre">C123_JK050420_POLR2A-FLAG_wt_arsenite30min</span></code> will be used for an experiment <code class="docutils literal notranslate"><span class="pre">C123</span></code> conducted by a person <code class="docutils literal notranslate"><span class="pre">JK</span></code> on <code class="docutils literal notranslate"><span class="pre">020420</span></code>. This is puldown with <code class="docutils literal notranslate"><span class="pre">POLR2A-FLAG</span></code> in <code class="docutils literal notranslate"><span class="pre">wt</span></code> cells after <code class="docutils literal notranslate"><span class="pre">arsenite30min</span></code></p>
+<section id="reporting-bugs">
+<h2>Reporting bugs<a class="headerlink" href="#reporting-bugs" title="Link to this heading"></a></h2>
+<p>If you encounter a bug, please report it on the <a class="reference external" href="https://github.com/TurowskiLab/trxtools/issues">GitHub issue tracker</a>.</p>
+</section>
+<section id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="scripts.html#main-scripts">Main scripts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scripts.html#sam2profilesgenomic-py">SAM2profilesGenomic.py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scripts.html#sam2profilestranscripts-py">SAM2profilesTranscripts.py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scripts.html#genomenascentfolding-py">genomeNascentFolding.py</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="scripts.html#supporting-scripts">Supporting scripts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scripts.html#genome2windowsgtf-py">genome2WindowsGTF.py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scripts.html#csv2pickle-py">csv2pickle.py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scripts.html#mergesalmon-py">mergeSalmon.py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scripts.html#fasta2slidingwindows-py">fasta2slidingWindows.py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scripts.html#polyafraction-py">polyAfraction.py</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="trxtools.html">trxtools package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="trxtools.html#trxtools-sam-module">trxtools.sam module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#module-trxtools.sam.SAMgeneral">trxtools.sam.SAMgeneral submodule</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgeneral.countDeletion"><code class="docutils literal notranslate"><span class="pre">countDeletion()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgeneral.countMiddle"><code class="docutils literal notranslate"><span class="pre">countMiddle()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgeneral.countRead"><code class="docutils literal notranslate"><span class="pre">countRead()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgeneral.groupCIGAR"><code class="docutils literal notranslate"><span class="pre">groupCIGAR()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgeneral.noncoded2profile"><code class="docutils literal notranslate"><span class="pre">noncoded2profile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgeneral.noncoded2profile1"><code class="docutils literal notranslate"><span class="pre">noncoded2profile1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgeneral.saveBigWig"><code class="docutils literal notranslate"><span class="pre">saveBigWig()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgeneral.selectEnds"><code class="docutils literal notranslate"><span class="pre">selectEnds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgeneral.selectNoncodedAndProfile"><code class="docutils literal notranslate"><span class="pre">selectNoncodedAndProfile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgeneral.selectSortPaths"><code class="docutils literal notranslate"><span class="pre">selectSortPaths()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgeneral.stripCIGAR"><code class="docutils literal notranslate"><span class="pre">stripCIGAR()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgeneral.stripSubstitutions"><code class="docutils literal notranslate"><span class="pre">stripSubstitutions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgeneral.tostripCIGARfive"><code class="docutils literal notranslate"><span class="pre">tostripCIGARfive()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgeneral.tostripCIGARthree"><code class="docutils literal notranslate"><span class="pre">tostripCIGARthree()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#module-trxtools.sam.SAMgenome">trxtools.sam.SAMgenome submodule</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgenome.chromosome2profile3end"><code class="docutils literal notranslate"><span class="pre">chromosome2profile3end()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgenome.parseHeader"><code class="docutils literal notranslate"><span class="pre">parseHeader()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgenome.reads2genome"><code class="docutils literal notranslate"><span class="pre">reads2genome()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgenome.reads2genome3end"><code class="docutils literal notranslate"><span class="pre">reads2genome3end()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgenome.reads2genome5end"><code class="docutils literal notranslate"><span class="pre">reads2genome5end()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgenome.reads2genomeDeletions"><code class="docutils literal notranslate"><span class="pre">reads2genomeDeletions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMgenome.sam2genome"><code class="docutils literal notranslate"><span class="pre">sam2genome()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#module-trxtools.sam.SAMtranscripts">trxtools.sam.SAMtranscripts submodule</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMtranscripts.reads2profile"><code class="docutils literal notranslate"><span class="pre">reads2profile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMtranscripts.reads2profileDeletions"><code class="docutils literal notranslate"><span class="pre">reads2profileDeletions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMtranscripts.sam2profiles"><code class="docutils literal notranslate"><span class="pre">sam2profiles()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMtranscripts.transcript2profile"><code class="docutils literal notranslate"><span class="pre">transcript2profile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.sam.SAMtranscripts.transcript2profileDeletions"><code class="docutils literal notranslate"><span class="pre">transcript2profileDeletions()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="trxtools.html#trxtools-profiles-module">trxtools.profiles module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#module-trxtools.profiles.BigWig">trxtools.profiles.BigWig module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.BigWig.foldingFromBigWig"><code class="docutils literal notranslate"><span class="pre">foldingFromBigWig()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.BigWig.geneFromBigWig"><code class="docutils literal notranslate"><span class="pre">geneFromBigWig()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.BigWig.geneFromBigWigTree"><code class="docutils literal notranslate"><span class="pre">geneFromBigWigTree()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.BigWig.getSeqData"><code class="docutils literal notranslate"><span class="pre">getSeqData()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.BigWig.strip_BigWig_names"><code class="docutils literal notranslate"><span class="pre">strip_BigWig_names()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#module-trxtools.profiles.metaprofiles">trxtools.profiles.metaprofiles module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.bed_split_strands"><code class="docutils literal notranslate"><span class="pre">bed_split_strands()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.binMultipleMatrices"><code class="docutils literal notranslate"><span class="pre">binMultipleMatrices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.getMultipleMatrices"><code class="docutils literal notranslate"><span class="pre">getMultipleMatrices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.getMultipleMatricesFromPeak"><code class="docutils literal notranslate"><span class="pre">getMultipleMatricesFromPeak()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.getMultipleMatricesSparse"><code class="docutils literal notranslate"><span class="pre">getMultipleMatricesSparse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.get_bw_data"><code class="docutils literal notranslate"><span class="pre">get_bw_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.get_chrom_lens"><code class="docutils literal notranslate"><span class="pre">get_chrom_lens()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.get_multiple_matrices"><code class="docutils literal notranslate"><span class="pre">get_multiple_matrices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.join_strand_matrices"><code class="docutils literal notranslate"><span class="pre">join_strand_matrices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.matrixFromBigWig"><code class="docutils literal notranslate"><span class="pre">matrixFromBigWig()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.matrixFromBigWigSparse"><code class="docutils literal notranslate"><span class="pre">matrixFromBigWigSparse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.matrix_from_bigwig"><code class="docutils literal notranslate"><span class="pre">matrix_from_bigwig()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.metaprofile"><code class="docutils literal notranslate"><span class="pre">metaprofile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.normalizeToLibrary"><code class="docutils literal notranslate"><span class="pre">normalizeToLibrary()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.peak2matrice"><code class="docutils literal notranslate"><span class="pre">peak2matrice()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.readBED"><code class="docutils literal notranslate"><span class="pre">readBED()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.read_bed"><code class="docutils literal notranslate"><span class="pre">read_bed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.regionScore"><code class="docutils literal notranslate"><span class="pre">regionScore()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.selectSubsetMM"><code class="docutils literal notranslate"><span class="pre">selectSubsetMM()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.metaprofiles.trim_bed"><code class="docutils literal notranslate"><span class="pre">trim_bed()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#module-trxtools.profiles.profileTools">trxtools.profiles.profileTools module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.profileTools.FoldingFromBigWig"><code class="docutils literal notranslate"><span class="pre">FoldingFromBigWig()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.profileTools.binCollect3"><code class="docutils literal notranslate"><span class="pre">binCollect3()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.profileTools.calculateFDR"><code class="docutils literal notranslate"><span class="pre">calculateFDR()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.profileTools.compare1toRef"><code class="docutils literal notranslate"><span class="pre">compare1toRef()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.profileTools.compareMoretoRef"><code class="docutils literal notranslate"><span class="pre">compareMoretoRef()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.profileTools.dictBigWig"><code class="docutils literal notranslate"><span class="pre">dictBigWig()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.profileTools.findPeaks"><code class="docutils literal notranslate"><span class="pre">findPeaks()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.profileTools.findTroughs"><code class="docutils literal notranslate"><span class="pre">findTroughs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.profileTools.geneFromBigWig"><code class="docutils literal notranslate"><span class="pre">geneFromBigWig()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.profileTools.ntotal"><code class="docutils literal notranslate"><span class="pre">ntotal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.profileTools.parseConcatFile"><code class="docutils literal notranslate"><span class="pre">parseConcatFile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.profileTools.preprocess"><code class="docutils literal notranslate"><span class="pre">preprocess()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.profileTools.pseudocounts"><code class="docutils literal notranslate"><span class="pre">pseudocounts()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.profileTools.save_csv"><code class="docutils literal notranslate"><span class="pre">save_csv()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.profiles.profileTools.stripBigWignames"><code class="docutils literal notranslate"><span class="pre">stripBigWignames()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="trxtools.html#trxtools-folding-module">trxtools.folding module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#module-trxtools.folding.assays">trxtools.folding.assays submodule</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.assays.bulkInputIDT"><code class="docutils literal notranslate"><span class="pre">bulkInputIDT()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.assays.extruded"><code class="docutils literal notranslate"><span class="pre">extruded()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.assays.findPrimer"><code class="docutils literal notranslate"><span class="pre">findPrimer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.assays.nonTemplateDNA"><code class="docutils literal notranslate"><span class="pre">nonTemplateDNA()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.assays.sequenceConstrain"><code class="docutils literal notranslate"><span class="pre">sequenceConstrain()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.assays.stalled"><code class="docutils literal notranslate"><span class="pre">stalled()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.assays.structureFile"><code class="docutils literal notranslate"><span class="pre">structureFile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.assays.templateDNA"><code class="docutils literal notranslate"><span class="pre">templateDNA()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.assays.testScaffold"><code class="docutils literal notranslate"><span class="pre">testScaffold()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.assays.toOrder"><code class="docutils literal notranslate"><span class="pre">toOrder()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#module-trxtools.folding.nascent">trxtools.folding.nascent submodule</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.nascent.Fold"><code class="docutils literal notranslate"><span class="pre">Fold</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.nascent.Hybrid"><code class="docutils literal notranslate"><span class="pre">Hybrid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.nascent.extendingWindow"><code class="docutils literal notranslate"><span class="pre">extendingWindow()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.nascent.foldNascentElem"><code class="docutils literal notranslate"><span class="pre">foldNascentElem()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.nascent.handleInput"><code class="docutils literal notranslate"><span class="pre">handleInput()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.nascent.join2d"><code class="docutils literal notranslate"><span class="pre">join2d()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.nascent.merge2d"><code class="docutils literal notranslate"><span class="pre">merge2d()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.nascent.name2index"><code class="docutils literal notranslate"><span class="pre">name2index()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.nascent.nascentElems"><code class="docutils literal notranslate"><span class="pre">nascentElems()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.nascent.nascentElemsDataFrame"><code class="docutils literal notranslate"><span class="pre">nascentElemsDataFrame()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.nascent.nascentFolding"><code class="docutils literal notranslate"><span class="pre">nascentFolding()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.nascent.parseFoldingName"><code class="docutils literal notranslate"><span class="pre">parseFoldingName()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.nascent.prepareNascent"><code class="docutils literal notranslate"><span class="pre">prepareNascent()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.nascent.slidingWindow"><code class="docutils literal notranslate"><span class="pre">slidingWindow()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#module-trxtools.folding.secondary">trxtools.folding.secondary submodule</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.secondary.Lstem"><code class="docutils literal notranslate"><span class="pre">Lstem()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.secondary.Rstem"><code class="docutils literal notranslate"><span class="pre">Rstem()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.secondary.checkVienna"><code class="docutils literal notranslate"><span class="pre">checkVienna()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.secondary.loopStems"><code class="docutils literal notranslate"><span class="pre">loopStems()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.secondary.loops"><code class="docutils literal notranslate"><span class="pre">loops()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.secondary.substructures"><code class="docutils literal notranslate"><span class="pre">substructures()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.secondary.test"><code class="docutils literal notranslate"><span class="pre">test()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.folding.secondary.vienna2format"><code class="docutils literal notranslate"><span class="pre">vienna2format()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="trxtools.html#trxtools-tables-module">trxtools.tables module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#module-trxtools.tables.goEnrichment">trxtools.tables.goEnrichment submodule</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trxtools.html#trxtools.tables.goEnrichment.get_enrichment"><code class="docutils literal notranslate"><span class="pre">get_enrichment()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="trxtools.html#module-trxtools.methods">trxtools.methods module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.DNA_stretch_positions"><code class="docutils literal notranslate"><span class="pre">DNA_stretch_positions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.DNA_string_positions"><code class="docutils literal notranslate"><span class="pre">DNA_string_positions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.addCluster"><code class="docutils literal notranslate"><span class="pre">addCluster()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.bashCommand"><code class="docutils literal notranslate"><span class="pre">bashCommand()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.bed2len"><code class="docutils literal notranslate"><span class="pre">bed2len()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.calGC"><code class="docutils literal notranslate"><span class="pre">calGC()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.cleanNames"><code class="docutils literal notranslate"><span class="pre">cleanNames()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.define_experiments"><code class="docutils literal notranslate"><span class="pre">define_experiments()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.enriched"><code class="docutils literal notranslate"><span class="pre">enriched()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.expNameParser"><code class="docutils literal notranslate"><span class="pre">expNameParser()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.expStats"><code class="docutils literal notranslate"><span class="pre">expStats()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.filterExp"><code class="docutils literal notranslate"><span class="pre">filterExp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.find_pol3_terminators"><code class="docutils literal notranslate"><span class="pre">find_pol3_terminators()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.groupCRACsamples"><code class="docutils literal notranslate"><span class="pre">groupCRACsamples()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.indexOrder"><code class="docutils literal notranslate"><span class="pre">indexOrder()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.is_inside"><code class="docutils literal notranslate"><span class="pre">is_inside()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.letterContent"><code class="docutils literal notranslate"><span class="pre">letterContent()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.listPaths"><code class="docutils literal notranslate"><span class="pre">listPaths()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.loadGTF"><code class="docutils literal notranslate"><span class="pre">loadGTF()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.nested_region_cleanup"><code class="docutils literal notranslate"><span class="pre">nested_region_cleanup()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.normalize"><code class="docutils literal notranslate"><span class="pre">normalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.parseCRACname"><code class="docutils literal notranslate"><span class="pre">parseCRACname()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.quantileCategory"><code class="docutils literal notranslate"><span class="pre">quantileCategory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.randomDNAall"><code class="docutils literal notranslate"><span class="pre">randomDNAall()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.randomDNAsingle"><code class="docutils literal notranslate"><span class="pre">randomDNAsingle()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.readSalmon"><code class="docutils literal notranslate"><span class="pre">readSalmon()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.read_DEseq"><code class="docutils literal notranslate"><span class="pre">read_DEseq()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.read_HTSeq_output"><code class="docutils literal notranslate"><span class="pre">read_HTSeq_output()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.read_STARstats"><code class="docutils literal notranslate"><span class="pre">read_STARstats()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.read_featureCount"><code class="docutils literal notranslate"><span class="pre">read_featureCount()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.read_list"><code class="docutils literal notranslate"><span class="pre">read_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.read_tabFile"><code class="docutils literal notranslate"><span class="pre">read_tabFile()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.reverse_complement"><code class="docutils literal notranslate"><span class="pre">reverse_complement()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.reverse_complement_DNA"><code class="docutils literal notranslate"><span class="pre">reverse_complement_DNA()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.reverse_complement_RNA"><code class="docutils literal notranslate"><span class="pre">reverse_complement_RNA()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.rollingGC"><code class="docutils literal notranslate"><span class="pre">rollingGC()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.runPCA"><code class="docutils literal notranslate"><span class="pre">runPCA()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.timestamp"><code class="docutils literal notranslate"><span class="pre">timestamp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.methods.timestampRandomInt"><code class="docutils literal notranslate"><span class="pre">timestampRandomInt()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="trxtools.html#module-trxtools.plotting">trxtools.plotting module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.GOterm"><code class="docutils literal notranslate"><span class="pre">GOterm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.PCA"><code class="docutils literal notranslate"><span class="pre">PCA()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.boxplot1"><code class="docutils literal notranslate"><span class="pre">boxplot1()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.clusterClusterMap"><code class="docutils literal notranslate"><span class="pre">clusterClusterMap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.cumulativeDifference"><code class="docutils literal notranslate"><span class="pre">cumulativeDifference()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.cumulativePeaks"><code class="docutils literal notranslate"><span class="pre">cumulativePeaks()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.enhancedVolcano"><code class="docutils literal notranslate"><span class="pre">enhancedVolcano()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.generateSubplots"><code class="docutils literal notranslate"><span class="pre">generateSubplots()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.hplotSTARstats_readLen"><code class="docutils literal notranslate"><span class="pre">hplotSTARstats_readLen()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.hplotSTARstats_reads"><code class="docutils literal notranslate"><span class="pre">hplotSTARstats_reads()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.metaprofileAndHeatmap"><code class="docutils literal notranslate"><span class="pre">metaprofileAndHeatmap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.plotAndFolding"><code class="docutils literal notranslate"><span class="pre">plotAndFolding()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.plotSTARstats"><code class="docutils literal notranslate"><span class="pre">plotSTARstats()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.plotSTARstats_chimeric"><code class="docutils literal notranslate"><span class="pre">plotSTARstats_chimeric()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.plotSTARstats_mapping"><code class="docutils literal notranslate"><span class="pre">plotSTARstats_mapping()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.plotSTARstats_mistmatches"><code class="docutils literal notranslate"><span class="pre">plotSTARstats_mistmatches()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.plotSTARstats_readLen"><code class="docutils literal notranslate"><span class="pre">plotSTARstats_readLen()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.plotSTARstats_reads"><code class="docutils literal notranslate"><span class="pre">plotSTARstats_reads()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.plot_as_box_plot"><code class="docutils literal notranslate"><span class="pre">plot_as_box_plot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.plot_diff"><code class="docutils literal notranslate"><span class="pre">plot_diff()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.plot_heatmap"><code class="docutils literal notranslate"><span class="pre">plot_heatmap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.plot_to_compare"><code class="docutils literal notranslate"><span class="pre">plot_to_compare()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.select_colors"><code class="docutils literal notranslate"><span class="pre">select_colors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="trxtools.html#trxtools.plotting.vennDiagram"><code class="docutils literal notranslate"><span class="pre">vennDiagram()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="release.html">Release information</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="release.html#reporting-bugs">Reporting bugs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release.html#versions">Versions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="release.html#v0-3-4">v0.3.4</a></li>
+<li class="toctree-l3"><a class="reference internal" href="release.html#v0-3-0">v0.3.0</a></li>
+<li class="toctree-l3"><a class="reference internal" href="release.html#v0-2-2">v0.2.2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="release.html#v0-2-1">v0.2.1</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="release.html#authors">Authors</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="scripts.html" class="btn btn-neutral float-right" title="Scripts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Turowski Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
