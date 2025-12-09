@@ -264,7 +264,7 @@ def GOterm(df, x='fdr', y='term.label', normalizer='pValue', cutoff=0.05, count=
     # color map
     sm = plt.cm.ScalarMappable(cmap=my_cmap, norm=plt.Normalize(0, cutoff))
     sm.set_array([])
-    cbar = plt.colorbar(sm)
+    cbar = plt.colorbar(sm, ax=ax)
     cbar.set_label(normalizer, rotation=270, labelpad=25)
     
     # output
