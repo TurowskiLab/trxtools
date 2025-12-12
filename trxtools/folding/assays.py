@@ -1,5 +1,5 @@
 import pandas as pd
-import trxtools.methods as ttm
+from trxtools.utils import *
 
 ### Functions used in desing of in vitro assays i.e. elongation, termination, etc. for RNA polymerases
 
@@ -132,7 +132,7 @@ def templateDNA(seq=str(), overhang5end=str()):
     :return: DNA sequence of template strand
     :rtype: str
     '''
-    return ttm.reverse_complement_RNA(seq) + overhang5end[::-1]
+    return sequences.reverse_complement_RNA(seq) + overhang5end[::-1]
 
 
 def nonTemplateDNA(seq="", primer=""):

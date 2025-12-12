@@ -4,6 +4,7 @@ from trxtools.utils import names
 from trxtools.utils import stats
 from trxtools.utils import sequences
 import warnings
+import pandas as pd
 
 ### METHODS ###
 # various python methods
