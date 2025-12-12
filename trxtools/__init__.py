@@ -10,8 +10,13 @@ from trxtools.folding import assays
 from trxtools.folding import nascent
 from trxtools.folding import secondary
 
-from trxtools.tables import goEnrichment
-  
+from trxtools.utils import goEnrichment
+from trxtools.utils import bash
+from trxtools.utils import files
+from trxtools.utils import names
+from trxtools.utils import stats
+from trxtools.utils import sequences
+
 from trxtools import plotting
 from trxtools import methods
 
@@ -28,4 +33,9 @@ __all__ = [
     "goEnrichment",
     "plotting",
     "methods",
+    "bash",
+    "files",
+    "names",
+    "stats",
+    "sequences",
 ]
