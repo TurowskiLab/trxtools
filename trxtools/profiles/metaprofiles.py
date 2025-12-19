@@ -119,12 +119,18 @@ def get_multiple_matrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flan
 
 ### level -3
 def readBED(bed_path):
-    '''Simple BED file parser
+    '''
+    Simple BED file parser
 
     :param bed_path: Path to BED file
     :type bed_path: str
+    
     :return: Contents of BED file in DataFrame form
     :rtype: pandas.DataFrame
+
+    :example:
+
+    >>> bed_df = tt.metaprofiles.readBED('regions.bed')
     '''
     bed_df = pd.read_csv(bed_path, sep='\t', header=None)
     if len(bed_df.columns) > 6:
@@ -135,36 +141,99 @@ def readBED(bed_path):
 
 ### level -2
 def trim_bed(row, align_3end, len_cutoff):
-            region_length = row[2] - row[1]
-            if align_3end:
-                # go len_cutoff bases upstream from 3'end
-                if region_length > len_cutoff:
-                    if row[5] == '+':
-                        row[1] = row[2] - len_cutoff
-                    elif row[5] == '-':
-                        row[2] = row[1] + len_cutoff
-            else:  # go len_cutoff bases downstream from 5'end
-                if region_length > len_cutoff:
-                    if row[5] == '+':
-                        row[2] = row[1] + len_cutoff
-                    elif row[5] == '-':
-                        row[1] = row[2] - len_cutoff
-            return row
+    '''
+    Trim BED region to final length of len_cutoff bases starting from 3' or 5' end (strand-aware).
+
+    :param row: A row from a BED file, containing chromosome, start, end, and strand information.
+    :type row: list or pandas.Series
+    :param align_3end:  If true, the 3' end will be kept, i.e. the upstream region will be trimmed from the 5' end of the feature.
+    :type align_3end: bool
+    :param len_cutoff: The final length to which the region should be trimmed.
+    :type len_cutoff: int
+    
+    :return: The trimmed BED row.
+    :rtype: list or pandas.Series
+    
+    :example:
+
+    >>> bed_df_trimmed = bed_df.apply(trim_bed, axis=1, align_3end=True, len_cutoff=100)
+
+
+    
+    >>> bed_df
+       chrom  start  end  name   score  strand
+    0  chr1   100    500  gene1  .      -
+    1  chr2   439    1021 gene2  .      +
+
+    >>> bed_df.apply(trim_bed, axis=1, align_3end=True, len_cutoff=100)
+       chrom  start  end  name   score  strand
+    0  chr1   100    200  gene1  .      -
+    1  chr2   921    1021 gene2  .      +
+    '''
+    region_length = row[2] - row[1]
+    if align_3end:
+        # go len_cutoff bases upstream from 3'end
+        if region_length > len_cutoff:
+            if row[5] == '+':
+                row[1] = row[2] - len_cutoff
+            elif row[5] == '-':
+                row[2] = row[1] + len_cutoff
+    else:  # go len_cutoff bases downstream from 5'end
+        if region_length > len_cutoff:
+            if row[5] == '+':
+                row[2] = row[1] + len_cutoff
+            elif row[5] == '-':
+                row[1] = row[2] - len_cutoff
+    return row
 
 def get_chrom_lens(bw):
-    '''Get chromosome lengths from a BigWig file.
+    '''
+    Get chromosome lengths from a BigWig file.
 
     :param bw: A pyBigWig object to retrieve chromosome lengths from.
     :type bw: pyBigWig
+
     :return: A dictionary with chromosome names as keys and their lengths as values.
     :rtype: dict
+
+    :example:
+
+    >>> bw = pbw.open('example_fwd.bw')
+    >>> meta.get_chrom_lens(bw)
+    {'chr1': 248956422,
+    'chr2': 242193529,
+    'chr3': 198295559,
+    'chr4': 190214555,
+    'chr5': 181538259,
+    'chr6': 170805979,
+    'chr7': 159345973,
+    'chr8': 145138636,
+    'chr9': 138394717,
+    'chr10': 133797422,
+    'chr11': 135086622,
+    'chr12': 133275309,
+    'chr13': 114364328,
+    'chr14': 107043718,
+    'chr15': 101991189,
+    'chr16': 90338345,
+    'chr17': 83257441,
+    'chr18': 80373285,
+    'chr19': 58617616,
+    'chr20': 64444167,
+    'chr21': 46709983,
+    'chr22': 50818468,
+    'chrX': 156040895,
+    'chrY': 57227415,
+    'chrM': 16569}
     '''
     # Get chromosome lengths from a BigWig file.
     chrom_lens = {chrom: bw.chroms()[chrom] for chrom in bw.chroms()}
     return chrom_lens
 
 def get_bw_data(bed_row, bw, flank_5=0, flank_3=0, align_3end=False):
-    '''Retrieve BigWig scores for positions in a given region, optionally including flanks of given length.
+    '''
+    !!! This is an internal function, use getMultipleMatrices() instead.
+    Retrieve BigWig scores for positions in a given region, optionally including flanks of given length.
 
     :param bed_row: A row from a BED file, containing chromosome, start, end, and strand information.
     :type bed_row: list or pandas.Series
@@ -176,8 +245,20 @@ def get_bw_data(bed_row, bw, flank_5=0, flank_3=0, align_3end=False):
     :type flank_3: int, optional
     :param align_3end: Whether to align the series to the 3' end, defaults to False.
     :type align_3end: bool, optional
+
     :return: A pandas Series containing the BigWig scores for the specified region.
     :rtype: pandas.Series
+
+    :example:
+
+    >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],
+    ...                             'start': [1000, 2000],
+    ...                             'end': [1500, 2500],
+    ...                             'name': ['region1', 'region2'],
+    ...                             'score': [0, 0],
+    ...                             'strand': ['+', '-']})
+    >>> bw = pyBigWig.open('example.bw')
+    >>> result = get_bw_data(bed_regions.iloc[0], bw, flank_5=100, flank_3=100, align_3end=False)
     '''
 
     # Retrieve BigWig scores for positions in a given region, optionally including flanks of given length.
@@ -198,14 +279,26 @@ def get_bw_data(bed_row, bw, flank_5=0, flank_3=0, align_3end=False):
 
 ### level -1
 def bed_split_strands(bed_df):
-    '''Splits a BED dataframe into two separate dataframes based on strand information.
+    '''
+    Splits a BED dataframe into two separate dataframes based on strand information.
 
     :param bed_df: A dataframe containing BED format data. The strand information is expected to be in the 6th column (index 5).
     :type bed_df: pandas.DataFrame
+
     :return: A tuple containing two dataframes:
         - bed_plus (pandas.DataFrame): Dataframe containing entries with the '+' strand.
         - bed_minus (pandas.DataFrame): Dataframe containing entries with the '-' strand.
     :rtype: tuple
+
+    :example:
+
+    >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],
+    ...                             'start': [1000, 2000],
+    ...                             'end': [1500, 2500],
+    ...                             'name': ['region1', 'region2'],
+    ...                             'score': [0, 0],
+    ...                             'strand': ['+', '-']})
+    >>> bed_plus, bed_minus = bed_split_strands(bed_regions)
     '''
     # Split dataframe (from read_bw) by strand
     bed_plus = bed_df[bed_df[5] == "+"]
@@ -217,7 +310,9 @@ def matrixFromBigWig(
         fill_na=True, pseudocounts=None,
         align_3end=False, len_cutoff=None, skip_zeroes=False,
         chunk_baselimit=None, verbose=False):
-    '''Get matrix with BigWig scores for all regions in a bed df from a single BigWig file.
+    '''
+    !!! This is an internal function, use getMultipleMatrices() instead.
+    Get matrix with BigWig scores for all regions in a bed df from a single BigWig file.
     Matrix rows correspond to regions in BED.
     Columns correpond to nucleotide positions in regions + flanks.
     Flanks are strand-aware.
@@ -236,10 +331,20 @@ def matrixFromBigWig(
     :type pseudocounts: float, optional
     :param align_3end: If true, position 0 in the resulting matrix will be set at the target region's 3'end instead of 5'end, defaults to False
     :type align_3end: bool, optional
+
     :return: Dictionary with 'regions' (numpy array), 'matrix' (numpy array), and 'lengths' (numpy array) keys
     :rtype: dict
-    '''
 
+    :example:
+
+    >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],
+    ...                             'start': [1000, 2000],
+    ...                             'end': [1500, 2500],
+    ...                             'name': ['region1', 'region2'],
+    ...                             'score': [0, 0],
+    ...                             'strand': ['+', '-']})
+    >>> matrix = matrixFromBigWig('example.bw', bed_regions, flank_5=100, flank_3=100, align_3end=False)
+    '''
 
     # Sanity checks for len_cutoff
     if len_cutoff is not None:
@@ -453,6 +558,7 @@ def matrixFromBigWigSparse(
         align_3end=False, len_cutoff=None, skip_zeroes=False,
         chunk_baselimit=None, verbose=False):
     '''
+    !!! This is an internal function, use getMultipleMatrices() instead.
     matrixFromBigWig optimized for sparse data (features with mostly 0 coverage).
     Use when your bait protein binds in well defined sites (e.g TFs) as opposed to e.g. processive helicases or polymerases.
     Get matrix with BigWig scores for all regions in a bed df from a single BigWig file.
@@ -475,6 +581,7 @@ def matrixFromBigWigSparse(
     :type pseudocounts: float, optional
     :param align_3end: If true, position 0 in the resulting matrix will be set at the target region's 3'end instead of 5'end, defaults to False
     :type align_3end: bool, optional
+
     :return: Dictionary with 'regions' (numpy array), 'matrix' (numpy array), and 'lengths' (numpy array) keys
     :rtype: dict
     '''
@@ -694,13 +801,15 @@ def matrixFromBigWigSparse(
     return {'regions': final_regions, 'matrix': final_matrix}
 
 def join_strand_matrices(plus_dict, minus_dict):
-    '''Combine score matrices for regions on + and - strands.
+    '''
+    Combine score matrices for regions on + and - strands.
 
     :param plus_dict: Dictionary containing score matrices for regions on the + strand.
     :type plus_dict: dict
     :param minus_dict: Dictionary containing score matrices for regions on the - strand.
     :type minus_dict: dict
     :raises Exception: If keys in dictionaries do not match.
+
     :return: Dictionary containing combined score matrices for regions on both strands.
     :rtype: dict
     '''
@@ -745,10 +854,11 @@ def peak2matrice(bed_df=pd.DataFrame, peak_file_path='',
     :type flank_3: int, optional
     :param fill_na: If true replace NaN values with 0 (pybigwig returns positions with 0 coverage as NaN), defaults to True
     :type fill_na: bool, optional
+
     :return: DataFrame with the result score matrix
     :rtype: pandas.DataFrame
     '''
-    
+    #TODO: example in docstring
     peak_columns = ['chrom', 'start', 'end', 'name', 'score', 'strand', 'signalValue', 'pvalue', 'qValue','peak'] #broadPeak do not have 'peak' column
     peak_df = pd.read_csv(peak_file_path, sep='\t', header=None, names=peak_columns)
     a = BedTool.from_dataframe(peak_df)
@@ -791,7 +901,8 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
                         align_3end=False, len_cutoff=None, skip_zeroes=False, chunk_baselimit=None,
                         verbose=False):
     
-    '''Get score matrices for positions in given regions (with optional flanks) from multiple BigWig files.
+    '''
+    Get score matrices for positions in given regions (with optional flanks) from multiple BigWig files.
     Matrix rows correspond to regions in BED.
     Columns correpond to nucleotide positions in regions + flanks.
 
@@ -813,8 +924,29 @@ def getMultipleMatrices(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, flank_
     :type normalize_libsize: bool, optional
     :param align_3end: if True, align profiles at the 3'end of features. Otherwise align at 5'end, defaults to False
     :type align_3end: bool, optional
+    :param len_cutoff: If set, regions longer than len_cutoff will be trimmed to len_cutoff. Incompatible with flank_3 when align_3end=False and with flank_5 when align_3end=True, defaults to None
+    :type len_cutoff: int, optional
+    :param skip_zeroes: If true, regions with no coverage in the BigWig will be skipped to reduce memory usage, defaults to False
+    :type skip_zeroes: bool, optional
+    :param chunk_baselimit: If set, data will be processed in chunks to limit memory usage. Value is approximate total number of bases in a chunk, defaults to None
+    :type chunk_baselimit: int, optional
+    :param verbose: If true, print progress messages for troubleshooting purposes, defaults to False
+    :type verbose: bool, optional
+
     :return:  A dictionary containing score matrices for individual BigWig files. Dictionary keys are BigWig file names.
     :rtype: dict
+
+    :example:
+
+    >>> bw_plus_files = ['sample1_plus.bw', 'sample2_plus.bw']
+    >>> bw_minus_files = ['sample1_minus.bw', 'sample2_minus.bw']
+    >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],
+    ...                             'start': [1000, 2000],
+    ...                             'end': [1500, 2500],
+    ...                             'name': ['region1', 'region2'],
+    ...                             'score': [0, 0],
+    ...                             'strand': ['+', '-']})
+    >>> mm = getMultipleMatrices(bw_plus_files, bw_minus_files, bed_regions, flank_5=100, flank_3=100, normalize_libsize=True)
     '''
 
     warn = False
@@ -973,8 +1105,21 @@ def getMultipleMatricesSparse(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, 
     :type normalize_libsize: bool, optional
     :param align_3end: if True, align profiles at the 3'end of features. Otherwise align at 5'end, defaults to False
     :type align_3end: bool, optional
+
     :return:  A dictionary containing score matrices for individual BigWig files. Dictionary keys are BigWig file names.
     :rtype: dict
+
+    :example:
+
+    >>> bw_plus_files = ['sample1_plus.bw', 'sample2_plus.bw']
+    >>> bw_minus_files = ['sample1_minus.bw', 'sample2_minus.bw']
+    >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],
+    ...                             'start': [1000, 2000],
+    ...                             'end': [1500, 2500],
+    ...                             'name': ['region1', 'region2'],
+    ...                             'score': [0, 0],
+    ...                             'strand': ['+', '-']})
+    >>> mm = getMultipleMatricesSparse(bw_plus_files, bw_minus_files, bed_regions, flank_5=100, flank_3=100, normalize_libsize=True)
     '''
 
     # Split strands once to avoid repeated operations
@@ -1086,15 +1231,23 @@ def getMultipleMatricesSparse(bw_paths_plus, bw_paths_minus, bed_df, flank_5=0, 
     return out_dict
 
 def normalizeToLibrary(metaprofile=pd.DataFrame(), bigwig_plus=[], bigwig_minus=[]):
-    '''Normalize metaprofile to library size (sum of scores in a bigwig file).
+    '''
+    Normalize metaprofile to library size (sum of scores in a bigwig file).
     :param metaprofile: DataFrame with metaprofile data
     :type metaprofile: pandas.DataFrame
     :param bigwig_plus: list of paths to BigWig files for + strand
     :type bigwig_plus: list
     :param bigwig_minus: list of paths to BigWig files for - strand
     :type bigwig_minus: list
+    :raises Exception: if number of + and - strand BigWig files do not match
+    
     :return: normalized metaprofile DataFrame
     :rtype: pandas.DataFrame
+
+    :example:
+    
+    >>> metaprofile_df = trxtools.metaprofile(matrix_dict)
+    >>> normalized_metaprofile = trxtools.normalizeToLibrary(metaprofile_df, bigwig_plus=['sample1_plus.bw'], bigwig_minus=['sample1_minus.bw'])
     '''
     out_df = metaprofile.copy()
     if len(bigwig_plus) != len(bigwig_minus):
@@ -1115,7 +1268,8 @@ def normalizeToLibrary(metaprofile=pd.DataFrame(), bigwig_plus=[], bigwig_minus=
 def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
                  g='references/GRCh38.primary_assembly.genome.cleaned.len', 
                  flank_5=0, flank_3=0):
-    '''Get score matrices for positions in given regions (with optional flanks) from multiple peak files.
+    '''
+    Get score matrices for positions in given regions (with optional flanks) from multiple peak files.
     Matrix rows correspond to regions in BED. Columns correpond to nucleotide positions in regions + flanks.
     :param peak_paths: list of paths to peak files (broadPeak or narrowPeak format)
     :type peak_paths: list
@@ -1127,10 +1281,22 @@ def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
     :type flank_5: int, optional
     :param flank_3: length of 3'flank to extend BED regions by, defaults to 0
     :type flank_3: int, optional
+
     :return: dictionary of score matrices for each peak file
     :rtype: dict
-    '''
 
+    :example:
+
+    >>> peak_files = ['sample1_peaks.narrowPeak', 'sample2_peaks.narrowPeak']
+    >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],
+    ...                             'start': [1000, 2000],
+    ...                             'end': [1500, 2500],
+    ...                             'name': ['region1', 'region2'],
+    ...                             'score': [0, 0],
+    ...                             'strand': ['+', '-']})
+    >>> mm = getMultipleMatricesFromPeak(peak_files, bed_regions, flank_5=100, flank_3=100) 
+    '''
+    #TODO: example in docstring
     out_dict = {}
     for path in peak_paths:
         name = path.split("/")[-1].replace('_peaks.narrowPeak','').replace('_peaks.broadPeak','')
@@ -1140,17 +1306,32 @@ def getMultipleMatricesFromPeak(peak_paths=[], bed_df=pd.DataFrame,
     return out_dict
 
 def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False, subset=None, name_col=None):
-    '''Calculate metaprofiles from score matrices by aggregating each position in all regions.
-
-    :param matrix_dict: Dict containing score matrices returned by get_multiple_matrices()
+    '''
+    Calculate metaprofiles for each sample from score matrices by aggregating each position across all regions.
+    :param matrix_dict: Dict containing score matrices returned by getMultipleMatrices()
     :type matrix_dict: dict
     :param agg_type: Type of aggregation to use. Available: 'mean', 'median', 'sum', defaults to 'mean'
     :type agg_type: str, optional
-    :param normalize: if true, normalize each profile internally (i.e. gene-wise) (x/sum(x)) before aggregating, defaults to False
-    :type normalize: bool, optional
-    :raises Exception: _description_
+    :param normalize_internal: if true, normalize each profile internally (i.e. gene-wise) (x/sum(x)) before aggregating, defaults to False
+    :type normalize_internal: bool, optional
+    :raises Exception: "Wrong agg_type; available values: 'mean', 'median', 'sum'"
+
     :return: dataframe containing metaprofile values for each position in each of the input matrices (i.e. bigwig files)
     :rtype: pandas.DataFrame
+
+    :example:
+
+    >>> bw_plus_files = ['sample1_plus.bw', 'sample2_plus.bw']
+    >>> bw_minus_files = ['sample1_minus.bw', 'sample2_minus.bw']
+    >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],
+    ...                             'start': [1000, 2000],
+    ...                             'end': [1500, 2500],
+    ...                             'name': ['region1', 'region2'],
+    ...                             'score': [0, 0],
+    ...                             })
+    >>> mm = getMultipleMatrices(bw_plus_files, bw_minus_files, bed_regions, flank_5=100, flank_3=100, normalize_libsize=True)
+    >>> mp = metaprofile(mm)
+    >>> mp.plot()
     '''
 
     if agg_type not in ['mean', 'median', 'sum']:
@@ -1179,90 +1360,92 @@ def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False, subset=N
     else:
         return pd.DataFrame({key: value.agg(agg_type, numeric_only=True) for key, value in matrix_dict.items()})
 
-def metaprofile_new(matrix_dict, agg_type='mean', normalize_internal=False, subset=None):
-    '''Calculate metaprofiles from score matrices by aggregating each position in all regions.
+## Experimental version, could reduce memory usage 
+# def metaprofile_new(matrix_dict, agg_type='mean', normalize_internal=False, subset=None):
+#     '''Calculate metaprofiles from score matrices by aggregating each position in all regions.
 
-    :param matrix_dict: Dict containing score matrices returned by get_multiple_matrices()
-    :type matrix_dict: dict
-    :param agg_type: Type of aggregation to use. Available: 'mean', 'median', 'sum', defaults to 'mean'
-    :type agg_type: str, optional
-    :param normalize_internal: if true, normalize each profile internally (i.e. gene-wise) (x/sum(x)) before aggregating, defaults to False
-    :type normalize_internal: bool, optional
-    :param subset: DataFrame or list containing the subset of regions to select, defaults to None
-    :type subset: Union[pd.DataFrame, list], optional
-    :raises Exception: _description_
-    :return: dataframe containing metaprofile values for each position in each of the input matrices (i.e. bigwig files)
-    :rtype: pandas.DataFrame
-    '''
+#     :param matrix_dict: Dict containing score matrices returned by get_multiple_matrices()
+#     :type matrix_dict: dict
+#     :param agg_type: Type of aggregation to use. Available: 'mean', 'median', 'sum', defaults to 'mean'
+#     :type agg_type: str, optional
+#     :param normalize_internal: if true, normalize each profile internally (i.e. gene-wise) (x/sum(x)) before aggregating, defaults to False
+#     :type normalize_internal: bool, optional
+#     :param subset: DataFrame or list containing the subset of regions to select, defaults to None
+#     :type subset: Union[pd.DataFrame, list], optional
+#     :raises Exception: _description_
+#     :return: dataframe containing metaprofile values for each position in each of the input matrices (i.e. bigwig files)
+#     :rtype: pandas.DataFrame
+#     '''
 
-    if agg_type not in ['mean', 'median', 'sum']:
-        raise Exception("Wrong agg_type; available values: 'mean', 'median', 'sum'")
+#     if agg_type not in ['mean', 'median', 'sum']:
+#         raise Exception("Wrong agg_type; available values: 'mean', 'median', 'sum'")
 
-    # Apply subset filtering if provided
-    if isinstance(subset, pd.DataFrame):
-        subset_regions = set(subset.index)
-        matrix_dict = {key: {'regions': value['regions'][np.isin(value['regions'], list(subset_regions))],
-                            'matrix': value['matrix'][np.isin(value['regions'], list(subset_regions))],
-                            'lengths': value['lengths'][np.isin(value['regions'], list(subset_regions))]}
-                      for key, value in matrix_dict.items()}
-    elif isinstance(subset, list):
-        subset_regions = set(subset)
-        matrix_dict = {key: {'regions': value['regions'][np.isin(value['regions'], subset)],
-                            'matrix': value['matrix'][np.isin(value['regions'], subset)],
-                            'lengths': value['lengths'][np.isin(value['regions'], subset)]}
-                      for key, value in matrix_dict.items()}
+#     # Apply subset filtering if provided
+#     if isinstance(subset, pd.DataFrame):
+#         subset_regions = set(subset.index)
+#         matrix_dict = {key: {'regions': value['regions'][np.isin(value['regions'], list(subset_regions))],
+#                             'matrix': value['matrix'][np.isin(value['regions'], list(subset_regions))],
+#                             'lengths': value['lengths'][np.isin(value['regions'], list(subset_regions))]}
+#                       for key, value in matrix_dict.items()}
+#     elif isinstance(subset, list):
+#         subset_regions = set(subset)
+#         matrix_dict = {key: {'regions': value['regions'][np.isin(value['regions'], subset)],
+#                             'matrix': value['matrix'][np.isin(value['regions'], subset)],
+#                             'lengths': value['lengths'][np.isin(value['regions'], subset)]}
+#                       for key, value in matrix_dict.items()}
 
-    result_dict = {}
-    for key, value in matrix_dict.items():
-        matrix = value['matrix']
-        lengths = value['lengths']
+#     result_dict = {}
+#     for key, value in matrix_dict.items():
+#         matrix = value['matrix']
+#         lengths = value['lengths']
         
-        if normalize_internal:
-            # Normalize each row by its sum, using actual lengths to avoid padding zeros
-            normalized_matrix = np.zeros_like(matrix)
-            for i, length in enumerate(lengths):
-                row = matrix[i, :length]  # Only consider actual data, not padding
-                row_sum = np.sum(row)
-                if row_sum > 0:
-                    normalized_matrix[i, :length] = row / row_sum
-            matrix = normalized_matrix
+#         if normalize_internal:
+#             # Normalize each row by its sum, using actual lengths to avoid padding zeros
+#             normalized_matrix = np.zeros_like(matrix)
+#             for i, length in enumerate(lengths):
+#                 row = matrix[i, :length]  # Only consider actual data, not padding
+#                 row_sum = np.sum(row)
+#                 if row_sum > 0:
+#                     normalized_matrix[i, :length] = row / row_sum
+#             matrix = normalized_matrix
         
-        # Aggregate across all regions (rows) for each position (column)
-        if agg_type == 'mean':
-            # For mean, we need to consider only non-padded positions
-            result = np.zeros(matrix.shape[1])
-            counts = np.zeros(matrix.shape[1])
-            for i, length in enumerate(lengths):
-                result[:length] += matrix[i, :length]
-                counts[:length] += 1
-            # Avoid division by zero
-            result = np.divide(result, counts, out=np.zeros_like(result), where=counts!=0)
-        elif agg_type == 'median':
-            # For median, create a masked array considering actual lengths
-            masked_data = []
-            max_len = matrix.shape[1]
-            for pos in range(max_len):
-                valid_values = []
-                for i, length in enumerate(lengths):
-                    if pos < length:
-                        valid_values.append(matrix[i, pos])
-                if valid_values:
-                    masked_data.append(np.median(valid_values))
-                else:
-                    masked_data.append(0.0)
-            result = np.array(masked_data)
-        elif agg_type == 'sum':
-            # For sum, we can sum all values but should consider only actual data
-            result = np.zeros(matrix.shape[1])
-            for i, length in enumerate(lengths):
-                result[:length] += matrix[i, :length]
+#         # Aggregate across all regions (rows) for each position (column)
+#         if agg_type == 'mean':
+#             # For mean, we need to consider only non-padded positions
+#             result = np.zeros(matrix.shape[1])
+#             counts = np.zeros(matrix.shape[1])
+#             for i, length in enumerate(lengths):
+#                 result[:length] += matrix[i, :length]
+#                 counts[:length] += 1
+#             # Avoid division by zero
+#             result = np.divide(result, counts, out=np.zeros_like(result), where=counts!=0)
+#         elif agg_type == 'median':
+#             # For median, create a masked array considering actual lengths
+#             masked_data = []
+#             max_len = matrix.shape[1]
+#             for pos in range(max_len):
+#                 valid_values = []
+#                 for i, length in enumerate(lengths):
+#                     if pos < length:
+#                         valid_values.append(matrix[i, pos])
+#                 if valid_values:
+#                     masked_data.append(np.median(valid_values))
+#                 else:
+#                     masked_data.append(0.0)
+#             result = np.array(masked_data)
+#         elif agg_type == 'sum':
+#             # For sum, we can sum all values but should consider only actual data
+#             result = np.zeros(matrix.shape[1])
+#             for i, length in enumerate(lengths):
+#                 result[:length] += matrix[i, :length]
         
-        result_dict[key] = result
+#         result_dict[key] = result
     
-    return pd.DataFrame(result_dict)
+#     return pd.DataFrame(result_dict)
 
 def regionScore(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0, flank_3=0, fill_na=True, pseudocounts=None, normalize_libsize=True):
-    '''Calculate coverage or statistic for multiple regions in multiple BigWig files.
+    '''
+    Calculate coverage (when agg_type='sum') or statistic for multiple regions in multiple BigWig files.
 
     :param bw_paths_plus: list of paths to BigWig files (+ strand)
     :type bw_paths_plus: list
@@ -1282,8 +1465,21 @@ def regionScore(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0
     :type pseudocounts: float, optional
     :param normalize_libsize: normalization to library size (sum of scores in a bigwig file), defaults to True
     :type normalize_libsize: bool, optional
+
     :return:  DataFrame with calculated scores. Rows are regions/genes, columns are BigWig files.
     :rtype: pandas.DataFrame
+
+    :example:
+
+    >>> bw_plus_files = ['sample1_plus.bw', 'sample2_plus.bw']
+    >>> bw_minus_files = ['sample1_minus.bw', 'sample2_minus.bw']
+    >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],
+    ...                             'start': [1000, 2000],
+    ...                             'end': [1500, 2500],
+    ...                             'name': ['region1', 'region2'],
+    ...                             'score': [0, 0],
+    ...                             'strand': ['+', '-']})
+    >>> region_scores = regionScore(bw_plus_files, bw_minus_files, bed_regions, agg_type='sum', flank_5=100, flank_3=100, normalize_libsize=True)
     '''
 
     if agg_type not in ['mean', 'median', 'sum']:
@@ -1375,24 +1571,36 @@ def regionScore(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0
 ### level 1
 def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(),
                         flank_5=None, flank_3=None, region_col=None):
-    '''Bin multiple matrices of tRNA profiles into a single dataframe
-      
+    '''
+    Bin multiple matrices of gene profiles into a single dataframe
     :param mm: dictionary of matrices of gene profiles 
     :type mm: dict
-    :param bins: list of three integers, defaults to [50, 10, 50]
+    :param bins: How many bins to use for each region part (5' flank, region body, 3' flank), defaults to [50, 10, 50]
     :type bins: list, optional
     :param bed_df: dataframe in BED format containing genomic coordinates of target regions, defaults to pd.DataFrame()
     :type bed_df: pandas.DataFrame, optional
     :param flank_5: length of 5'flank to extend BED regions by, defaults to None
     :type flank_5: int, optional
-    :type bed_df: pandas.DataFrame, optional
     :param flank_3: length of 3'flank to extend BED regions by, defaults to None
     :type flank_3: int, optional
-    :type bed_df: pandas.DataFrame, optional
     :raises ValueError: if bins is not a list of three integers
     :raises ValueError: if input_value is not an integer or a DataFrame
-    :return: dictionary of binned matrices of tRNA profiles
+    
+    :return: dictionary of binned matrices of gene profiles
     :rtype: dict
+
+    :example:
+    
+    >>> bw_plus_files = ['sample1_plus.bw', 'sample2_plus.bw']
+    >>> bw_minus_files = ['sample1_minus.bw', 'sample2_minus.bw']
+    >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],
+    ...                             'start': [1000, 2000],
+    ...                             'end': [1500, 2500],
+    ...                             'name': ['region1', 'region2'],
+    ...                             'score': [0, 0],
+    ...                             'strand': ['+', '-']})
+    >>> mm = getMultipleMatrices(bw_plus_files, bw_minus_files, bed_regions, flank_5=100, flank_3=100, normalize_libsize=True)
+    >>> binned_mm = binMultipleMatrices(mm, bins=[50,10,50], bed_df=bed_regions, flank_5=100, flank_3=100)
     '''
 
     if len(bins) != 3:
@@ -1419,17 +1627,17 @@ def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(),
         # bin individual profiles of tRNAs
         if region_col is not None:
             for region,row in value.set_index(region_col).iterrows():
-                results_df[region] = tt.profiles.binCollect3(s1=row,
+                results_df[region] = tt.profileTools.binCollect3(s1=row,
                                             lengths=length_df.loc[region].tolist(),
                                             bins=bins)
         elif 'region' in value.columns:
             for region,row in value.set_index('region').iterrows():
-                results_df[region] = tt.profiles.binCollect3(s1=row,
+                results_df[region] = tt.profileTools.binCollect3(s1=row,
                                             lengths=length_df.loc[region].tolist(),
                                             bins=bins)
         else:
             for region,row in value.iterrows():
-                results_df[region] = tt.profiles.binCollect3(s1=row,
+                results_df[region] = tt.profileTools.binCollect3(s1=row,
                                             lengths=length_df.loc[region].tolist(),
                                             bins=bins)
         
@@ -1440,14 +1648,30 @@ def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(),
 
 ## helper functions
 def selectSubsetMM(matrix_dict, subset=None):
-    '''Select a subset of regions from the matrix dictionary.
+    '''
+    Select a subset of regions from the matrix dictionary.
 
     :param matrix_dict: Dictionary containing score matrices.
     :type matrix_dict: dict
     :param subset: DataFrame or list containing the subset of regions to select, defaults to None
     :type subset: Union[pd.DataFrame, list], optional
+
     :return: Dictionary containing the selected subset of score matrices.
     :rtype: dict
+
+    :example:
+    
+    >>> bw_plus_files = ['sample1_plus.bw', 'sample2_plus.bw']
+    >>> bw_minus_files = ['sample1_minus.bw', 'sample2_minus.bw']
+    >>> bed_regions = pd.DataFrame({'chrom': ['chr1', 'chr2'],
+    ...                             'start': [1000, 2000],
+    ...                             'end': [1500, 2500],
+    ...                             'name': ['region1', 'region2'],
+    ...                             'score': [0, 0],
+    ...                             'strand': ['+', '-']})
+    >>> mm = getMultipleMatrices(bw_plus_files, bw_minus_files, bed_regions, flank_5=100, flank_3=100, normalize_libsize=True)
+    >>> subset_regions = pd.DataFrame(index=['region1'])
+    >>> subset_mm = selectSubsetMM(mm, subset=subset_regions)
     '''
     if isinstance(subset, pd.DataFrame):
         subset_regions = set(subset.index)

@@ -13,7 +13,9 @@ def strip_BigWig_names(files=list(), suffix=".bw"):
     :type files: list, required
     :return: list of unique names
     :rtype: list
-
+    
+    :example:
+    
     >>> strip_BigWig_names(["file1_fwd.bw", "file1_rev.bw", "file2_fwd.bw", "file2_rev.bw"])
     ['file2', 'file1']
     '''

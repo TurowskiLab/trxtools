@@ -1,6 +1,6 @@
 from trxtools.sam.SAMgeneral import *
 from trxtools.sam.SAMtranscripts import transcript2profile, transcript2profileDeletions
-from trxtools.methods import timestamp
+from trxtools.utils.files import timestamp
 import time, shutil
 import pyBigWig
 
@@ -20,6 +20,8 @@ def chromosome2profile3end(l=[], length=int(), strand='FWD'):
     :return: profile, noncoded
     :rtype: np.array, list of tuples
 
+    :example:
+    
     >>> chromosome2profile3end(l=[(10,"3S15M1D9M2S","TTTGCGCAGTCGTGCGGGGCGCAGCGCCC")],length=50,strand="FWD")
     (0     0.0
     1     0.0

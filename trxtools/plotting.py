@@ -2,8 +2,8 @@ from turtle import st
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import trxtools.profiles as profiles
-import trxtools.metaprofiles as meta
+import trxtools.profiles.profileTools as pp
+import trxtools.profiles.metaprofiles as meta
 from adjustText import adjust_text
 import seaborn as sns
 import matplotlib
@@ -264,7 +264,7 @@ def GOterm(df, x='fdr', y='term.label', normalizer='pValue', cutoff=0.05, count=
     # color map
     sm = plt.cm.ScalarMappable(cmap=my_cmap, norm=plt.Normalize(0, cutoff))
     sm.set_array([])
-    cbar = plt.colorbar(sm)
+    cbar = plt.colorbar(sm, ax=ax)
     cbar.set_label(normalizer, rotation=270, labelpad=25)
     
     # output
@@ -1164,7 +1164,7 @@ def plot_diff(ref, dataset=pd.DataFrame(), ranges='mm', label1="reference", labe
 
     ranges_dict = {'mm': 'min-max', 'qq': 'q1-q3'}
 
-    differences_df = profiles.compareMoretoRef(dataset=dataset, ranges=ranges, ref=reference)[start:stop]
+    differences_df = pp.compareMoretoRef(dataset=dataset, ranges=ranges, ref=reference)[start:stop]
     dataset, s2 = dataset[start:stop], reference[start:stop]  # preparing datasets
     # plotting
     fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
