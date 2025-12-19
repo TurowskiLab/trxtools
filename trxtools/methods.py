@@ -854,7 +854,7 @@ def runPCA(data=pd.DataFrame(), n_components=2):
     return stats.runPCA(data=data, n_components=n_components)
 
 
-def addCluster(df=pd.DataFrame(), n=10):
+def addCluster(df=pd.DataFrame(), n=10, plot=True):
     '''Assigns n clusters to the data using KMeans algorithm
 
     :param df: DataFrame containing the data to be clustered
