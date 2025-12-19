@@ -2,11 +2,10 @@
 
 import setuptools
 
-# TODO requirements
 
 setuptools.setup(
     name='trxtools',
-    version='0.3.4',
+    version='0.4',
     author="Tomasz W. Turowski, Jan Mikołajczyk",
     author_email="tomasz.turowski@ibb.waw.pl",
     description='Python tools facilitating bioinformatic analysis of nascent transcripts and transcriptomic data.',
@@ -37,6 +36,6 @@ setuptools.setup(
     install_requires=[
         'scikit-learn','pandas', 'numpy', 'pybedtools',
         'pyBigWig', 'adjustText', 'scipy', 'matplotlib_venn',
-        'seaborn', 'matplotlib', 'requests'],
+        'seaborn', 'matplotlib', 'requests', 'biopython',],
     python_requires='>=3.6'
 )

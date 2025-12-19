@@ -9,6 +9,13 @@ If you encounter a bug, please report it on the `GitHub issue tracker <https://g
 Versions
 --------
 
+v0.4.0
+^^^^^^
+- major restructuring of the package
+- new functions for advanced analysis of transcriptional profiles
+- modules divided into submodules
+- improved documentation with more examples
+
 v0.3.4
 ^^^^^^
 - added functions for metaprofile analysis
