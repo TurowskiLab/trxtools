@@ -1355,10 +1355,13 @@ def metaprofile(matrix_dict, agg_type='mean', normalize_internal=False, subset=N
             dropped = {key: value.set_index(name_col).div(value.sum(axis=1,numeric_only=True),axis=0) for key, value in matrix_dict.items()}
         else:
             dropped = {key: value.div(value.sum(axis=1,numeric_only=True),axis=0) for key, value in matrix_dict.items()}
-        return pd.DataFrame({key: value.agg(agg_type,numeric_only=True) for key, value in dropped.items()})
-
+        out_df = pd.DataFrame({key: value.agg(agg_type,numeric_only=True) for key, value in dropped.items()})
+        # return out_df
     else:
-        return pd.DataFrame({key: value.agg(agg_type, numeric_only=True) for key, value in matrix_dict.items()})
+        out_df = pd.DataFrame({key: value.agg(agg_type, numeric_only=True) for key, value in matrix_dict.items()})
+        # return out_df
+    out_df.index = out_df.index.astype(int)
+    return out_df
 
 ## Experimental version, could reduce memory usage 
 # def metaprofile_new(matrix_dict, agg_type='mean', normalize_internal=False, subset=None):
