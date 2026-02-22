@@ -83,20 +83,15 @@ def runPCA(data=pd.DataFrame(), n_components=2):
     2  4.242641  0.000000, [100.0, 0.0])
     '''
 
-    # x = StandardScaler().fit_transform(df1_codone_composition)
-
     pca = PCA(n_components=n_components)
     principalComponents = pca.fit_transform(data)
     principalDf = pd.DataFrame(data=principalComponents,
                                columns=['PC' + str(i + 1) for i in np.arange(0, n_components)])
 
     values = pca.explained_variance_ratio_
+    principalDf.index = data.index
 
-    finalDf = pd.concat([principalDf, pd.Series(data.index)], axis=1)
-    finalDf.rename(columns={0: 'name'}, inplace=True)
-    finalDf = finalDf.set_index('name')
-
-    return finalDf, [round(i*100,2) for i in values.tolist()]
+    return principalDf, [round(i*100,2) for i in values.tolist()]
 
 def addCluster(df=pd.DataFrame(), n=10):
     '''Assigns n clusters to the data using KMeans algorithm
