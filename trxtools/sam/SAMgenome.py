@@ -456,7 +456,7 @@ def parseHeader(filename, name, dirPath):
 ####################################################
 
 def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",expand=0,
-               noncoded=True,noncoded_suffix="polyA", ncLen_min=3, ncLen_max=10,
+               noncoded=True,noncoded_suffix="polyA", paired=False, ncLen_min=3, ncLen_max=10,
                save_intermediate=False):
     '''Function handling SAM files and generating profiles. Executed using wrapping script SAM2profilesGenomic.py.
 
@@ -480,7 +480,10 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",expand=0,
     :type ncLen_min: int, optional
     :param ncLen_max: Maximal length of non-coded tail for noncoded_suffix=polyAmm, defaults to 10
     :type ncLen_max: int, optional
+    :param paired: Whether the reads are paired-end, defaults to False
+    :type paired: bool, optional
 
+    :return: None (saves profiles as bigWig files)
     '''
     # checking use
     if use not in ["read","3end","5end",'del']: exit("Wrong -u parameter selected")
@@ -522,20 +525,56 @@ def sam2genome(filename="", path='', toClear='',chunks=0,use="3end",expand=0,
     log_file.write(timestamp()+"\t"+"Selecting reads from SAM files"+"\n")
     os.chdir(dirPath)
     
-    for i in chunkList:
-        geneListFileName = "geneList_" + str(i) + ".tab"
+    # for processing single-read data
+    if paired == False:
+        for i in chunkList:
+            geneListFileName = "geneList_" + str(i) + ".tab"
+            #FLAG 0 and 256 for single end reads, aligned, forward match
+            command = "grep -v ^@ ../" + filename + " | grep -f " + geneListFileName +\
+                    " | awk -F'\t' 'BEGIN{OFS = FS} $2==0||$2==256{print $2,$3, $4, $6, $10, $12}' > "+\
+                    name + "_" + str(i) + "_fwd.tab"
+            tt.methods.bashCommand(command)      
+            #FLAG 16 and 272 for single end reads, aligned, reverse match
+            command = "grep -v ^@ ../" + filename + " | grep -f " + geneListFileName +\
+                    " | awk -F'\t' 'BEGIN{OFS = FS} $2==16||$2==272{print $2,$3, $4, $6, $10, $12}' > "+\
+                    name + "_" + str(i) + "_rev.tab"
+            tt.methods.bashCommand(command)
 
-        #FLAG 0 and 256 for single end reads, aligned, forward match
-        command = "grep -v ^@ ../" + filename + " | grep -f " + geneListFileName +\
-                  " | awk -F'\t' 'BEGIN{OFS = FS} $2==0||$2==256{print $2,$3, $4, $6, $10, $12}' > "+\
-                  name + "_" + str(i) + "_fwd.tab"
-        tt.methods.bashCommand(command)
-        
-        #FLAG 16 and 272 for single end reads, aligned, forward match
-        command = "grep -v ^@ ../" + filename + " | grep -f " + geneListFileName +\
-                  " | awk -F'\t' 'BEGIN{OFS = FS} $2==16||$2==272{print $2,$3, $4, $6, $10, $12}' > "+\
-                  name + "_" + str(i) + "_rev.tab"
-        tt.methods.bashCommand(command)
+    # for processing paired-end data
+    elif paired == True:
+        # processing 5' ends
+        if use == "5end":
+            log_file.write(timestamp()+"\t"+"Selecting reads for 5ends using paired-end data"+"\n")
+            for i in chunkList:
+                geneListFileName = "geneList_" + str(i) + ".tab"
+                #FLAG 99 and 147 for paired end reads, aligned, forward match
+                command = "grep -v ^@ ../" + filename + " | grep -f " + geneListFileName +\
+                        " | awk -F'\t' 'BEGIN{OFS = FS} $2==99{print $2,$3, $4, $6, $10, $12}' > "+\
+                        name + "_" + str(i) + "_fwd.tab"
+                tt.methods.bashCommand(command)      
+                #FLAG 83 and 163 for paired end reads, aligned, reverse match
+                command = "grep -v ^@ ../" + filename + " | grep -f " + geneListFileName +\
+                        " | awk -F'\t' 'BEGIN{OFS = FS} $2==83{print $2,$3, $4, $6, $10, $12}' > "+\
+                        name + "_" + str(i) + "_rev.tab"
+                tt.methods.bashCommand(command)
+        # processing 3' ends
+        elif use == "3end":
+            log_file.write(timestamp()+"\t"+"Selecting reads for 3ends using paired-end data"+"\n")
+            for i in chunkList:
+                geneListFileName = "geneList_" + str(i) + ".tab"
+                #FLAG 99 and 147 for paired end reads, aligned, forward match
+                command = "grep -v ^@ ../" + filename + " | grep -f " + geneListFileName +\
+                        " | awk -F'\t' 'BEGIN{OFS = FS} $2==147{print $2,$3, $4, $6, $10, $12}' > "+\
+                        name + "_" + str(i) + "_fwd.tab"
+                tt.methods.bashCommand(command)      
+                #FLAG 83 and 163 for paired end reads, aligned, reverse match
+                command = "grep -v ^@ ../" + filename + " | grep -f " + geneListFileName +\
+                        " | awk -F'\t' 'BEGIN{OFS = FS} $2==163{print $2,$3, $4, $6, $10, $12}' > "+\
+                        name + "_" + str(i) + "_rev.tab"
+                tt.methods.bashCommand(command)
+        else:
+            exit("Paired-end data processing is only implemented for -u 3end and -u 5end. Please select one of these options for paired-end data.")
+                
     
     tt.methods.bashCommand("cat "+name+"*fwd.tab > " + name +"_fwd.tab")
     tt.methods.bashCommand("cat "+name+"*rev.tab > " + name +"_rev.tab")
