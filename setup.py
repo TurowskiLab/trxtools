@@ -5,7 +5,7 @@ import setuptools
 
 setuptools.setup(
     name='trxtools',
-    version='0.4',
+    version='0.5',
     author="Tomasz W. Turowski, Jan Mikołajczyk",
     author_email="tomasz.turowski@ibb.waw.pl",
     description='Python tools facilitating bioinformatic analysis of nascent transcripts and transcriptomic data.',
