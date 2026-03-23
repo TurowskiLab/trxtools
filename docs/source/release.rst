@@ -11,6 +11,10 @@ Versions
 
 v0.4.0
 ^^^^^^
+- SAM2profilesGenomic.py - added option to use only one read from paired-end data
+
+v0.4.0
+^^^^^^
 - major restructuring of the package
 - new functions for advanced analysis of transcriptional profiles
 - modules divided into submodules
