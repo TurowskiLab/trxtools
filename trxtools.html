@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>trxtools package &mdash; trxtools 0.3.4 documentation</title>
+  <title>trxtools package &mdash; trxtools 0.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/custom.css?v=e6c5d56c" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=1e28cc32"></script>
-      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/documentation_options.js?v=db78e746"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -182,9 +182,9 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#trxtools-tables-module">trxtools.tables module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#module-trxtools.tables.goEnrichment">trxtools.tables.goEnrichment submodule</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#trxtools.tables.goEnrichment.get_enrichment"><code class="docutils literal notranslate"><span class="pre">get_enrichment()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#trxtools-utils-module">trxtools.utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-trxtools.utils.goEnrichment">trxtools.utils.goEnrichment submodule</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#trxtools.utils.goEnrichment.get_enrichment"><code class="docutils literal notranslate"><span class="pre">get_enrichment()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -198,7 +198,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#trxtools.methods.calGC"><code class="docutils literal notranslate"><span class="pre">calGC()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trxtools.methods.cleanNames"><code class="docutils literal notranslate"><span class="pre">cleanNames()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trxtools.methods.define_experiments"><code class="docutils literal notranslate"><span class="pre">define_experiments()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#trxtools.methods.enriched"><code class="docutils literal notranslate"><span class="pre">enriched()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trxtools.methods.expNameParser"><code class="docutils literal notranslate"><span class="pre">expNameParser()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trxtools.methods.expStats"><code class="docutils literal notranslate"><span class="pre">expStats()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trxtools.methods.filterExp"><code class="docutils literal notranslate"><span class="pre">filterExp()</span></code></a></li>
@@ -802,7 +801,7 @@ This function filters and sorts the paths dictionary based on the provided chrom
 
 <dl class="py function">
 <dt class="sig sig-object py" id="trxtools.sam.SAMgenome.sam2genome">
-<span class="sig-prename descclassname"><span class="pre">trxtools.sam.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">sam2genome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">toClear</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'3end'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noncoded</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noncoded_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'polyA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncLen_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncLen_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_intermediate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.sam.SAMgenome.sam2genome" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">trxtools.sam.SAMgenome.</span></span><span class="sig-name descname"><span class="pre">sam2genome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">toClear</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'3end'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noncoded</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noncoded_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'polyA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paired</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncLen_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncLen_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_intermediate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.sam.SAMgenome.sam2genome" title="Link to this definition"></a></dt>
 <dd><p>Function handling SAM files and generating profiles. Executed using wrapping script SAM2profilesGenomic.py.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -817,7 +816,11 @@ This function filters and sorts the paths dictionary based on the provided chrom
 <li><p><strong>noncoded_suffix</strong> (<em>str</em><em>, </em><em>optional</em>) – Suffix for non-coded ends, defaults to ‘polyA’</p></li>
 <li><p><strong>ncLen_min</strong> (<em>int</em><em>, </em><em>optional</em>) – Minimal length of non-coded tail for noncoded_suffix=polyAmm, defaults to 5</p></li>
 <li><p><strong>ncLen_max</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximal length of non-coded tail for noncoded_suffix=polyAmm, defaults to 10</p></li>
+<li><p><strong>paired</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether the reads are paired-end, defaults to False</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None (saves profiles as bigWig files)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2451,7 +2454,7 @@ Discards oligos longer than 200 nt.</p>
 <span id="trxtools-folding-nascent-submodule"></span><h3>trxtools.folding.nascent submodule<a class="headerlink" href="#module-trxtools.folding.nascent" title="Link to this heading"></a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="trxtools.folding.nascent.Fold">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">trxtools.folding.nascent.</span></span><span class="sig-name descname"><span class="pre">Fold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tempDir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.folding.nascent.Fold" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">trxtools.folding.nascent.</span></span><span class="sig-name descname"><span class="pre">Fold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tempDir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.folding.nascent.Fold" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="trxtools.folding.nascent.Fold.RNAfold">
@@ -2560,7 +2563,7 @@ Discards oligos longer than 200 nt.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="trxtools.folding.nascent.Hybrid">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">trxtools.folding.nascent.</span></span><span class="sig-name descname"><span class="pre">Hybrid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tempDir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.folding.nascent.Hybrid" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">trxtools.folding.nascent.</span></span><span class="sig-name descname"><span class="pre">Hybrid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tempDir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.folding.nascent.Hybrid" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="trxtools.folding.nascent.Hybrid.RNAhybrid">
@@ -3044,13 +3047,13 @@ __O_O</p>
 
 </section>
 </section>
-<section id="trxtools-tables-module">
-<h2>trxtools.tables module<a class="headerlink" href="#trxtools-tables-module" title="Link to this heading"></a></h2>
-<section id="module-trxtools.tables.goEnrichment">
-<span id="trxtools-tables-goenrichment-submodule"></span><h3>trxtools.tables.goEnrichment submodule<a class="headerlink" href="#module-trxtools.tables.goEnrichment" title="Link to this heading"></a></h3>
+<section id="trxtools-utils-module">
+<h2>trxtools.utils module<a class="headerlink" href="#trxtools-utils-module" title="Link to this heading"></a></h2>
+<section id="module-trxtools.utils.goEnrichment">
+<span id="trxtools-utils-goenrichment-submodule"></span><h3>trxtools.utils.goEnrichment submodule<a class="headerlink" href="#module-trxtools.utils.goEnrichment" title="Link to this heading"></a></h3>
 <dl class="py function">
-<dt class="sig sig-object py" id="trxtools.tables.goEnrichment.get_enrichment">
-<span class="sig-prename descclassname"><span class="pre">trxtools.tables.goEnrichment.</span></span><span class="sig-name descname"><span class="pre">get_enrichment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query_genes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">organism</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">go_dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'biological_process'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_reference_set</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_genes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_organism</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'FISHER'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'FDR'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.tables.goEnrichment.get_enrichment" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="trxtools.utils.goEnrichment.get_enrichment">
+<span class="sig-prename descclassname"><span class="pre">trxtools.utils.goEnrichment.</span></span><span class="sig-name descname"><span class="pre">get_enrichment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query_genes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">organism</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">go_dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'biological_process'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_reference_set</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_genes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_organism</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'FISHER'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'FDR'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.utils.goEnrichment.get_enrichment" title="Link to this definition"></a></dt>
 <dd><p>Run a GO term enrichment test using PANTHER API</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -3126,7 +3129,7 @@ __O_O</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="trxtools.methods.addCluster">
-<span class="sig-prename descclassname"><span class="pre">trxtools.methods.</span></span><span class="sig-name descname"><span class="pre">addCluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n=10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.methods.addCluster" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">trxtools.methods.</span></span><span class="sig-name descname"><span class="pre">addCluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[]</span> <span class="pre">Index:</span> <span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot=True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.methods.addCluster" title="Link to this definition"></a></dt>
 <dd><p>Assigns n clusters to the data using KMeans algorithm</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -3254,27 +3257,6 @@ __O_O</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="trxtools.methods.enriched">
-<span class="sig-prename descclassname"><span class="pre">trxtools.methods.</span></span><span class="sig-name descname"><span class="pre">enriched</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.methods.enriched" title="Link to this definition"></a></dt>
-<dd><p>Filter DataFrame for enriched genes based on adjusted p-value and log2 fold change.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame containing gene expression data</p></li>
-<li><p><strong>padj</strong> (<em>float</em><em>, </em><em>optional</em>) – Adjusted p-value threshold, defaults to 0.05</p></li>
-<li><p><strong>fc</strong> (<em>float</em><em>, </em><em>optional</em>) – Log2 fold change threshold, defaults to 2</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Filtered DataFrame with enriched genes</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3471,6 +3453,7 @@ __O_O</p>
 <dt class="sig sig-object py" id="trxtools.methods.listPaths">
 <span class="sig-prename descclassname"><span class="pre">trxtools.methods.</span></span><span class="sig-name descname"><span class="pre">listPaths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nameElem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#trxtools.methods.listPaths" title="Link to this definition"></a></dt>
 <dd><p>List all file paths in a folder with a specific suffix and optional name element.</p>
+<p>Warning: This function is deprecated. Please use bash.listPaths() instead.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -4649,7 +4632,7 @@ Read DESeq2 output file and add gene names.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Turowski Lab.</p>
+    <p>&#169; Copyright 2026, Turowski Lab.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

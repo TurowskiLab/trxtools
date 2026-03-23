@@ -19,6 +19,9 @@ Options:
     -u {read,3end,5end,del}, --use {read,3end,5end,del}
         Generate profiles using reads (read) or the 3' ends (3end), 5' ends (5end), or deletions (del).
 
+    -p, --paired
+        Process paired-end data.
+
     -n, --noncoded
         Save non-coded ends. Can be used ONLY with: -u 3end.
 

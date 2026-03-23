@@ -77,12 +77,12 @@ trxtools.folding.secondary submodule
    :show-inheritance:
 
 
-trxtools.tables module
+trxtools.utils module
 **********************
 
-trxtools.tables.goEnrichment submodule
+trxtools.utils.goEnrichment submodule
 ======================================
-.. automodule:: trxtools.tables.goEnrichment
+.. automodule:: trxtools.utils.goEnrichment
    :members:
    :undoc-members:
    :show-inheritance:
