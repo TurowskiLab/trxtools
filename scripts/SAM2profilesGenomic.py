@@ -39,7 +39,7 @@ from trxtools.sam.SAMgenome import sam2genome
 import os, argparse
 import trxtools as tt
 
-usage = "Generates genomic profiles from SAM files. To  \n" 
+usage = "Generates BigWig genomic profiles from SAM files.\n" 
 usage += "For instrictions and additional options use SAM2profilesGenomic.py --help \n" 
 usage += "Example usage: SAM2profilesGenomic.py -f file.sam -u 3end -n -s polyA"
 
@@ -50,7 +50,7 @@ files.add_argument("-f", dest="sam_file", help="SAM file",
 files.add_argument("-u", dest="use", help="Generate profiles using reads (read) or the 3' ends (end)",
                         type=str,choices=["read","3end","5end","del"], default="3end")
 # files.add_argument("--del", dest="deletions", help="Generate additional profiles for deletions",action="store_true")
-# files.add_argument("-e", dest="expand", help="For deletions position can be expanded by the value on each side (e=5 gives 10 nt long)", type=int, default=5)
+files.add_argument("-p", dest="paired", help="Use this argument to specify if the reads are paired-end", action="store_true", default=False)
 files.add_argument("-n", dest="noncoded", help="Save non-coded ends. Can be used ONLY with: -u 3end",
                         action="store_true",default=False)
 files.add_argument("-s", dest="noncoded_suffix", help="Select non-coded ends. Can be used ONLY with: -u 3end",
@@ -77,6 +77,7 @@ sam2genome(filename=args.sam_file,
                 use=args.use,
                 noncoded=args.noncoded, # for 3end only
                 noncoded_suffix=args.noncoded_suffix, # for 3end and noncoded==True
+                paired=args.paired, # True if the reads are paired-end, False otherwise
                 ncLen_min=args.ncLen_min,
                 ncLen_max=args.ncLen_max,
                 expand=args.expand,
