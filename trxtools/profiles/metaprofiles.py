@@ -1572,7 +1572,7 @@ def regionScore(bw_paths_plus, bw_paths_minus, bed_df, agg_type='sum', flank_5=0
 #     return out_df
 
 ### level 1
-def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(),
+def binMultipleMatrices(mm, bins=[50, 10, 50], bed_df=pd.DataFrame(),
                         flank_5=0, flank_3=0, region_col=None):
     '''
     Bin multiple matrices of gene profiles into a single dataframe
@@ -1605,6 +1605,9 @@ def binMultipleMatrices(mm={}, bins=[50, 10, 50], bed_df=pd.DataFrame(),
     >>> mm = getMultipleMatrices(bw_plus_files, bw_minus_files, bed_regions, flank_5=100, flank_3=100, normalize_libsize=True)
     >>> binned_mm = binMultipleMatrices(mm, bins=[50,10,50], bed_df=bed_regions, flank_5=100, flank_3=100)
     '''
+
+    if bed_df.empty:
+        raise ValueError("bed_df cannot be empty")
 
     if len(bins) != 3:
         raise ValueError(f"{bins} takes three numbers")
