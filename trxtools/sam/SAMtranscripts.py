@@ -101,7 +101,6 @@ def reads2profile(name=str(), dirPath=str(), df_details=pd.DataFrame()):
             length = details['transcript_length']
             l = list(zip(df['position'], df['CIGAR']))
             s1 = transcript2profile(l, length=length)
-            # output_df = output_df.append(s1.rename(n))
             output_df = pd.concat([output_df, s1.rename(n).to_frame().T])
 
             log.append(n + " - profile generated successfully")
