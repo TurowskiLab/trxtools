@@ -145,7 +145,6 @@ def reads2profileDeletions(name=str(), dirPath=str(), df_details=pd.DataFrame(),
 
             # reads
             s1 = transcript2profile(l, length=length)
-            # output_df = output_df.append(s1.rename(n))
             output_df = pd.concat([output_df, s1.rename(n).to_frame().T])
 
             # deletions
