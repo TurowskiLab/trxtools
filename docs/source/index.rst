@@ -8,9 +8,9 @@ trxtools
 
 version 0.5
 
-trxtools is set of bioinformatic tools and methods to facilitate analysis of transcriptional data. 
+trxtools is a set of bioinformatic tools and methods to facilitate analysis of transcriptional data. 
 
-Major focus is put on postprocessing of high-troughput sequencing data originating from the followin methods:
+Major focus is put on postprocessing of high-troughput sequencing data originating from the following methods:
 
 * CRAC/CLIP
 * RNA-seq
