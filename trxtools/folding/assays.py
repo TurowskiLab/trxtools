@@ -177,9 +177,11 @@ def bulkInputIDT(data=pd.DataFrame()):
 
     # table to order
     output = pd.DataFrame()
+    rows = []
     for i, row in working.iterrows():
-        output = output.append(pd.Series(index=['sequence'], data=row["template"], name=str(i) + "_template"))
-        output = output.append(pd.Series(index=['sequence'], data=row["non-template"], name=str(i) + "_non-temp"))
+        rows.append(pd.Series(index=['sequence'], data=row["template"], name=str(i) + "_template"))
+        rows.append(pd.Series(index=['sequence'], data=row["non-template"], name=str(i) + "_non-temp"))
+    output = pd.DataFrame(rows)
 
     # synthesis scale
     output['scale'] = "25nm"

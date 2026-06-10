@@ -101,7 +101,7 @@ def reads2profile(name=str(), dirPath=str(), df_details=pd.DataFrame()):
             length = details['transcript_length']
             l = list(zip(df['position'], df['CIGAR']))
             s1 = transcript2profile(l, length=length)
-            output_df = output_df.append(s1.rename(n))
+            output_df = pd.concat([output_df, s1.rename(n).to_frame().T])
 
             log.append(n + " - profile generated successfully")
         except:
@@ -145,15 +145,15 @@ def reads2profileDeletions(name=str(), dirPath=str(), df_details=pd.DataFrame(),
 
             # reads
             s1 = transcript2profile(l, length=length)
-            output_df = output_df.append(s1.rename(n))
+            output_df = pd.concat([output_df, s1.rename(n).to_frame().T])
 
             # deletions
             s2 = transcript2profileDeletions(l, length=length)
-            outputDel_df = outputDel_df.append(s2.rename(n))
+            outputDel_df = pd.concat([outputDel_df, s2.rename(n).to_frame().T])
 
             # deletions ext
             s3 = transcript2profileDeletions(l, length=length, expand=expand)
-            outputDelExt_df = outputDelExt_df.append(s3.rename(n))
+            outputDelExt_df = pd.concat([outputDelExt_df, s3.rename(n).to_frame().T])
 
             log.append(n + " - profile generated successfully")
         except:
